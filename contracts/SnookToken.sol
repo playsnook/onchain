@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
@@ -16,18 +17,31 @@ import "./SkillToken.sol";
 contract SnookToken is ERC721, ERC721Burnable, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+  
+    using EnumerableSet for EnumerableSet.AddressSet;
 
+    EnumerableSet.AddressSet private _mintRequesters;
+    mapping (address => uint) _mintPrice;
+    
+    
     event Entrance(address indexed from, uint tokenId);
     event Extraction(address indexed to, uint tokenId);
     event Death(address indexed to, uint tokenId, uint timestamp);
     event Ressurection(address indexed from, uint tokenId);
 
+    // Open to public:
+    // 1. trait ids
+    // 2. special skin id, name, description?
+    // 3. resurrectionCount
+    
+    // tokenURI should be several urls for in-game and off-game
     struct Descriptor {
         uint[] traitIds;
-        uint specialSkinId;
         string tokenURI;
         uint ressurectionPrice;
         uint ressurectionCount;
+        uint[] onRessurectionTraitIds;
+        string onRessurectionTokenURI;
         bool inplay;
         uint deathTime;
     }
@@ -44,21 +58,53 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         return _descriptors[tokenId].tokenURI;
     }
     
-    // mint will be done by contract itself not by owner to mint in exchange for SKILL
-    function mint(address to, string memory metaTokenURI) public onlyOwner {
+    function _updateTraitIds(uint tokenId, uint[] memory newTraitIds) private {
+        for (uint i=0; i<newTraitIds.length; i++) {
+            _descriptors[tokenId].traitIds.push(newTraitIds[i]);
+        }
+    }
+
+    // if requestMint listeners are down and missed the request
+    // cronjob servers can get all pending requests for mint and do the job
+    function _getMintRequesters() public view onlyOwner returns(address[] memory buyers) {
+        for (uint i=0; i<_mintRequesters.length(); i++) {
+            buyers[i] = _mintRequesters.at(i);
+        }
+    }
+
+    // send skill tokens to CONTRACT address, not to contract owner
+    // we cannot steal this money
+    function requestMint(address to) public {
+        uint SNOOK_PRICE = 1;
+        require(_mintRequesters.contains(to) == false, 'Previous minting is in progress');
+        require(skill.transferFrom(to, address(this), SNOOK_PRICE), 'Not enough funds for minting');
+        _mintRequesters.add(to);
+        _mintPrice[to] = SNOOK_PRICE;
+    }
+
+
+    
+    // Wallet Server got trait ids from game server and mints a token
+    function mint(address to, uint[] memory initialTraitIds, string memory tokenURI_) public onlyOwner {
+        require(_mintRequesters.contains(to), 'No payment made for snook');
+
         _tokenIds.increment(); // start from 1
-        uint256 newItemId = _tokenIds.current();   
-        _mint(to, newItemId);
-        _descriptors[newItemId] = Descriptor({
-            traitIds: new uint256[](0),
-            specialSkinId: 0, 
+        uint256 tokenId = _tokenIds.current();   
+        _mint(to, tokenId);
+        _descriptors[tokenId] = Descriptor({
+            traitIds: initialTraitIds,
             deathTime: 0,
             ressurectionPrice: 0,
             ressurectionCount: 0,
+            onRessurectionTokenURI: "",
+            onRessurectionTraitIds: new uint256[](0),
             inplay: false,
-            tokenURI: metaTokenURI
+            tokenURI: tokenURI_
         });
-        _descriptors[newItemId].traitIds.push(1 + _random(26));
+
+        skill.burn(address(this), _mintPrice[to]);
+        _mintRequesters.remove(to);
+        
     }
 
     
@@ -87,25 +133,29 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     }
 
     // called by WS when snook successfully extracts snook
-    function extractFromGame(uint256 tokenId, uint[] memory newTraitIds, uint specialSkinId, string memory tokenURI_) public onlyOwner {
+    function extractFromGame(uint256 tokenId, uint[] memory newTraitIds, string memory tokenURI_) public onlyOwner {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
         
         _descriptors[tokenId].inplay = false;
-        _descriptors[tokenId].specialSkinId = specialSkinId;
         _descriptors[tokenId].tokenURI = tokenURI_;
-        for (uint i=0; i<newTraitIds.length; i++) {
-            _descriptors[tokenId].traitIds.push(newTraitIds[i]);
-        }
+        _updateTraitIds(tokenId, newTraitIds);
 
         emit Extraction(ownerOf(tokenId), tokenId);
     }
 
-    // called by WS when snook is dead
-    function setDeathTime(uint256 tokenId) public onlyOwner {
+    // called by WS when snook is dead; newTraits are updated according to penalty
+    function setDeathTime(uint256 tokenId, uint[] memory onRessurectionTraitIds, string memory onRessurectionTokenURI) public onlyOwner {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play'); // prevent wallet server from errors
         _descriptors[tokenId].deathTime = block.timestamp;
+
+        // ressurection price is based on traits of dying snook 
         _descriptors[tokenId].ressurectionPrice = _getRessurectionPrice(tokenId);
+
+        // remember what traits should be assigned to snook on ressurection
+        _descriptors[tokenId].onRessurectionTraitIds = onRessurectionTraitIds;
+        _descriptors[tokenId].onRessurectionTokenURI = onRessurectionTokenURI;
+
         emit Death(ownerOf(tokenId), tokenId, _descriptors[tokenId].deathTime);
     }
 
@@ -121,11 +171,10 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
 
         require(skill.transferFrom(ownerOf(tokenId), address(this), _descriptors[tokenId].ressurectionPrice));
 
-        // here introduce the penalty as trait loss
-        // code is here
-
         _descriptors[tokenId].ressurectionCount += 1; // no overflow with solc8
         _descriptors[tokenId].deathTime = 0;
+        _descriptors[tokenId].tokenURI = _descriptors[tokenId].onRessurectionTokenURI;
+        _descriptors[tokenId].traitIds = _descriptors[tokenId].onRessurectionTraitIds;
         _descriptors[tokenId].inplay = false;
     }
 
@@ -163,12 +212,6 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         }
         D = ABDKMath64x64.div(D, totalLiveSnooks);
         return D;
-    }
-
-    // generates number between 0 and maxvalue including
-    function _random(uint256 maxvalue) private view returns (uint) {
-        uint randomHash = uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty)));
-        return randomHash % maxvalue;
     }
 
     // for tests
