@@ -18,4 +18,14 @@ contract SkillToken is ERC20, Ownable {
   function burn(address account, uint256 amount) public onlyOwner {
     _burn(account, amount);
   }
+
+  // test only
+  function test123() public onlyOwner view returns (uint256) {
+    return 100;
+  }
+
+  // test only
+  function getMyAddress() public view returns (address me) {
+    return address(this);
+  }
 }

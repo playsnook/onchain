@@ -58,15 +58,11 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         return _descriptors[tokenId].tokenURI;
     }
     
-    function _updateTraitIds(uint tokenId, uint[] memory newTraitIds) private {
-        for (uint i=0; i<newTraitIds.length; i++) {
-            _descriptors[tokenId].traitIds.push(newTraitIds[i]);
-        }
-    }
 
     // if requestMint listeners are down and missed the request
     // cronjob servers can get all pending requests for mint and do the job
-    function _getMintRequesters() public view onlyOwner returns(address[] memory buyers) {
+    function getMintRequesters() public view onlyOwner returns(address[] memory buyers) {
+        buyers = new address[](_mintRequesters.length());
         for (uint i=0; i<_mintRequesters.length(); i++) {
             buyers[i] = _mintRequesters.at(i);
         }
@@ -74,8 +70,9 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
 
     // send skill tokens to CONTRACT address, not to contract owner
     // we cannot steal this money
-    function requestMint(address to) public {
-        uint SNOOK_PRICE = 1;
+    function requestMint() public {
+        address to = msg.sender;
+        uint SNOOK_PRICE = 10;
         require(_mintRequesters.contains(to) == false, 'Previous minting is in progress');
         require(skill.transferFrom(to, address(this), SNOOK_PRICE), 'Not enough funds for minting');
         _mintRequesters.add(to);
@@ -102,12 +99,21 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
             tokenURI: tokenURI_
         });
 
-        skill.burn(address(this), _mintPrice[to]);
+        // skill.burn(address(this), _mintPrice[to]);
+
+        // (bool result, ) = address(skill).call(abi.encodeWithSignature('burn(address,uint256)', address(this), _mintPrice[to]));
+        // require(result == true, 'Burn failed');
+    
         _mintRequesters.remove(to);
         
     }
 
     
+
+    function test() public returns (uint256) {
+        (bool success, bytes memory returndata) = address(skill).delegatecall(abi.encodeWithSignature("test123()"));
+        return abi.decode(returndata, (uint256));
+    }
 
     // function is called by WS periodically to bury dead snooks
     function bury() public onlyOwner {
@@ -139,7 +145,9 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         
         _descriptors[tokenId].inplay = false;
         _descriptors[tokenId].tokenURI = tokenURI_;
-        _updateTraitIds(tokenId, newTraitIds);
+        for (uint i=0; i<newTraitIds.length; i++) {
+            _descriptors[tokenId].traitIds.push(newTraitIds[i]);
+        }
 
         emit Extraction(ownerOf(tokenId), tokenId);
     }
@@ -217,6 +225,10 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     // for tests
     function getDescriptor(uint tokenId) public onlyOwner view returns (Descriptor memory) {
         return _descriptors[tokenId];
+    }
+
+    function getMyAddress() public view returns (address me) {
+        return address(this);
     }
 
 }
