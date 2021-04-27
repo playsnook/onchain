@@ -18,6 +18,8 @@ import "./SkillToken.sol";
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
 contract SnookToken is ERC721, ERC721Burnable, Ownable {
+    uint public SNOOK_PRICE = 10; // DEBUG ONLY
+
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
   
@@ -74,7 +76,6 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     // we cannot steal this money
     function requestMint() public {
         address to = msg.sender;
-        uint SNOOK_PRICE = 10;
         require(_mintRequesters.contains(to) == false, 'Previous minting is in progress');
         require(skill.transferFrom(to, address(this), SNOOK_PRICE), 'Not enough funds for minting');
         _mintRequesters.add(to);
