@@ -10,15 +10,14 @@ describe("Game flow", function() {
     const SkillToken = await ethers.getContractFactory('SkillToken');
     skillToken = await SkillToken.deploy();
     await skillToken.deployed();
-    const reportedSkill = await skillToken.getMyAddress();
-    console.log(`skill contract: ${skillToken.address}, reported: ${reportedSkill}`);
+    console.log(`skill contract: ${skillToken.address}`);
     
 
     const SnookToken = await ethers.getContractFactory('SnookToken');
     snookToken = await SnookToken.deploy(skillToken.address);
     await snookToken.deployed();
-    const reportedSnook = await snookToken.getMyAddress();
-    console.log(`snookToken: ${snookToken.address}, reported: ${reportedSnook}`)
+    console.log(`snookToken: ${snookToken.address}`);
+    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookToken.address)
     
 
     signers = await ethers.getSigners();
@@ -26,14 +25,6 @@ describe("Game flow", function() {
     // tap up Skill balances of signers
     await skillToken.transfer(signers[1].address, 1000); 
   });
-
-  it('Burning Skills', async ()=>{
-    let totalSupply = await skillToken.totalSupply();
-    console.log(`before burn: ${totalSupply}`)
-    await skillToken.burn(signers[1].address, 10);
-    totalSupply = await skillToken.totalSupply();
-    console.log(`after burn: ${totalSupply}`)
-  })
 
   it('Minting flow', async ()=>{
     await skillToken.connect(signers[1]).approve(snookToken.address, 10);
@@ -52,9 +43,6 @@ describe("Game flow", function() {
     ).to.include(signers[1].address);
     
     await snookToken.mint(signers[1].address, [1], 'test');
-    console.log('-----')
-    const t = await snookToken.test();
-    console.log(t)
   });
 
 });

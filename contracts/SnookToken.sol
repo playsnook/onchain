@@ -10,6 +10,9 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 
+import "hardhat/console.sol";
+
+
 import "./SkillToken.sol";
 
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
@@ -48,7 +51,6 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     mapping (uint => Descriptor) private _descriptors;
 
     SkillToken skill;
-
     constructor(address skillAddr) ERC721("SnookToken", "SNK") {
         skill = SkillToken(skillAddr);
     }
@@ -99,20 +101,8 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
             tokenURI: tokenURI_
         });
 
-        // skill.burn(address(this), _mintPrice[to]);
-
-        // (bool result, ) = address(skill).call(abi.encodeWithSignature('burn(address,uint256)', address(this), _mintPrice[to]));
-        // require(result == true, 'Burn failed');
-    
-        _mintRequesters.remove(to);
-        
-    }
-
-    
-
-    function test() public returns (uint256) {
-        (bool success, bytes memory returndata) = address(skill).delegatecall(abi.encodeWithSignature("test123()"));
-        return abi.decode(returndata, (uint256));
+        skill.burn(address(this), _mintPrice[to]);
+        _mintRequesters.remove(to);        
     }
 
     // function is called by WS periodically to bury dead snooks
@@ -225,10 +215,6 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     // for tests
     function getDescriptor(uint tokenId) public onlyOwner view returns (Descriptor memory) {
         return _descriptors[tokenId];
-    }
-
-    function getMyAddress() public view returns (address me) {
-        return address(this);
     }
 
 }
