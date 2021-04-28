@@ -31,7 +31,7 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     
     event Entrance(address indexed from, uint tokenId);
     event Extraction(address indexed to, uint tokenId);
-    event Death(address indexed to, uint tokenId, uint timestamp);
+    event Death(address indexed to, uint tokenId);
     event Ressurection(address indexed from, uint tokenId);
 
     // Open to public:
@@ -55,6 +55,20 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     SkillToken skill;
     constructor(address skillAddr) ERC721("SnookToken", "SNK") {
         skill = SkillToken(skillAddr);
+    }
+
+    function describe(uint tokenId) public view returns (
+        uint[] memory traitIds, 
+        uint ressurectionPrice, 
+        uint ressurectionCount 
+    ) {
+        require(ownerOf(tokenId) == _msgSender(), 'Only token owner has access');
+        return (
+            _descriptors[tokenId].traitIds,
+            _descriptors[tokenId].ressurectionPrice,
+            _descriptors[tokenId].ressurectionCount
+        );
+
     }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
@@ -155,7 +169,7 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         _descriptors[tokenId].onRessurectionTraitIds = onRessurectionTraitIds;
         _descriptors[tokenId].onRessurectionTokenURI = onRessurectionTokenURI;
 
-        emit Death(ownerOf(tokenId), tokenId, _descriptors[tokenId].deathTime);
+        emit Death(ownerOf(tokenId), tokenId);
     }
 
     // 1. user should approve contract to get amount of skill
@@ -175,9 +189,11 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         _descriptors[tokenId].tokenURI = _descriptors[tokenId].onRessurectionTokenURI;
         _descriptors[tokenId].traitIds = _descriptors[tokenId].onRessurectionTraitIds;
         _descriptors[tokenId].inplay = false;
+
+        emit Ressurection(_msgSender(), tokenId);
     }
 
-    function _getRessurectionPrice(uint256 tokenId) public view returns (uint256) {
+    function _getRessurectionPrice(uint256 tokenId) private view returns (uint256) {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
         int128 k = ABDKMath64x64.fromUInt(100); // now it's set to 100 to recover fraction from D
         int128 S = ABDKMath64x64.fromUInt(1); // skill.totalSupply();
@@ -186,7 +202,7 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         return ABDKMath64x64.toUInt(price); // will truncate fraction, for example if price=6.6 as 64x64 then after toUInt it gets 6
     }
 
-    function _getRessurectionDifficulty(uint256 tokenId) public view returns (int128) {
+    function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
         int128 D = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
         int128[] memory f; // probability density
         int128 totalLiveSnooks = ABDKMath64x64.fromUInt(0);
@@ -211,11 +227,6 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         }
         D = ABDKMath64x64.div(D, totalLiveSnooks);
         return D;
-    }
-
-    // for tests
-    function getDescriptor(uint tokenId) public onlyOwner view returns (Descriptor memory) {
-        return _descriptors[tokenId];
     }
 
 }
