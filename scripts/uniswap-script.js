@@ -38,39 +38,40 @@ async function main() {
   const usdcToken = await UsdcToken.deploy();
   await usdcToken.deployed();
   
-  await usdcToken.approve(uniswapV2Router02.address, 10000);
-  await skillToken.approve(uniswapV2Router02.address, 10000);
+  await usdcToken.approve(uniswapV2Router02.address, ethers.utils.parseEther('10000'));
+  await skillToken.approve(uniswapV2Router02.address, ethers.utils.parseEther('10000'));
 
-  console.log(`Skill Address: ${skillToken.address}, FakeDAE address: ${usdcToken.address}`)
+  console.log(`Skill Address: ${skillToken.address}, USDC address: ${usdcToken.address}`)
 
-  await expect(uniswapV2Factory.createPair(skillToken.address, usdcToken.address))
+  await expect(uniswapV2Factory.createPair(usdcToken.address, skillToken.address))
     .to.emit(uniswapV2Factory, "PairCreated"); 
 
   
   await uniswapV2Router02.addLiquidity(
-    skillToken.address, 
     usdcToken.address,
-    8000,
-    8000,
-    7999,
-    7999,
+    skillToken.address,
+    ethers.utils.parseEther('250'),
+    ethers.utils.parseEther('1000'),
+    ethers.utils.parseEther('249'),
+    ethers.utils.parseEther('999'),
     signers[0].address,
     moment().add(10, 'seconds').unix()
   );
 
-  await uniswapV2Router02.swapTokensForExactTokens(
-    1,
-    2,
-    [usdcToken.address, skillToken.address],
-    signers[0].address,
-    moment().add(1, 'minutes').unix()
-  );
+  // await uniswapV2Router02.swapTokensForExactTokens(
+  //   1,
+  //   2,
+  //   [usdcToken.address, skillToken.address],
+  //   signers[0].address,
+  //   moment().add(1, 'minutes').unix()
+  // );
 
   const Uniswap = await ethers.getContractFactory('UniswapUSDCSkill');
   const uniswap = await Uniswap.deploy(uniswapV2Factory.address, usdcToken.address, skillToken.address);
   await uniswap.deployed();
   const k = await uniswap.getK();
-  console.log(k)
+  console.log(ethers.utils.formatEther(k))
+
   
 }
 

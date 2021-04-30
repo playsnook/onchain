@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 
-pragma solidity ^0.6.6;
+pragma solidity >=0.6.6;
 
 import '@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
@@ -29,7 +29,10 @@ contract UniswapUSDCSkill  {
         (uint reservesUSDC, uint reservesSkill) = _usdc == _pair.token0() ? ( reserves0, reserves1) : (reserves1, reserves0);
 
         console.log('SnookPriceUSDC:', snookPriceUSDC);
-        k = UniswapV2Library.getAmountOut(snookPriceUSDC, reservesUSDC, reservesSkill);
+        console.log('reservesUSDC:', reservesUSDC);
+        console.log('reservesSkill:', reservesSkill);
+
+        k = UniswapV2Library.quote(snookPriceUSDC, reservesUSDC, reservesSkill);        
     }
  
 }

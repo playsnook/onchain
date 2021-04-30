@@ -14,6 +14,7 @@ import "hardhat/console.sol";
 
 
 import "./SkillToken.sol";
+import "./IUniswapUSDCSkill.sol";
 
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
@@ -52,9 +53,12 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     }
     mapping (uint => Descriptor) private _descriptors;
 
-    SkillToken skill;
-    constructor(address skillAddr) ERC721("SnookToken", "SNK") {
-        skill = SkillToken(skillAddr);
+    SkillToken skill; // change to private
+    IUiniswapUSDCSkill private _uniswap;
+
+    constructor(address skill_, address uniswap_) ERC721("SnookToken", "SNK") {
+        skill = SkillToken(skill_);
+        _uniswap = IUiniswapUSDCSkill(uniswap_);
     }
 
     function describe(uint tokenId) public view returns (
