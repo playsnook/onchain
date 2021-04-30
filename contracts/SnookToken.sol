@@ -39,7 +39,7 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     // 2. special skin id, name, description?
     // 3. resurrectionCount
     
-    // tokenURI should be several urls for in-game and off-game
+    // tokenURI should be several urls for in-game and off-game, contract
     struct Descriptor {
         uint[] traitIds;
         string tokenURI;

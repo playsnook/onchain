@@ -13,13 +13,10 @@ contract SkillToken is ERC20, AccessControl {
   uint public INITIAL_SUPPLY = 12000;
   bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
-  function decimals() public pure override returns (uint8) {
-    return 2;
-  }
-
   constructor() ERC20("SkillToken", "SKILL") {
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    _mint(_msgSender(), INITIAL_SUPPLY);
+    uint amount = INITIAL_SUPPLY * 10**decimals();
+    _mint(_msgSender(), amount);
   }
 
   function burn(address from, uint256 amount) public {

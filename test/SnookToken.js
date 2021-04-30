@@ -19,6 +19,9 @@ describe("Game flow", function() {
     await snookToken.deployed();
     console.log(`snookToken: ${snookToken.address}`);
     await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookToken.address)
+
+    const decimals = await skillToken.decimals();
+    console.log(`Skill token decimals: ${decimals}`);
     
 
     signers = await ethers.getSigners();

@@ -1,6 +1,9 @@
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
+
+
 const moment = require('moment');
+
 const { expect } = require("chai");
 const { ethers } = require('hardhat');
 
@@ -31,41 +34,44 @@ async function main() {
   const skillToken = await SkillToken.deploy();
   await skillToken.deployed();
   
-  const FakeDAE = await ethers.getContractFactory('FakeDAE');
-  const fakeDAE = await FakeDAE.deploy();
-  await fakeDAE.deployed();
+  const UsdcToken = await ethers.getContractFactory('UsdcToken');
+  const usdcToken = await UsdcToken.deploy();
+  await usdcToken.deployed();
   
-  await fakeDAE.approve(uniswapV2Router02.address, 9000);
-  await skillToken.approve(uniswapV2Router02.address, 9000);
+  await usdcToken.approve(uniswapV2Router02.address, 10000);
+  await skillToken.approve(uniswapV2Router02.address, 10000);
 
-  await expect(uniswapV2Factory.createPair(skillToken.address, fakeDAE.address))
+  console.log(`Skill Address: ${skillToken.address}, FakeDAE address: ${usdcToken.address}`)
+
+  await expect(uniswapV2Factory.createPair(skillToken.address, usdcToken.address))
     .to.emit(uniswapV2Factory, "PairCreated"); 
 
   
   await uniswapV2Router02.addLiquidity(
     skillToken.address, 
-    fakeDAE.address,
+    usdcToken.address,
     8000,
     8000,
     7999,
     7999,
     signers[0].address,
-    moment().add(1, 'minutes').unix()
+    moment().add(10, 'seconds').unix()
   );
 
   await uniswapV2Router02.swapTokensForExactTokens(
     1,
     2,
-    [fakeDAE.address, skillToken.address],
+    [usdcToken.address, skillToken.address],
     signers[0].address,
     moment().add(1, 'minutes').unix()
   );
 
-  const LiqCalc = await ethers.getContractFactory('LiqCalc');
-  const liqCalc = await LiqCalc.deploy(uniswapV2Factory.address);
-  await liqCalc.deployed();
-  const info = await liqCalc.pairInfo(skillToken.address, fakeDAE.address);
-  console.log(info)
+  const Uniswap = await ethers.getContractFactory('UniswapUSDCSkill');
+  const uniswap = await Uniswap.deploy(uniswapV2Factory.address, usdcToken.address, skillToken.address);
+  await uniswap.deployed();
+  const k = await uniswap.getK();
+  console.log(k)
+  
 }
 
 main()
