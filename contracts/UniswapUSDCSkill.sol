@@ -28,10 +28,6 @@ contract UniswapUSDCSkill  {
         (uint reserves0, uint reserves1,) = _pair.getReserves();
         (uint reservesUSDC, uint reservesSkill) = _usdc == _pair.token0() ? ( reserves0, reserves1) : (reserves1, reserves0);
 
-        // console.log('SnookPriceUSDC:', snookPriceUSDC);
-        // console.log('reservesUSDC:', reservesUSDC);
-        // console.log('reservesSkill:', reservesSkill);
-
         k = UniswapV2Library.quote(snookPriceUSDC, reservesUSDC, reservesSkill);        
     }
  

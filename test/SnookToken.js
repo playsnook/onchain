@@ -161,8 +161,6 @@ describe("Game flow", function() {
       snookToken.connect(signers[2]).transferFrom(signers[1].address, signers[2].address, 1)
     ).to.be.revertedWith('Token is locked')
 
-    console.log('----->ok2')
-
 
     // WS gets notification from GS to extract snook
     // contract owner extracts snook of gamer 1
@@ -180,13 +178,15 @@ describe("Game flow", function() {
       snookToken.connect(signers[2]).enterGame(1)
     ).to.emit(snookToken, 'Entrance').withArgs(signers[2].address, 1);
 
+
     // gamer 2 dies in the game
     await expect(
-      snookToken.setDeathTime(1, [1], 'reserect')
+      snookToken.setDeathTime(1, [1], 'ressurect')
     ).to.emit(snookToken, 'Death').withArgs(signers[2].address, 1);
 
+    
     const { ressurectionPrice } = await snookToken.connect(signers[2].address).describe(1);
-    console.log(ressurectionPrice.toNumber());
+    console.log(`Resprice=${ethers.utils.formatEther(ressurectionPrice)}`);
 
     // gamer 2 tries to ressurect without paying
     await expect(
@@ -199,7 +199,7 @@ describe("Game flow", function() {
     ).to.be.revertedWith('Token is locked');
 
     // gamer 2 allows to pay ressurection price
-    await skillToken.connect(signers[2]).approve(snookToken.address, ressurectionPrice.toNumber());
+    await skillToken.connect(signers[2]).approve(snookToken.address, ressurectionPrice);
     // ... and ressurects
     await expect(
       snookToken.connect(signers[2]).ressurect(1)

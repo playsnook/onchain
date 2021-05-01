@@ -197,12 +197,14 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
 
     function _getRessurectionPrice(uint256 tokenId) private view returns (uint256 price) {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
-        
-        int128 k = ABDKMath64x64.fromUInt(_uniswap.getSnookPriceInSkills()); 
+        console.log('Inside getResPrice');
+        uint256 k = _uniswap.getSnookPriceInSkills();
+        console.log('resDiff, k=', k);
         int128 d = _getRessurectionDifficultyCoef(tokenId); 
-        int128 p = ABDKMath64x64.mul(d, k);
-        console.log('k from uniswap:', _uniswap.getSnookPriceInSkills());
-        price = ABDKMath64x64.toUInt(p); 
+        console.log('resDiff, d=', ABDKMath64x64.toUInt(d));
+
+        price = ABDKMath64x64.mulu(d, k);
+ 
         console.log('price=', price);
     }
 
@@ -229,12 +231,15 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         for (uint i=0; i<bin ; i++) {
             D = ABDKMath64x64.add(D, f[i]);
         }
+
         D = ABDKMath64x64.div(D, totalLiveSnooks); // difficulty
         
         int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
+        console.log('numOfTraits=', bin, 'totalLiveSnooks=', ABDKMath64x64.toUInt(totalLiveSnooks));
+        console.log('D=', ABDKMath64x64.toUInt(D) );
 
         // difficulty coef,  d = exp(D) * traits^2
-        int128 d = ABDKMath64x64.mul(D, ABDKMath64x64.mul(numOfTraits, ABDKMath64x64.exp(numOfTraits)));
+        int128 d = ABDKMath64x64.mul(ABDKMath64x64.exp(D), ABDKMath64x64.mul(numOfTraits, numOfTraits));
         return d;
     }
 
