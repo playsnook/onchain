@@ -21,16 +21,16 @@ contract UniswapUSDCSkill  {
         _pair = IUniswapV2Pair(UniswapV2Library.pairFor(factory, usdc, skill));
     }
 
-    function getK() public view returns (uint k) {
+    function getSnookPriceInSkills() public view returns (uint k) {
         uint usdcDecimals = IERC20(address(_usdc)).decimals();
         uint snookPriceUSDC = 10**usdcDecimals * 25 / 100;  // (=0.25 USDC = 0.25 USD) 
 
         (uint reserves0, uint reserves1,) = _pair.getReserves();
         (uint reservesUSDC, uint reservesSkill) = _usdc == _pair.token0() ? ( reserves0, reserves1) : (reserves1, reserves0);
 
-        console.log('SnookPriceUSDC:', snookPriceUSDC);
-        console.log('reservesUSDC:', reservesUSDC);
-        console.log('reservesSkill:', reservesSkill);
+        // console.log('SnookPriceUSDC:', snookPriceUSDC);
+        // console.log('reservesUSDC:', reservesUSDC);
+        // console.log('reservesSkill:', reservesSkill);
 
         k = UniswapV2Library.quote(snookPriceUSDC, reservesUSDC, reservesSkill);        
     }

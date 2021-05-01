@@ -69,7 +69,7 @@ async function main() {
   const Uniswap = await ethers.getContractFactory('UniswapUSDCSkill');
   const uniswap = await Uniswap.deploy(uniswapV2Factory.address, usdcToken.address, skillToken.address);
   await uniswap.deployed();
-  const k = await uniswap.getK();
+  const k = await uniswap.getSnookPriceInSkills;
   console.log(ethers.utils.formatEther(k))
 
   

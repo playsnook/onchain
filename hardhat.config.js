@@ -17,6 +17,16 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  networks: {
+    // to disable 'Error: Transaction reverted: trying to deploy a contract whose code is too large'
+    // solution from: https://github.com/nomiclabs/hardhat/issues/660
+    hardhat: { 
+      gas: 12000000,
+      blockGasLimit: 0x1fffffffffffff,
+      allowUnlimitedContractSize: true,
+      timeout: 1800000
+    }
+  },
   solidity: {
     compilers: [
       {

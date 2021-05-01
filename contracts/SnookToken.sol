@@ -19,8 +19,6 @@ import "./IUniswapUSDCSkill.sol";
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
 contract SnookToken is ERC721, ERC721Burnable, Ownable {
-    uint public SNOOK_PRICE = 10; // DEBUG ONLY
-
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
   
@@ -95,9 +93,9 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
     function requestMint() public {
         address to = msg.sender;
         require(_mintRequesters.contains(to) == false, 'Previous minting is in progress');
-        require(skill.transferFrom(to, address(this), SNOOK_PRICE), 'Not enough funds for minting');
+        require(skill.transferFrom(to, address(this), _uniswap.getSnookPriceInSkills()), 'Not enough funds for minting');
         _mintRequesters.add(to);
-        _mintPrice[to] = SNOOK_PRICE;
+        _mintPrice[to] = _uniswap.getSnookPriceInSkills();
     }
 
 
@@ -197,16 +195,18 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         emit Ressurection(_msgSender(), tokenId);
     }
 
-    function _getRessurectionPrice(uint256 tokenId) private view returns (uint256) {
+    function _getRessurectionPrice(uint256 tokenId) private view returns (uint256 price) {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
-        int128 k = ABDKMath64x64.fromUInt(100); // now it's set to 100 to recover fraction from D
-        int128 S = ABDKMath64x64.fromUInt(1); // skill.totalSupply();
-        int128 D = _getRessurectionDifficulty(tokenId); // it is a fraction
-        int128 price = ABDKMath64x64.div(ABDKMath64x64.mul(D, k), S);
-        return ABDKMath64x64.toUInt(price); // will truncate fraction, for example if price=6.6 as 64x64 then after toUInt it gets 6
+        
+        int128 k = ABDKMath64x64.fromUInt(_uniswap.getSnookPriceInSkills()); 
+        int128 d = _getRessurectionDifficultyCoef(tokenId); 
+        int128 p = ABDKMath64x64.mul(d, k);
+        console.log('k from uniswap:', _uniswap.getSnookPriceInSkills());
+        price = ABDKMath64x64.toUInt(p); 
+        console.log('price=', price);
     }
 
-    function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
+    function _getRessurectionDifficultyCoef(uint256 tokenId) private view returns (int128) {
         int128 D = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
         int128[] memory f; // probability density
         int128 totalLiveSnooks = ABDKMath64x64.fromUInt(0);
@@ -229,8 +229,13 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         for (uint i=0; i<bin ; i++) {
             D = ABDKMath64x64.add(D, f[i]);
         }
-        D = ABDKMath64x64.div(D, totalLiveSnooks);
-        return D;
+        D = ABDKMath64x64.div(D, totalLiveSnooks); // difficulty
+        
+        int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
+
+        // difficulty coef,  d = exp(D) * traits^2
+        int128 d = ABDKMath64x64.mul(D, ABDKMath64x64.mul(numOfTraits, ABDKMath64x64.exp(numOfTraits)));
+        return d;
     }
 
 }
