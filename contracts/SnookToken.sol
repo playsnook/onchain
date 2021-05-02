@@ -200,7 +200,7 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         console.log('Inside getResPrice');
         uint256 k = _uniswap.getSnookPriceInSkills();
         console.log('resDiff, k=', k);
-        int128 d = _getRessurectionDifficultyCoef(tokenId); 
+        int128 d = _getRessurectionDifficulty(tokenId); 
         console.log('resDiff, d=', ABDKMath64x64.toUInt(d));
 
         price = ABDKMath64x64.mulu(d, k);
@@ -208,8 +208,8 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         console.log('price=', price);
     }
 
-    function _getRessurectionDifficultyCoef(uint256 tokenId) private view returns (int128) {
-        int128 D = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
+    function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
+        int128 s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
         int128[] memory f; // probability density
         int128 totalLiveSnooks = ABDKMath64x64.fromUInt(0);
         uint bin; // var is used for better code understanding; may be removed to save some memory usage
@@ -229,17 +229,17 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
 
         bin = _descriptors[tokenId].traitIds.length;
         for (uint i=0; i<bin ; i++) {
-            D = ABDKMath64x64.add(D, f[i]);
+            s = ABDKMath64x64.add(s, f[i]);
         }
 
-        D = ABDKMath64x64.div(D, totalLiveSnooks); // difficulty
+        s = ABDKMath64x64.div(s, totalLiveSnooks); // standing, s(b)
         
         int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
         console.log('numOfTraits=', bin, 'totalLiveSnooks=', ABDKMath64x64.toUInt(totalLiveSnooks));
-        console.log('D=', ABDKMath64x64.toUInt(D) );
+        console.log('s=', ABDKMath64x64.toUInt(s) );
 
-        // difficulty coef,  d = exp(D) * traits^2
-        int128 d = ABDKMath64x64.mul(ABDKMath64x64.exp(D), ABDKMath64x64.mul(numOfTraits, numOfTraits));
+        // difficulty coef,  d = exp(s) * traits^2
+        int128 d = ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
         return d;
     }
 
