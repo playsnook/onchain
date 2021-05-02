@@ -43,7 +43,7 @@ describe("Game flow", function() {
     );
     const uniswapV2Router02 = await UniswapV2Router02.deploy(uniswapV2Factory.address, signers[0].address);
     await uniswapV2Router02.deployed();
-    console.log('uniswap route deployed');
+    console.log('uniswap router deployed');
       
     await usdcToken.approve(uniswapV2Router02.address, ethers.utils.parseEther('10000'));
     await skillToken.approve(uniswapV2Router02.address, ethers.utils.parseEther('10000'));

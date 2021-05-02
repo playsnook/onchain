@@ -16,7 +16,7 @@ class SnookWeb {
     this.signer = provider.getSigner();
     console.log(await this.signer.getAddress());
     console.log(await this.signer.getBalance());
-    //this.snook = new ethers.Contract(SnookContractAddress, )
+    this.snook = new ethers.Contract(SnookContractAddress, )
   }
 }
 
