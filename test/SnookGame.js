@@ -3,6 +3,7 @@ const moment = require('moment');
 
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
+const { ethers } = require("hardhat");
 
 describe("Game flow", function() {
 
@@ -10,6 +11,7 @@ describe("Game flow", function() {
   let skillToken;
   let uniswap;
   let signers; 
+  let snookGame;
   const startBalance = ethers.utils.parseEther('1000');
 
   before(async ()=>{
@@ -68,10 +70,20 @@ describe("Game flow", function() {
     console.log('k=', ethers.utils.formatEther(k))
 
     const SnookToken = await ethers.getContractFactory('SnookToken');
-    snookToken = await SnookToken.deploy(skillToken.address, uniswap.address);
+    snookToken = await SnookToken.deploy();
     await snookToken.deployed();
     console.log(`snookToken deployed`);
-    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookToken.address)
+
+    const SnookGame = await ethers.getContractFactory('SnookGame');
+    snookGame = await SnookGame.deploy(snookToken.address, skillToken.address, uniswap.address);
+    await snookGame.deployed();
+    console.log(`snookGame deployed`);
+
+    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookGame.address);
+    console.log(`SkillToken granted BURNER role to SnookGame contract`);
+
+    await snookToken.grantRole(await snookToken.MINTER_ROLE(), snookGame.address);
+    console.log('SnookToken granted MINTER role to SnookGame contract');
 
     // tap up Skill balances of signers
     await skillToken.transfer(signers[1].address, startBalance); 
@@ -85,38 +97,41 @@ describe("Game flow", function() {
 
     // gamer 1 approves paying snook price
     const snookPrice = await uniswap.getSnookPriceInSkills();
-    
+    console.log(`price=${ethers.utils.formatEther(snookPrice)}`);
 
-    await skillToken.connect(signers[1]).approve(snookToken.address, snookPrice);
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     // gamer 1 requests minting
-    await snookToken.connect(signers[1]).requestMint();
+    await snookGame.connect(signers[1]).requestMint();
     
 
     // gamer 1 request another minting before the first is finished and reverted
     await expect(
-      snookToken.connect(signers[1]).requestMint()
+      snookGame.connect(signers[1]).requestMint()
     ).to.be.revertedWith('Previous minting is in progress');
     
 
     // gamer 2 who did not approved paying, requests minting and reverted
     await expect(
-      snookToken.connect(signers[2]).requestMint()
+      snookGame.connect(signers[2]).requestMint()
     ).to.be.reverted;
 
     // contract owner asks who are mint requesters and get user 1
     expect(
-      await snookToken.getMintRequesters()
+      await snookGame.getMintRequesters()
     ).to.include(signers[1].address);
-    
-    // contract owner mints to user 1
-    await snookToken.mint(signers[1].address, [1], 'test');
 
+    // non-minter  tries to mint snook token
+    await expect(
+      snookToken.connect(signers[0]).mint(signers[0].address, 'test')
+    ).to.be.revertedWith('Caller is not a minter');
+
+    // contract owner mints to user 1
+    await snookGame.mint(signers[1].address, [1], 'test');
 
     const totalSupply2 = await skillToken.totalSupply();
     console.log(`totalSupply2: ${totalSupply2}`);
     // during minting total supply of skill token decreases by snook price
     expect(totalSupply1).to.be.equal(totalSupply2.add(snookPrice));
-
 
     // user 1's balance is decreased by snook price
     expect(
@@ -125,8 +140,8 @@ describe("Game flow", function() {
 
     // user 1 enters the game with minted token 1
     await expect(
-      snookToken.connect(signers[1]).enterGame(1)
-    ).to.emit(snookToken, 'Entrance').withArgs(signers[1].address, 1);
+      snookGame.connect(signers[1]).enterGame(1)
+    ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 1);
 
     // user 1 tries to send locked token to user 2 and reverted
     await expect(
@@ -135,20 +150,18 @@ describe("Game flow", function() {
 
     // user 1 tries to extract the snook by itself
     await expect(
-      snookToken.connect(signers[1]).extractFromGame(1, [1,2,3], 'myfake')
+      snookGame.connect(signers[1]).extractFromGame(1, [1,2,3], 'myfake')
     ).to.be.revertedWith('Ownable: caller is not the owner')
 
     // user 1 tries to enter the game with the same snook
     await expect(
-      snookToken.connect(signers[1]).enterGame(1)
+      snookGame.connect(signers[1]).enterGame(1)
     ).to.be.revertedWith('Snook is already in play')
 
     // contract owner tries to move snook 1 to itself (steal it) and fails
     await expect(
       snookToken.transferFrom(signers[1].address, signers[0].address, 1)
     ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved');
-
-
 
     // user 1 approves transfer rights to user 2
     // WARNING: maybe we need to revert this when token is locked?
@@ -161,12 +174,12 @@ describe("Game flow", function() {
       snookToken.connect(signers[2]).transferFrom(signers[1].address, signers[2].address, 1)
     ).to.be.revertedWith('Token is locked')
 
-
     // WS gets notification from GS to extract snook
     // contract owner extracts snook of gamer 1
     await expect(
-      snookToken.extractFromGame(1, [1,2], 'extracted')
-    ).to.emit(snookToken, 'Extraction').withArgs(signers[1].address, 1);
+      snookGame.extractFromGame(1, [1,2], 'extracted')
+    ).to.emit(snookGame, 'Extraction').withArgs(signers[1].address, 1);
+
 
     // gamer 1 sends snook 1 to gamer 2 which succeeds as token was extracted
     await expect(
@@ -175,22 +188,21 @@ describe("Game flow", function() {
 
     // gamer 2 enters the game with snook 1
     await expect(
-      snookToken.connect(signers[2]).enterGame(1)
-    ).to.emit(snookToken, 'Entrance').withArgs(signers[2].address, 1);
+      snookGame.connect(signers[2]).enterGame(1)
+    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
 
 
     // gamer 2 dies in the game
     await expect(
-      snookToken.setDeathTime(1, [1], 'ressurect')
-    ).to.emit(snookToken, 'Death').withArgs(signers[2].address, 1);
+      snookGame.setDeathTime(1, [1], 'ressurect')
+    ).to.emit(snookGame, 'Death').withArgs(signers[2].address, 1);
 
-    
-    const { ressurectionPrice } = await snookToken.connect(signers[2].address).describe(1);
+    const { ressurectionPrice } = await snookGame.connect(signers[2].address).describe(1);
     console.log(`Resprice=${ethers.utils.formatEther(ressurectionPrice)}`);
 
     // gamer 2 tries to ressurect without paying
     await expect(
-      snookToken.connect(signers[2]).ressurect(1)
+      snookGame.connect(signers[2]).ressurect(1)
     ).to.be.revertedWith('ERC20: transfer amount exceeds allowance');
 
     // gamer 2 tries to move dead token to gamer 1
@@ -199,11 +211,11 @@ describe("Game flow", function() {
     ).to.be.revertedWith('Token is locked');
 
     // gamer 2 allows to pay ressurection price
-    await skillToken.connect(signers[2]).approve(snookToken.address, ressurectionPrice);
+    await skillToken.connect(signers[2]).approve(snookGame.address, ressurectionPrice);
     // ... and ressurects
     await expect(
-      snookToken.connect(signers[2]).ressurect(1)
-    ).to.emit(snookToken, 'Ressurection').withArgs(signers[2].address, 1);
+      snookGame.connect(signers[2]).ressurect(1)
+    ).to.emit(snookGame, 'Ressurection').withArgs(signers[2].address, 1);
 
   });
 

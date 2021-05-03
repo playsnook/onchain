@@ -6,9 +6,6 @@ import '@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "./IERC20.sol";
 
-import "hardhat/console.sol";
-
-
 contract UniswapUSDCSkill  {
     address private _factory;
     address private _usdc;

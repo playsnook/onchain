@@ -5,10 +5,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-// for debug
-import "hardhat/console.sol";
-
-
 contract SkillToken is ERC20, AccessControl {
   uint public INITIAL_SUPPLY = 12000;
   bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
