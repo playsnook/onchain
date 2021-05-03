@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require('hardhat-deploy');
+require('hardhat-contract-sizer');
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -18,6 +19,11 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
+  },
   namedAccounts: {
     deployer: 0,
     gamer1: 1,
@@ -27,7 +33,7 @@ module.exports = {
     // to disable 'Error: Transaction reverted: trying to deploy a contract whose code is too large'
     // solution from: https://github.com/nomiclabs/hardhat/issues/660
     hardhat: { 
-      gas: 12000000,
+      gas: 22000000,
       blockGasLimit: 0x1fffffffffffff,
       allowUnlimitedContractSize: true,
       timeout: 1800000
@@ -36,10 +42,18 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: '0.6.6'
+        version: '0.6.6',
+        optimizer: {
+          enabled: true,
+          runs: 1000
+        }
       },
       {
-        version: '0.8.0'
+        version: '0.8.0',
+        optimizer: {
+          enabled: true,
+          runs: 1000
+        }
       },
       
     ]

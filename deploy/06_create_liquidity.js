@@ -24,14 +24,6 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   )
 
   await deployments.execute(
-    'UniswapV2Factory', 
-    {from: deployer}, 
-    'createPair', 
-    UsdcToken.address, 
-    SkillToken.address
-  );
-
-  await deployments.execute(
     'UniswapV2Router02',
     {from: deployer},
     'addLiquidity',
@@ -42,8 +34,8 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     ethers.utils.parseEther('249'),
     ethers.utils.parseEther('999'),
     deployer,
-    moment().add(1, 'minutes').unix()
+    moment().add(10, 'minutes').unix()
   )
+  deployments.log('Added liquidity');
 };
 module.exports.tags = ['CreateLiquidity'];
-module.exports.runAtTheEnd = true;

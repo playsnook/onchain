@@ -10,9 +10,6 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 
-import "hardhat/console.sol";
-
-
 import "./SkillToken.sol";
 import "./IUniswapUSDCSkill.sol";
 
@@ -197,15 +194,9 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
 
     function _getRessurectionPrice(uint256 tokenId) private view returns (uint256 price) {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
-        console.log('Inside getResPrice');
         uint256 k = _uniswap.getSnookPriceInSkills();
-        console.log('resDiff, k=', k);
         int128 d = _getRessurectionDifficulty(tokenId); 
-        console.log('resDiff, d=', ABDKMath64x64.toUInt(d));
-
         price = ABDKMath64x64.mulu(d, k);
- 
-        console.log('price=', price);
     }
 
     function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
@@ -233,14 +224,10 @@ contract SnookToken is ERC721, ERC721Burnable, Ownable {
         }
 
         s = ABDKMath64x64.div(s, totalLiveSnooks); // standing, s(b)
-        
         int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
-        console.log('numOfTraits=', bin, 'totalLiveSnooks=', ABDKMath64x64.toUInt(totalLiveSnooks));
-        console.log('s=', ABDKMath64x64.toUInt(s) );
-
+        
         // difficulty coef,  d = exp(s) * traits^2
-        int128 d = ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
-        return d;
+        return ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
     }
 
 }
