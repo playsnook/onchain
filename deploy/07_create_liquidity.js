@@ -12,7 +12,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     {from: deployer},
     'approve',
     UniswapV2Router02.address,
-    ethers.utils.parseEther('10000')
+    ethers.utils.parseEther('250')
   )
 
   await deployments.execute(
@@ -20,7 +20,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     {from: deployer},
     'approve',
     UniswapV2Router02.address,
-    ethers.utils.parseEther('10000')
+    ethers.utils.parseEther('1000')
   )
 
   await deployments.execute(

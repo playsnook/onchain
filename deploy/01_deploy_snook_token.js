@@ -11,7 +11,7 @@ module.exports = async ({
   });  
   if (deployResult.newlyDeployed) {
     log(
-      `contract SnookToken deployed at ${deployResult.address} using ${deployResult.receipt.gasUsed} gas`
+      `contract SnookToken deployed at ${deployResult.address} using ${deployResult.receipt.gasUsed} gas from ${deployer}`
     );
   }
 };
