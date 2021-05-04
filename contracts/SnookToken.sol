@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
-contract SnookToken is ERC721, AccessControl, ERC721Burnable {
+contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
     using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -51,13 +51,13 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable {
     }
 
     // lock token if it's in play
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId);
         require(_locked[tokenId] == false, 'Token is locked');
     }
 
     // https://forum.openzeppelin.com/t/derived-contract-must-override-function-supportsinterface/6315/2
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

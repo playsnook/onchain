@@ -52,13 +52,6 @@ contract SnookGame is Ownable {
     // mapping of token ids to descriptors
     mapping (uint => Descriptor) private _descriptors;
 
-    // decoupling tookenIds returned by mint of SnookToken from SnookGame;
-    // we don't want to implicitly use knowledge of how tokenIds of SnookToken
-    // are generated; so ids of SnookTokens can be hashes and not consequetive integers;
-    // So we track these ids with enumarable set.
-    // Needed by ressurection procedure which goes over all available tokens.
-    EnumerableSet.UintSet private _tokenIds;
-
     constructor(address snook_, address skill_, address uniswap_) {
         _snook = SnookToken(snook_);
         _skill = SkillToken(skill_);
@@ -119,19 +112,17 @@ contract SnookGame is Ownable {
             inplay: false,
             tokenURI: tokenURI_
         });
-        _tokenIds.add(tokenId);
         _skill.burn(address(this), _mintPrice[to]);
         _mintRequesters.remove(to);        
     }
 
     // function is called by WS periodically to bury dead snooks
     function bury() public onlyOwner {
-        for (uint i = 0; i < _tokenIds.length(); i++ ) {
-            uint tokenId = _tokenIds.at(i);
+        for (uint i = 0; i < _snook.totalSupply(); i++ ) {
+            uint tokenId = _snook.tokenByIndex(i);
             if (_descriptors[tokenId].inplay == true && _descriptors[tokenId].deathTime < block.timestamp + 65 minutes) {
                 _snook.burn(tokenId);
                 delete _descriptors[tokenId];
-                _tokenIds.remove(tokenId);
             }
         }
     }
@@ -213,8 +204,8 @@ contract SnookGame is Ownable {
         int128[] memory f; // probability density
         
         uint bin; // var is used for better code understanding; may be removed to save some memory usage
-        for (uint i = 0; i < _tokenIds.length(); i++) {
-            uint _tokenId = _tokenIds.at(i);
+        for (uint i = 0; i < _snook.totalSupply(); i++) {
+            uint _tokenId = _snook.tokenByIndex(i);
             
             bin = _descriptors[_tokenId].traitIds.length;
             if (f.length < bin) { 
@@ -228,7 +219,7 @@ contract SnookGame is Ownable {
             s = ABDKMath64x64.add(s, f[i]);
         }
 
-        int128 totalLiveSnooks = ABDKMath64x64.fromUInt(_tokenIds.length());
+        int128 totalLiveSnooks = ABDKMath64x64.fromUInt(_snook.totalSupply());
         s = ABDKMath64x64.div(s, totalLiveSnooks); // standing, s(b)
         int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
         
