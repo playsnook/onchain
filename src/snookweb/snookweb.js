@@ -30,23 +30,44 @@ class SnookWeb {
       throw new SnookWebException('NO METAMASK');
     }
   }
+
+  async getTokens() {
+    const tokens = [];
+    const signerAddress = await this.signer.getAddress();
+    const snookBalance = await this.snookToken.balanceOf(signerAddress);
+    for (let i = 0; i < snookBalance; i++) {
+      const tokenId = await this.snookToken.tokenOfOwnerByIndex(signerAddress, i);
+      const tokenURI = await this.snookToken.tokenURI(tokenId);
+      const descriptor = await this.snookGame.describe(tokenId);
+      const ressurectionCount = descriptor.ressurectionCount.toString();
+      const ressurectionPrice = descriptor.ressurectionPrice.toString();
+      const traitIds = descriptor.traitIds.map(id=>id.toString());
+      const token = {
+        id: tokenId.toString(),
+        ressurectionCount,
+        ressurectionPrice,
+        traitIds,
+        tokenURI,
+      }
+      tokens.push(token);
+    }
+    return tokens;
+  }
+
   async login() {
-    await window.ethereum.enable()
+    await window.ethereum.enable();
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     
     this.signer = provider.getSigner();
-    this.signerAddress = await this.signer.getAddress();
-    console.log(`signerAddress: ${this.signerAddress}`);
     
     this.snookToken = new ethers.Contract(SnookTokenAddress, SnookTokenArtifact.abi, this.signer);
     this.snookGame = new ethers.Contract(SnookGameAddress, SnookGameArtifact.abi, this.signer);
     this.uniswap = new ethers.Contract(UniswapUSDCSkillAddress, UniswapUSDTSkillArtifact.abi, this.signer);
     this.skillToken = new ethers.Contract(SkillTokenAddress, SkillTokenArtifact.abi, this.signer);
-    const balance = await this.snookToken.balanceOf(this.signerAddress);
-    console.log(balance)
+      
   }
 
-  async formatSnookPrice(price) {
+  static formatSnookPrice(price) {
     return ethers.utils.formatEther(price);
   }
 

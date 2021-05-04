@@ -18,6 +18,6 @@ snookGame.on('RequestMint', async (to) => {
   await snookGame.mint(to, traitIds, tokenURI);
 });
 
-snookGame.on('Entrance', (owner, tokenId)=>{
+snookGame.on('Entrance', async (owner, tokenId)=>{
   const d = await snookGame.describe(tokenId);
 })

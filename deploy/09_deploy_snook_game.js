@@ -10,7 +10,7 @@ module.exports = async ({
   
   const deployResult = await deploy('SnookGame', {
     from: deployer,
-    gasLimit: 4000000,
+    gasLimit: 5000000,
     args: [
       SnookToken.address,
       SkillToken.address,
