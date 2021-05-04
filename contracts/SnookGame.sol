@@ -24,6 +24,7 @@ contract SnookGame is Ownable {
     event Extraction(address indexed to, uint tokenId);
     event Death(address indexed to, uint tokenId);
     event Ressurection(address indexed from, uint tokenId);
+    event RequestMint(address indexed to);
 
     SnookToken private _snook;
     SkillToken private _skill;
@@ -99,6 +100,7 @@ contract SnookGame is Ownable {
         require(_skill.transferFrom(to, address(this), _uniswap.getSnookPriceInSkills()), 'Not enough funds for minting');
         _mintRequesters.add(to);
         _mintPrice[to] = _uniswap.getSnookPriceInSkills();
+        emit RequestMint(to);
     }
 
 

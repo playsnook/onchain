@@ -42,8 +42,8 @@ class SnookWeb {
     this.snookGame = new ethers.Contract(SnookGameAddress, SnookGameArtifact.abi, this.signer);
     this.uniswap = new ethers.Contract(UniswapUSDCSkillAddress, UniswapUSDTSkillArtifact.abi, this.signer);
     this.skillToken = new ethers.Contract(SkillTokenAddress, SkillTokenArtifact.abi, this.signer);
-    //const balance = await this.snook.balanceOf(this.signerAddress);
-    //console.log(balance)
+    const balance = await this.snookToken.balanceOf(this.signerAddress);
+    console.log(balance)
   }
 
   async formatSnookPrice(price) {
