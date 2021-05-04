@@ -203,7 +203,7 @@ contract SnookGame is Ownable {
         int128 s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
         int128[] memory f; // probability density
         
-        uint bin; // var is used for better code understanding; may be removed to save some memory usage
+        uint bin; 
         for (uint i = 0; i < _snook.totalSupply(); i++) {
             uint _tokenId = _snook.tokenByIndex(i);
             

@@ -14,7 +14,7 @@ describe("Game flow", function() {
   let snookGame;
   const startBalance = ethers.utils.parseEther('1000');
 
-  before(async ()=>{
+  beforeEach(async ()=>{
 
     signers = await ethers.getSigners();
     console.log(`Owner of contracts: ${signers[0].address}`)
@@ -127,6 +127,17 @@ describe("Game flow", function() {
 
     // contract owner mints to user 1
     await snookGame.mint(signers[1].address, [1], 'test');
+
+    // enumerate Snooks of signer1
+    const signer1snookBalance = await snookToken.balanceOf(signers[1].address);
+    const totalSnookSupply = await snookToken.totalSupply();
+    expect(totalSnookSupply).to.be.equal(1);
+    const signer1snookIds = [];
+    for (let i=0; i<signer1snookBalance; i++) {
+      const t = await snookToken.tokenOfOwnerByIndex(signers[1].address, i);
+      signer1snookIds.push(t.toNumber())
+    }
+    expect(signer1snookIds).to.include(1);
 
     const totalSupply2 = await skillToken.totalSupply();
     console.log(`totalSupply2: ${totalSupply2}`);

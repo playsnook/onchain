@@ -38,7 +38,7 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
     {
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");  
         
-        _tokenIds.increment();
+        _tokenIds.increment(); // start token sequence from 1
         uint256 tokenId = _tokenIds.current();
         _mint(to, tokenId);  
         // here we manage tokenURIs
