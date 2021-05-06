@@ -73,10 +73,18 @@ contract SnookGame is Ownable {
 
     }
 
-    // if requestMint listeners are down and missed the request
-    // cronjob servers can get all pending requests for mint and do the job
-    // maybe we don't need this function as all requried data can be retrieved from logs
-    // if this function drops we don't need enumarable set
+    // If requestMint listeners are down and missed the events of the mint request,
+    // cronjob servers can get all pending requests for mint and do the job.
+    //
+    // We can use queryFilter (https://docs.ethers.io/v5/api/contract/contract/#Contract--events)
+    // to do the same job but it maybe slow: we need to extract first all RequestMint events, 
+    // than all Mint events, then find the addresses (to) which issued mintRequest and don't 
+    // have mint events.
+    // 
+    // If this function drops we don't need enumarable set.
+    //
+    // We also can use only this function and not event listener not to 
+    // duplicate the job (this is what happens now)
     function getMintRequesters() public view onlyOwner returns(address[] memory buyers) {
         buyers = new address[](_mintRequesters.length());
         for (uint i=0; i<_mintRequesters.length(); i++) {
@@ -136,8 +144,22 @@ contract SnookGame is Ownable {
         emit Entrance(owner, tokenId);
     }
 
+    // Extracts all snooks without updating tokenURI or traits. 
+    // Used on emergencies with game server.
+    // -> working on that
+    function exractAll(uint serverId, uint roomId) public onlyOwner {
+        // alternative to implementation: keep tokens in play
+        for (uint i = 0; i < _snook.totalSupply(); i++) {
+            uint tokenId = _snook.tokenByIndex(i);
+            if (_descriptors[tokenId].inplay == true && _descriptors[tokenId].deathTime == 0) {
+                _descriptors[tokenId].inplay = false;
+                _snook.lock(tokenId, false);
+            }
+        }
+    }
 
     // called by WS when snook successfully extracts snook
+    // not newTraits but all traits are updated (Remove  and ADD)
     function extractFromGame(uint256 tokenId, uint[] memory newTraitIds, string memory tokenURI_) public onlyOwner {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');

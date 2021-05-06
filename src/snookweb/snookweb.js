@@ -11,6 +11,7 @@ const UniswapUSDCSkillAddress = '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318';
 const SkillTokenArtifact = require('../../artifacts/contracts/SkillToken.sol/SkillToken.json');
 const SkillTokenAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
 
+
 class SnookWebException extends Error {
   constructor(message) {
     super(message);
@@ -21,17 +22,28 @@ class SnookWebException extends Error {
 class SnookWeb {
   uniswap
   signer
-  signerAddress 
   snookToken
   snookGame
   skillToken
+  _eventHandlers
   constructor() {
     if (window.ethereum === undefined) {
       throw new SnookWebException('NO METAMASK');
     }
+
+    this._eventHandlers = [];
+  }
+  
+  // probably need either websocket or server events to get notifications
+  on(eventName, cb) {
+    this._eventHandlers[eventName] = cb;
   }
 
-  async getTokens() {
+  getSupportedWallets() {
+    // return url64 and ids of wallets 
+  }
+
+  async getTokens() { // should return if the token is locked
     const tokens = [];
     const signerAddress = await this.signer.getAddress();
     const snookBalance = await this.snookToken.balanceOf(signerAddress);
@@ -84,6 +96,14 @@ class SnookWeb {
     try {
       await this.skillToken.approve(SnookGameAddress, price);
       await this.snookGame.requestMint();
+    } catch(err) {
+      throw new SnookWebException(err.message);
+    }
+  }
+
+  async enterGame(tokenId) {
+    try {
+      await this.snookGame.enterGame(ethers.BigNumber.from(tokenId));
     } catch(err) {
       throw new SnookWebException(err.message);
     }

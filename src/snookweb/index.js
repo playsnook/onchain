@@ -14,11 +14,14 @@ class App {
         <div class="col-1">
           ID: ${tokens[i].id}
         </div>
-        <div class="col-3">
+        <div class="col-2">
           RESSURECTION PRICE: ${tokens[i].ressurectionPrice}
         </div>
-        <div class="col-3">
+        <div class="col-2">
           RESSURECTION COUNT: ${tokens[i].ressurectionCount}
+        </div>
+        <div class="col-2">
+          Traits: ${tokens[i].traitIds}
         </div>
         <div class="col-3">
           META: ${tokens[i].tokenURI}
@@ -31,11 +34,11 @@ class App {
       `;
       document.querySelector('#tokens').appendChild(newRowDiv);
       document.querySelector(`#enterGame${i}`).addEventListener('click', async ()=>{
-        // try {
-        //   await snookWeb.
-        // } catch(err) {
-        //   console.log(err)
-        // }
+        try {
+          await snookWeb.enterGame(tokens[i].id);
+        } catch(err) {
+          console.log(err)
+        }
       });
     }
   }
@@ -65,10 +68,13 @@ class App {
       } catch (err) {
         console.log(err)
       }
+
     });
 
     document.querySelector('#buy').addEventListener('click', async ()=>{
       if (!this._connected) return; // additional check 
+      const snookPrice = await snookWeb.getSnookPrice();
+      await snookWeb.buy(snookPrice);
     });
   }
 }
