@@ -24,14 +24,12 @@ contract SnookGame is Ownable {
     event Extraction(address indexed to, uint tokenId);
     event Death(address indexed to, uint tokenId);
     event Ressurection(address indexed from, uint tokenId);
-    event RequestMint(address indexed to);
+    event Birth(address indexed to, uint tokenId);
 
     SnookToken private _snook;
     SkillToken private _skill;
     IUiniswapUSDCSkill private _uniswap;
     
-    EnumerableSet.AddressSet private _mintRequesters;
-    mapping (address => uint) _mintPrice;
     
     // Open to public:
     // 1. trait ids
@@ -72,43 +70,11 @@ contract SnookGame is Ownable {
         );
 
     }
-
-    // If requestMint listeners are down and missed the events of the mint request,
-    // cronjob servers can get all pending requests for mint and do the job.
-    //
-    // We can use queryFilter (https://docs.ethers.io/v5/api/contract/contract/#Contract--events)
-    // to do the same job but it maybe slow: we need to extract first all RequestMint events, 
-    // than all Mint events, then find the addresses (to) which issued mintRequest and don't 
-    // have mint events.
-    // 
-    // If this function drops we don't need enumarable set.
-    //
-    // We also can use only this function and not event listener not to 
-    // duplicate the job (this is what happens now)
-    function getMintRequesters() public view onlyOwner returns(address[] memory buyers) {
-        buyers = new address[](_mintRequesters.length());
-        for (uint i=0; i<_mintRequesters.length(); i++) {
-            buyers[i] = _mintRequesters.at(i);
-        }
-    }
-
-    // send skill tokens to CONTRACT address, not to contract owner
-    // we cannot steal this money
-    // WS listens on the requestMint events and calls game server to get initialTraitIds
-    function requestMint() public {
-        address to = msg.sender;
-        require(_mintRequesters.contains(to) == false, 'Previous minting is in progress');
-        require(_skill.transferFrom(to, address(this), _uniswap.getSnookPriceInSkills()), 'Not enough funds for minting');
-        _mintRequesters.add(to);
-        _mintPrice[to] = _uniswap.getSnookPriceInSkills();
-        emit RequestMint(to);
-    }
-
-
     
     // Wallet Server got trait ids from game server and mints a token
     function mint(address to, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
-        require(_mintRequesters.contains(to), 'No payment made for snook');
+        uint price = _uniswap.getSnookPriceInSkills();
+        require(_skill.transferFrom(to, address(this), price), 'Not enough funds for minting');
         uint tokenId = _snook.mint(to, tokenURI_);
         _descriptors[tokenId] = Descriptor({
             traitIds: traitIds,
@@ -120,8 +86,8 @@ contract SnookGame is Ownable {
             inplay: false,
             tokenURI: tokenURI_
         });
-        _skill.burn(address(this), _mintPrice[to]);
-        _mintRequesters.remove(to);        
+        _skill.burn(address(this), price);     
+        emit Birth(to, tokenId);
     }
 
     // function is called by WS periodically to bury dead snooks
@@ -144,33 +110,28 @@ contract SnookGame is Ownable {
         emit Entrance(owner, tokenId);
     }
 
-    // Extracts all snooks without updating tokenURI or traits. 
-    // Used on emergencies with game server.
-    // -> working on that
-    function exractAllFromServer(uint serverId) public onlyOwner {
-        // alternative to implementation: keep tokens in play
-        for (uint i = 0; i < _snook.totalSupply(); i++) {
-            uint tokenId = _snook.tokenByIndex(i);
-            if (_descriptors[tokenId].inplay == true && _descriptors[tokenId].deathTime == 0) {
-                _descriptors[tokenId].inplay = false;
-                _snook.lock(tokenId, false);
-            }
-        }
-    }
-
-    // called by WS when snook is extracted on some error
-    function extractFromGame(uint256 tokenId) public onlyOwner {
+    // extract snook without updating traits and url
+    function _extractSnookWithoutUpdate(uint256 tokenId) private {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
-        
+
         _descriptors[tokenId].inplay = false;
         _snook.lock(tokenId, false);
 
         emit Extraction(_snook.ownerOf(tokenId), tokenId);
     }
 
+    // Extracts snooks with ids without updating traits and uris. 
+    // Called on GS failure.
+    // Can be replaced by looping over _extractFromGame from WS, but we want to save gas. 
+    function extractSnooksWithoutUpdate(uint256[] memory tokenIds) public onlyOwner {
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _extractSnookWithoutUpdate(tokenIds[i]);
+        }
+    }
+
     // called by WS when snook successfully extracts snook
-    function extractFromGame(uint256 tokenId, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
+    function extractSnook(uint256 tokenId, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
         _descriptors[tokenId].tokenURI = tokenURI_;

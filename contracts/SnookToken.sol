@@ -29,8 +29,7 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
         return 'Read from SnookGame';
     }
     
-    // Wallet Server got trait ids from game server and mints a token
-    // have to introduce Role of Minter to SnookGame;
+
     // tokenURI should works as proposed by the contract
     function mint(address to, string memory tokenURI_) 
         public 

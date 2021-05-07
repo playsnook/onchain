@@ -98,28 +98,8 @@ describe("Game flow", function() {
     // gamer 1 approves paying snook price
     const snookPrice = await uniswap.getSnookPriceInSkills();
     console.log(`price=${ethers.utils.formatEther(snookPrice)}`);
-
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
-    // gamer 1 requests minting
-    await snookGame.connect(signers[1]).requestMint();
     
-
-    // gamer 1 request another minting before the first is finished and reverted
-    await expect(
-      snookGame.connect(signers[1]).requestMint()
-    ).to.be.revertedWith('Previous minting is in progress');
-    
-
-    // gamer 2 who did not approved paying, requests minting and reverted
-    await expect(
-      snookGame.connect(signers[2]).requestMint()
-    ).to.be.reverted;
-
-    // contract owner asks who are mint requesters and get user 1
-    expect(
-      await snookGame.getMintRequesters()
-    ).to.include(signers[1].address);
-
     // non-minter  tries to mint snook token
     await expect(
       snookToken.connect(signers[0]).mint(signers[0].address, 'test')
@@ -161,7 +141,7 @@ describe("Game flow", function() {
 
     // user 1 tries to extract the snook by itself
     await expect(
-      snookGame.connect(signers[1]).extractFromGame(1, [1,2,3], 'myfake')
+      snookGame.connect(signers[1]).extractSnook(1, [1,2,3], 'myfake')
     ).to.be.revertedWith('Ownable: caller is not the owner')
 
     // user 1 tries to enter the game with the same snook
@@ -188,7 +168,7 @@ describe("Game flow", function() {
     // WS gets notification from GS to extract snook
     // contract owner extracts snook of gamer 1
     await expect(
-      snookGame.extractFromGame(1, [1,2], 'extracted')
+      snookGame.extractSnook(1, [1,2], 'extracted')
     ).to.emit(snookGame, 'Extraction').withArgs(signers[1].address, 1);
 
 
@@ -228,6 +208,35 @@ describe("Game flow", function() {
       snookGame.connect(signers[2]).ressurect(1)
     ).to.emit(snookGame, 'Ressurection').withArgs(signers[2].address, 1);
 
+    
+    const snookPrice2 = await uniswap.getSnookPriceInSkills();
+    console.log(`price=${ethers.utils.formatEther(snookPrice2)}`);
+
+    // gamer 1 buys another snook 
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice2);
+    await expect(
+      snookGame.mint(signers[1].address, [1], 'again')
+    ).to.emit(snookGame, 'Birth').withArgs(signers[1].address, 2);
+    
+    // gamer 1 enter the game with snook 2
+    await expect(
+      snookGame.connect(signers[1]).enterGame(2)
+    ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 2);
+    
+    // gamer 2 enters the game with snook 1
+    await expect(
+      snookGame.connect(signers[2]).enterGame(1)
+    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+    
+    // emergency with game server, extract all snooks
+    await expect(
+      snookGame.extractSnooksWithoutUpdate([1,2])
+    );
+    
+    // tokens are free, their owners can transfer them
+    await expect(
+      snookToken.connect(signers[1]).transferFrom(signers[1].address, signers[2].address, 2)
+    ).to.emit(snookToken, 'Transfer');
   });
 
 });
