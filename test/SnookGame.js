@@ -229,14 +229,17 @@ describe("Game flow", function() {
     ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
     
     // emergency with game server, extract all snooks
-    await expect(
-      snookGame.extractSnooksWithoutUpdate([1,2])
-    );
+    await snookGame.extractSnooksWithoutUpdate([1,2])
     
-    // tokens are free, their owners can transfer them
-    await expect(
-      snookToken.connect(signers[1]).transferFrom(signers[1].address, signers[2].address, 2)
-    ).to.emit(snookToken, 'Transfer');
+    // tokens are unlocked now
+    expect(
+      await snookToken.connect(signers[1]).isLocked(2)
+    ).to.be.false;
+
+    expect(
+      await snookToken.connect(signers[2]).isLocked(1)
+    ).to.be.false;
+
   });
 
 });

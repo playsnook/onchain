@@ -65,4 +65,9 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
         _locked[tokenId] = on;
     } 
 
+    function isLocked(uint tokenId) view public returns (bool) {
+        require(ownerOf(tokenId) == _msgSender(), 'Not token owner');
+        return _locked[tokenId];
+    }
+
 }
