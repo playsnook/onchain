@@ -107,11 +107,11 @@ contract SnookGame is Ownable {
 
     
     // Wallet Server got trait ids from game server and mints a token
-    function mint(address to, uint[] memory initialTraitIds, string memory tokenURI_) public onlyOwner {
+    function mint(address to, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
         require(_mintRequesters.contains(to), 'No payment made for snook');
         uint tokenId = _snook.mint(to, tokenURI_);
         _descriptors[tokenId] = Descriptor({
-            traitIds: initialTraitIds,
+            traitIds: traitIds,
             deathTime: 0,
             ressurectionPrice: 0,
             ressurectionCount: 0,
@@ -147,7 +147,7 @@ contract SnookGame is Ownable {
     // Extracts all snooks without updating tokenURI or traits. 
     // Used on emergencies with game server.
     // -> working on that
-    function exractAll(uint serverId, uint roomId) public onlyOwner {
+    function exractAllFromServer(uint serverId) public onlyOwner {
         // alternative to implementation: keep tokens in play
         for (uint i = 0; i < _snook.totalSupply(); i++) {
             uint tokenId = _snook.tokenByIndex(i);
@@ -158,17 +158,24 @@ contract SnookGame is Ownable {
         }
     }
 
-    // called by WS when snook successfully extracts snook
-    // not newTraits but all traits are updated (Remove  and ADD)
-    function extractFromGame(uint256 tokenId, uint[] memory newTraitIds, string memory tokenURI_) public onlyOwner {
+    // called by WS when snook is extracted on some error
+    function extractFromGame(uint256 tokenId) public onlyOwner {
         require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
         
-        _descriptors[tokenId].tokenURI = tokenURI_;
-        for (uint i=0; i<newTraitIds.length; i++) {
-            _descriptors[tokenId].traitIds.push(newTraitIds[i]);
-        }
+        _descriptors[tokenId].inplay = false;
+        _snook.lock(tokenId, false);
 
+        emit Extraction(_snook.ownerOf(tokenId), tokenId);
+    }
+
+    // called by WS when snook successfully extracts snook
+    function extractFromGame(uint256 tokenId, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
+        require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
+        require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
+        _descriptors[tokenId].tokenURI = tokenURI_;
+        _descriptors[tokenId].traitIds = traitIds; 
+        
         _descriptors[tokenId].inplay = false;
         _snook.lock(tokenId, false);
 
