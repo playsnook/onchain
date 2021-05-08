@@ -20,6 +20,7 @@
     "hardhat": "^2.2.1",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-deploy": "^0.7.5",
+    "hardhat-gas-reporter": "^1.0.4",
     "html-webpack-plugin": "^5.3.1",
     "webpack": "^5.36.2",
     "webpack-cli": "^4.6.0",

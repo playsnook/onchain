@@ -1,5 +1,8 @@
 const SnookWeb = require('./snookweb');
+const gsapi = require('./gsapi'); // dummy lib to emulate behavior of login page with the game server.
+
 const snookWeb = new SnookWeb();
+const gs = new gsapi();
 class App {
   _connected = false; 
 
@@ -51,6 +54,8 @@ class App {
   }
 
   constructor() {
+
+    // define Connect handler
     document.querySelector('#connect').addEventListener('click', async ()=>{
       if (this._connected) return;
       try {
@@ -71,14 +76,20 @@ class App {
 
     });
 
+    // define Buy button handler
     document.querySelector('#buy').addEventListener('click', async ()=>{
       if (!this._connected) return; // additional check 
       const snookPrice = await snookWeb.getSnookPrice();
-      await snookWeb.buy(snookPrice);
+      const signerAddress = await snookWeb.approvePayment(snookPrice);
+      await gs.generateTraitsForNewSnook(signerAddress);
     });
+
+    // subscribe to Mint events
+    snookWeb.on('Birth', (tokenId)=>{
+      console.log(`Birth of token: ${tokenId}`);
+    })
   }
 }
 
-(async ()=>{
-  new App();
-})();
+
+new App();

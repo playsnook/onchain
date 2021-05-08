@@ -22,6 +22,7 @@ class SnookWebException extends Error {
 class SnookWeb {
   uniswap
   signer
+  _signerAddress
   snookToken
   snookGame
   skillToken
@@ -32,9 +33,9 @@ class SnookWeb {
     }
 
     this._eventHandlers = [];
+
   }
   
-  // probably need either websocket or server events to get notifications
   on(eventName, cb) {
     this._eventHandlers[eventName] = cb;
   }
@@ -45,11 +46,12 @@ class SnookWeb {
 
   async getTokens() { // should return if the token is locked
     const tokens = [];
-    const signerAddress = await this.signer.getAddress();
-    const snookBalance = await this.snookToken.balanceOf(signerAddress);
+    this._signerAddress = await this.signer.getAddress();
+    const snookBalance = await this.snookToken.balanceOf(this._signerAddress);
     for (let i = 0; i < snookBalance; i++) {
-      const tokenId = await this.snookToken.tokenOfOwnerByIndex(signerAddress, i);
+      const tokenId = await this.snookToken.tokenOfOwnerByIndex(this._signerAddress, i);
       const tokenURI = await this.snookToken.tokenURI(tokenId);
+      const isLocked = await this.snookToken.isLocked(tokenId);
       const descriptor = await this.snookGame.describe(tokenId);
       const ressurectionCount = descriptor.ressurectionCount.toString();
       const ressurectionPrice = descriptor.ressurectionPrice.toString();
@@ -60,6 +62,7 @@ class SnookWeb {
         ressurectionPrice,
         traitIds,
         tokenURI,
+        isLocked,
       }
       tokens.push(token);
     }
@@ -76,6 +79,12 @@ class SnookWeb {
     this.snookGame = new ethers.Contract(SnookGameAddress, SnookGameArtifact.abi, this.signer);
     this.uniswap = new ethers.Contract(UniswapUSDCSkillAddress, UniswapUSDTSkillArtifact.abi, this.signer);
     this.skillToken = new ethers.Contract(SkillTokenAddress, SkillTokenArtifact.abi, this.signer);
+
+    this.snookGame.on('Birth', (to, tokenId) => {
+      if (to === this._signerAddress) {
+        this._eventHandlers['Birth'](tokenId);
+      }
+    });
       
   }
 
@@ -92,22 +101,17 @@ class SnookWeb {
     }
   }
 
-  async buy(price) {
+  // after that function, game server UI should command the game server 
+  // to (1) create a new trait for snook (2) put mintRequest with trait id and art images on RabbitMQ
+  async approvePayment(price) {
     try {
       await this.skillToken.approve(SnookGameAddress, price);
-      await this.snookGame.requestMint();
+      return this._signerAddress;
     } catch(err) {
       throw new SnookWebException(err.message);
     }
   }
 
-  async enterGame(tokenId) {
-    try {
-      await this.snookGame.enterGame(ethers.BigNumber.from(tokenId));
-    } catch(err) {
-      throw new SnookWebException(err.message);
-    }
-  }
 }
 
 
