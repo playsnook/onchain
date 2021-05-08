@@ -7,6 +7,7 @@ class App {
   _connected = false; 
 
   displayTokens(tokens) {
+    document.querySelector('#tokens').innerHTML = '';
     for (let i = 0; i < tokens.length; i++) {
       const newRowDiv = document.createElement("DIV");
       newRowDiv.classList.add('row');
@@ -26,11 +27,14 @@ class App {
         <div class="col-2">
           Traits: ${tokens[i].traitIds}
         </div>
-        <div class="col-3">
+        <div class="col-2">
           META: ${tokens[i].tokenURI}
         </div>
+        <div class="col-1">
+          Locked: ${tokens[i].isLocked}
+        </div>
         <div class="col-2">
-          <button class="btn btn-primary" id="enterGame${i}">
+          <button class="enterGame btn btn-primary" id="enterGame${i}">
             Enter Game
           </button>
         </div>
@@ -38,7 +42,7 @@ class App {
       document.querySelector('#tokens').appendChild(newRowDiv);
       document.querySelector(`#enterGame${i}`).addEventListener('click', async ()=>{
         try {
-          await snookWeb.enterGame(tokens[i].id);
+          await gs.enterGame(tokens[i].id);
         } catch(err) {
           console.log(err)
         }
@@ -55,7 +59,7 @@ class App {
 
   constructor() {
 
-    // define Connect handler
+    // define Connect button handler
     document.querySelector('#connect').addEventListener('click', async ()=>{
       if (this._connected) return;
       try {
@@ -84,9 +88,12 @@ class App {
       await gs.generateTraitsForNewSnook(signerAddress);
     });
 
-    // subscribe to Mint events
-    snookWeb.on('Birth', (tokenId)=>{
-      console.log(`Birth of token: ${tokenId}`);
+    // subscribe to Birth events
+    snookWeb.on('Birth', async (tokenId)=>{
+      const tokens = await snookWeb.getTokens();
+      if (!tokens.includes(tokenId)) { // always sends last event; so need to check the reported token is not in the list already
+        this.displayTokens(tokens);
+      }
     })
   }
 }

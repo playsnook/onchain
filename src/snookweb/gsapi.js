@@ -11,6 +11,10 @@ class GsApi {
     console.log('Generate for new');
     await this._gsapi.get(`/generateTraitsForNewSnook?to=${signerAddress}`);
   }
+
+  async enterGame(tokenId) {
+    /// HERERE
+  }
 }
 
 module.exports = GsApi;

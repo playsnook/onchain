@@ -129,10 +129,22 @@ describe("Game flow", function() {
       await skillToken.balanceOf(signers[1].address)
     ).to.be.equal(startBalance.sub(snookPrice));
 
-    // user 1 enters the game with minted token 1
+    // contract tries to enter the snook into game without permission and fails
     await expect(
-      snookGame.connect(signers[1]).enterGame(1)
+      snookGame.enterGame(1)
+    ).to.be.revertedWith('Snook is not allowed for playing')
+
+    // user 1 allows his snook 1 for playing 
+    await expect(
+      snookGame.connect(signers[1]).allowGame(1)
+    ).to.emit(snookGame, 'GameAllowed').withArgs(signers[1].address, 1);
+
+
+    // contract gets the user into the game
+    await expect(
+      snookGame.enterGame(1)
     ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 1);
+
 
     // user 1 tries to send locked token to user 2 and reverted
     await expect(
@@ -144,15 +156,12 @@ describe("Game flow", function() {
       snookGame.connect(signers[1]).extractSnook(1, [1,2,3], 'myfake')
     ).to.be.revertedWith('Ownable: caller is not the owner')
 
-    // user 1 tries to enter the game with the same snook
-    await expect(
-      snookGame.connect(signers[1]).enterGame(1)
-    ).to.be.revertedWith('Snook is already in play')
-
+    
     // contract owner tries to move snook 1 to itself (steal it) and fails
     await expect(
       snookToken.transferFrom(signers[1].address, signers[0].address, 1)
     ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved');
+
 
     // user 1 approves transfer rights to user 2
     // WARNING: maybe we need to revert this when token is locked?
@@ -165,11 +174,17 @@ describe("Game flow", function() {
       snookToken.connect(signers[2]).transferFrom(signers[1].address, signers[2].address, 1)
     ).to.be.revertedWith('Token is locked')
 
+
     // WS gets notification from GS to extract snook
     // contract owner extracts snook of gamer 1
     await expect(
       snookGame.extractSnook(1, [1,2], 'extracted')
     ).to.emit(snookGame, 'Extraction').withArgs(signers[1].address, 1);
+
+    // contract tries to get the snook 1 to the game but it's not allowed after extraction
+    await expect(
+      snookGame.enterGame(1)
+    ).to.be.revertedWith('Snook is not allowed for playing')
 
 
     // gamer 1 sends snook 1 to gamer 2 which succeeds as token was extracted
@@ -177,11 +192,17 @@ describe("Game flow", function() {
       snookToken.connect(signers[1]).transferFrom(signers[1].address, signers[2].address, 1)
     ).to.emit(snookToken, 'Transfer').withArgs(signers[1].address, signers[2].address, 1);
 
-    // gamer 2 enters the game with snook 1
-    await expect(
-      snookGame.connect(signers[2]).enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+    
 
+    // gamer 2 allows gaming
+    await expect(
+      snookGame.connect(signers[2]).allowGame(1)
+    ).to.emit(snookGame, 'GameAllowed').withArgs(signers[2].address, 1);
+
+    // smart contract gets him to the game
+    await expect(
+      snookGame.enterGame(1)
+    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
 
     // gamer 2 dies in the game
     await expect(
@@ -208,7 +229,6 @@ describe("Game flow", function() {
       snookGame.connect(signers[2]).ressurect(1)
     ).to.emit(snookGame, 'Ressurection').withArgs(signers[2].address, 1);
 
-    
     const snookPrice2 = await uniswap.getSnookPriceInSkills();
     console.log(`price=${ethers.utils.formatEther(snookPrice2)}`);
 
@@ -218,16 +238,24 @@ describe("Game flow", function() {
       snookGame.mint(signers[1].address, [1], 'again')
     ).to.emit(snookGame, 'Birth').withArgs(signers[1].address, 2);
     
-    // gamer 1 enter the game with snook 2
+    // gamer 1 allows game with snook 2
+    await snookGame.connect(signers[1]).allowGame(2)
+
+    // contract gets gamer 1 into the game with snook 2
     await expect(
-      snookGame.connect(signers[1]).enterGame(2)
+      snookGame.enterGame(2)
     ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 2);
     
-    // gamer 2 enters the game with snook 1
+    // gamer 2 allows the game with snook 1
     await expect(
-      snookGame.connect(signers[2]).enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+      snookGame.connect(signers[2]).allowGame(1)
+    ).to.emit(snookGame, 'GameAllowed').withArgs(signers[2].address, 1);
     
+    // gamer 2 is to the game with snook 1
+    await expect(
+      snookGame.enterGame(1)
+    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+
     // emergency with game server, extract all snooks
     await snookGame.extractSnooksWithoutUpdate([1,2])
     

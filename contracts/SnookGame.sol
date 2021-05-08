@@ -19,7 +19,7 @@ contract SnookGame is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    
+    event GameAllowed(address indexed from, uint tokenId);
     event Entrance(address indexed from, uint tokenId);
     event Extraction(address indexed to, uint tokenId);
     event Death(address indexed to, uint tokenId);
@@ -31,11 +31,6 @@ contract SnookGame is Ownable {
     IUiniswapUSDCSkill private _uniswap;
     
     
-    // Open to public:
-    // 1. trait ids
-    // 2. special skin id, name, description?
-    // 3. resurrectionCount
-    
     // tokenURI should be several urls for in-game and off-game, contract
     struct Descriptor {
         uint[] traitIds;
@@ -44,8 +39,9 @@ contract SnookGame is Ownable {
         uint ressurectionCount;
         uint[] onRessurectionTraitIds;
         string onRessurectionTokenURI;
-        bool inplay;
+        bool ingame;
         uint deathTime;
+        bool gameAllowed; // contract get the token to play only when this flag is true
     }
     // mapping of token ids to descriptors
     mapping (uint => Descriptor) private _descriptors;
@@ -83,7 +79,8 @@ contract SnookGame is Ownable {
             ressurectionCount: 0,
             onRessurectionTokenURI: "",
             onRessurectionTraitIds: new uint256[](0),
-            inplay: false,
+            ingame: false,
+            gameAllowed: false,
             tokenURI: tokenURI_
         });
         _skill.burn(address(this), price);     
@@ -94,28 +91,36 @@ contract SnookGame is Ownable {
     function bury() public onlyOwner {
         for (uint i = 0; i < _snook.totalSupply(); i++ ) {
             uint tokenId = _snook.tokenByIndex(i);
-            if (_descriptors[tokenId].inplay == true && _descriptors[tokenId].deathTime < block.timestamp + 65 minutes) {
+            if (_descriptors[tokenId].ingame == true && _descriptors[tokenId].deathTime < block.timestamp + 65 minutes) {
                 _snook.burn(tokenId);
                 delete _descriptors[tokenId];
             }
         }
     }
     
-    function enterGame(uint256 tokenId) public {
+    // Snook owner calls this function to permit game contract to get him to the game = lock his token
+    function allowGame(uint256 tokenId) public {
         address owner = _snook.ownerOf(tokenId);
-        require(owner == msg.sender);
-        require(_descriptors[tokenId].inplay == false, 'Snook is already in play');
+        require(owner == msg.sender, 'Not token owner');
+        _descriptors[tokenId].gameAllowed = true;
+        emit GameAllowed(owner, tokenId);
+    }
+
+    function enterGame(uint256 tokenId) public onlyOwner {
+        require(_descriptors[tokenId].ingame == false, 'Snook is already in play');
+        require(_descriptors[tokenId].gameAllowed == true, 'Snook is not allowed for playing');
         _snook.lock(tokenId, true);
-        _descriptors[tokenId].inplay = true;
-        emit Entrance(owner, tokenId);
+        _descriptors[tokenId].ingame = true;
+        emit Entrance(_snook.ownerOf(tokenId), tokenId);
     }
 
     // extract snook without updating traits and url
     function _extractSnookWithoutUpdate(uint256 tokenId) private {
-        require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
+        require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
 
-        _descriptors[tokenId].inplay = false;
+        _descriptors[tokenId].ingame = false;
+        _descriptors[tokenId].gameAllowed = false;
         _snook.lock(tokenId, false);
 
         emit Extraction(_snook.ownerOf(tokenId), tokenId);
@@ -132,12 +137,13 @@ contract SnookGame is Ownable {
 
     // called by WS when snook successfully extracts snook
     function extractSnook(uint256 tokenId, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
-        require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
+        require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
         _descriptors[tokenId].tokenURI = tokenURI_;
         _descriptors[tokenId].traitIds = traitIds; 
         
-        _descriptors[tokenId].inplay = false;
+        _descriptors[tokenId].ingame = false;
+        _descriptors[tokenId].gameAllowed = false;
         _snook.lock(tokenId, false);
 
         emit Extraction(_snook.ownerOf(tokenId), tokenId);
@@ -145,7 +151,7 @@ contract SnookGame is Ownable {
 
     // called by WS when snook is dead; newTraits are updated according to penalty
     function setDeathTime(uint256 tokenId, uint[] memory onRessurectionTraitIds, string memory onRessurectionTokenURI) public onlyOwner {
-        require(_descriptors[tokenId].inplay == true, 'Snook is not in play'); // prevent wallet server from errors
+        require(_descriptors[tokenId].ingame == true, 'Snook is not in play'); // prevent wallet server from errors
         _descriptors[tokenId].deathTime = block.timestamp;
 
         // ressurection price is based on traits of dying snook 
@@ -175,15 +181,16 @@ contract SnookGame is Ownable {
         _descriptors[tokenId].deathTime = 0;
         _descriptors[tokenId].tokenURI = _descriptors[tokenId].onRessurectionTokenURI;
         _descriptors[tokenId].traitIds = _descriptors[tokenId].onRessurectionTraitIds;
-        _descriptors[tokenId].inplay = false;
         
+        _descriptors[tokenId].ingame = false;
+        _descriptors[tokenId].gameAllowed = false;
         _snook.lock(tokenId, false);
 
         emit Ressurection(snookOwner, tokenId);
     }
 
     function _getRessurectionPrice(uint256 tokenId) private view returns (uint256 price) {
-        require(_descriptors[tokenId].inplay == true, 'Snook is not in play');
+        require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
         uint256 k = _uniswap.getSnookPriceInSkills();
         int128 d = _getRessurectionDifficulty(tokenId); 
         price = ABDKMath64x64.mulu(d, k);

@@ -1,7 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require('hardhat-deploy');
 require('hardhat-contract-sizer');
-require("hardhat-gas-reporter");
+// require("hardhat-gas-reporter");
 
 
 // This is a sample Hardhat task. To learn how to create your own go to
