@@ -268,6 +268,10 @@ describe("Game flow", function() {
       await snookToken.connect(signers[2]).isLocked(1)
     ).to.be.false;
 
+    // deployer tries to change token URI but fails as it has no minter role
+    await expect(
+      snookToken.setTokenURI(1, 'faked')
+    ).to.be.revertedWith('Caller is not a minter');
   });
 
 });
