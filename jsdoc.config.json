@@ -5,6 +5,6 @@
     ]
   },
   "opts": {
-    "destination": "src/snookweb/jsdocs"
+    "destination": "assets/snookweb/snookwebdocs"
   }
 }

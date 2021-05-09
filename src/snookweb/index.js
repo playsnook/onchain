@@ -1,4 +1,4 @@
-const SnookWeb = require('./snookweb');
+const {SnookWeb, SnookWebException} = require('./snookweb');
 const gsapi = require('./gsapi'); // dummy lib to emulate behavior of login page with the game server.
 
 const snookWeb = new SnookWeb();
