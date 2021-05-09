@@ -7,8 +7,10 @@
     "watch": "webpack --watch",
     "start": "webpack serve --open",
     "build": "webpack",
+    "docs": "jsdoc -c jsdoc.config.json",
     "test": "npx hardhat test",
-    "docs": "jsdoc -c jsdoc.config.json"
+    "compile": "npx hardhat compile",
+    "node": "npx hardhat node"
   },
   "author": "",
   "license": "ISC",
