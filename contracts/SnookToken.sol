@@ -27,7 +27,7 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-        return 'Read from SnookGame';
+        return _tokenURIs[tokenId];
     }
     
     // used by resserection from Game constract

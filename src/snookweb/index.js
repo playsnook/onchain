@@ -19,35 +19,29 @@ class App {
           ID: ${tokens[i].id}
         </div>
         <div class="col-2">
-          RESSURECTION PRICE: ${tokens[i].ressurectionPrice}
+          <div>ResPrice</div> 
+          <div>${tokens[i].ressurectionPrice}</div>
         </div>
         <div class="col-2">
-          RESSURECTION COUNT: ${tokens[i].ressurectionCount}
+          <div>ResCount</div>
+          <div>${tokens[i].ressurectionCount}</div>
         </div>
         <div class="col-2">
-          Traits: ${tokens[i].traitIds}
+          <div>Traits</div> 
+          <div>${tokens[i].traitIds}</div>
+        </div>
+        <div class="col-3">
+          <div><img src="${tokens[i].meta.image}" /></div>
+          <div>Description: ${tokens[i].meta.description}</div>
+          <div>Name: ${tokens[i].meta.description}</div>
         </div>
         <div class="col-1">
-          META: ${tokens[i].tokenURI}
-        </div>
-        <div class="col-1">
-          Locked: ${tokens[i].isLocked}
+          <div>Locked</div>
+          <div>${tokens[i].isLocked}</div>
         </div>
         <div class="col-1">
           <button class="btn btn-primary" id="enterGame${i}">
             Enter Game
-          </button>
-        </div>
-        
-        <div class="col-1">
-          <button class="bg-warning btn btn-primary" id="extractFromGame${i}">
-            Extract from Game
-          </button>
-        </div>
-
-        <div class="col-1">
-          <button class="bg-warning btn btn-primary" id="die${i}">
-            Die
           </button>
         </div>
       `;
@@ -64,17 +58,6 @@ class App {
         }
       });
 
-      document.querySelector(`#extractFromGame${i}`).addEventListener('click', async ()=>{
-        try {
-          console.log('extract from game clicked');
-          await snookWeb.allowGame(tokens[i].id);
-          console.log('game allowed');
-          await gs.enterGame(tokens[i].id);
-          // wait for notification from game server that snook is inside 
-        } catch(err) {
-          console.log(err)
-        }
-      });
     }
   }
 

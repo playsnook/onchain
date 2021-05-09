@@ -1,4 +1,5 @@
 const ethers = require('ethers');
+const axios = require('axios');
 const SnookTokenArtifact = require('../../artifacts/contracts/SnookToken.sol/SnookToken.json');
 const SnookTokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -87,6 +88,16 @@ class SnookWeb {
    * @property {string} tokenURI - url to open sea meta information
    */
 
+
+  // https://docs.opensea.io/docs/metadata-standards
+  async _getMeta(tokenURI) {
+    console.log(`tokenURI:${tokenURI}`);
+    const ipfsHash = tokenURI.split('ipfs://')[1];
+    const metaURL = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+    const { data: meta } = await axios.get(metaURL);
+    return meta;
+  }
+
   /**
    * Returns array of snooks owned by logged in user.
    * Throws SnookWebException if user is not logged in.
@@ -103,6 +114,12 @@ class SnookWeb {
     for (let i = 0; i < snookBalance; i++) {
       const tokenId = await this._snookToken.tokenOfOwnerByIndex(this._signerAddress, i);
       const tokenURI = await this._snookToken.tokenURI(tokenId);
+      let meta;
+      try {
+        meta = await this._getMeta(tokenURI);
+      } catch (err) {
+        throw new SnookWebException(err.message);
+      } 
       const isLocked = await this._snookToken.isLocked(tokenId);
       const descriptor = await this._snookGame.describe(tokenId);
       const ressurectionCount = descriptor.ressurectionCount.toString();
@@ -113,7 +130,7 @@ class SnookWeb {
         ressurectionCount,
         ressurectionPrice,
         traitIds,
-        tokenURI,
+        meta,
         isLocked,
       }
       tokens.push(token);
