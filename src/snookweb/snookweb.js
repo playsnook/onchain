@@ -78,6 +78,15 @@ class SnookWeb {
     ];
   }
 
+
+  /**
+   * @typedef {Object} Meta
+   * @property {string} image - This is the URL to the image of the item.
+   * @property {string} name - Name of the item.
+   * @property {string} description - A human readable description of the item.
+   * @property {string} external_url - This is the URL that will appear below the asset's image on OpenSea and will allow users to leave OpenSea and view the item on your site.
+   */
+
   /**
    * @typedef {Object} Snook
    * @property {string} id - snook id
@@ -85,7 +94,7 @@ class SnookWeb {
    * @property {string} ressurectionPrice - ressurection price of the snook in case it's dead
    * @property {bool} isLocked - true if the snook is locked; false otherwise
    * @property {string[]} traitIds - array of trait ids
-   * @property {string} tokenURI - url to open sea meta information
+   * @property {Meta} meta - meta object confirming to OpenSea
    */
 
 

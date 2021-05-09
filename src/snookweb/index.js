@@ -33,7 +33,8 @@ class App {
         <div class="col-3">
           <div><img src="${tokens[i].meta.image}" /></div>
           <div>Description: ${tokens[i].meta.description}</div>
-          <div>Name: ${tokens[i].meta.description}</div>
+          <div>Name: ${tokens[i].meta.name}</div>
+          <div>External: ${tokens[i].meta.external_url}</div>
         </div>
         <div class="col-1">
           <div>Locked</div>
