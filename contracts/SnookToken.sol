@@ -16,31 +16,36 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
     using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
+    
     Counters.Counter private _tokenIds;
+    mapping (uint => string) private _tokenURIs;
     mapping (uint => bool ) private _locked;
-
+    
     constructor() ERC721("SnookToken", "SNK") {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    }
+    }  
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
         return 'Read from SnookGame';
     }
     
+    // used by resserection from Game constract
+    function setTokenURI(uint256 tokenId, string memory tokenURI_) public {
+        require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");  
+        require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
 
-    // tokenURI should works as proposed by the contract
-    function mint(address to, string memory tokenURI_) 
-        public 
-        returns (uint256)
+        _tokenURIs[tokenId] = tokenURI_;
+    }
+
+    function mint(address to, string memory tokenURI_) public returns (uint256)
     {
         require(hasRole(MINTER_ROLE, _msgSender()), "Caller is not a minter");  
         
         _tokenIds.increment(); // start token sequence from 1
         uint256 tokenId = _tokenIds.current();
         _mint(to, tokenId);  
-        // here we manage tokenURIs
+        setTokenURI(tokenId, tokenURI_);
         return tokenId;
     }
 

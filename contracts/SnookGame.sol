@@ -30,11 +30,8 @@ contract SnookGame is Ownable {
     SkillToken private _skill;
     IUiniswapUSDCSkill private _uniswap;
     
-    
-    // tokenURI should be several urls for in-game and off-game, contract
     struct Descriptor {
         uint[] traitIds;
-        string tokenURI;
         uint ressurectionPrice;
         uint ressurectionCount;
         uint[] onRessurectionTraitIds;
@@ -80,8 +77,7 @@ contract SnookGame is Ownable {
             onRessurectionTokenURI: "",
             onRessurectionTraitIds: new uint256[](0),
             ingame: false,
-            gameAllowed: false,
-            tokenURI: tokenURI_
+            gameAllowed: false
         });
         _skill.burn(address(this), price);     
         emit Birth(to, tokenId);
@@ -139,7 +135,7 @@ contract SnookGame is Ownable {
     function extractSnook(uint256 tokenId, uint[] memory traitIds, string memory tokenURI_) public onlyOwner {
         require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
-        _descriptors[tokenId].tokenURI = tokenURI_;
+        _snook.setTokenURI(tokenId, tokenURI_); 
         _descriptors[tokenId].traitIds = traitIds; 
         
         _descriptors[tokenId].ingame = false;
@@ -179,7 +175,7 @@ contract SnookGame is Ownable {
 
         _descriptors[tokenId].ressurectionCount += 1; // no overflow with solc8
         _descriptors[tokenId].deathTime = 0;
-        _descriptors[tokenId].tokenURI = _descriptors[tokenId].onRessurectionTokenURI;
+        _snook.setTokenURI(tokenId, _descriptors[tokenId].onRessurectionTokenURI);
         _descriptors[tokenId].traitIds = _descriptors[tokenId].onRessurectionTraitIds;
         
         _descriptors[tokenId].ingame = false;
