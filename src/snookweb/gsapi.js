@@ -13,7 +13,8 @@ class GsApi {
   }
 
   async enterGame(tokenId) {
-    /// HERERE
+    console.log('Enter game with', tokenId);
+    await this._gsapi.get(`/enterGame?tokenId=${tokenId}`);
   }
 }
 

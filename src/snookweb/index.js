@@ -27,22 +27,50 @@ class App {
         <div class="col-2">
           Traits: ${tokens[i].traitIds}
         </div>
-        <div class="col-2">
+        <div class="col-1">
           META: ${tokens[i].tokenURI}
         </div>
         <div class="col-1">
           Locked: ${tokens[i].isLocked}
         </div>
-        <div class="col-2">
-          <button class="enterGame btn btn-primary" id="enterGame${i}">
+        <div class="col-1">
+          <button class="btn btn-primary" id="enterGame${i}">
             Enter Game
+          </button>
+        </div>
+        
+        <div class="col-1">
+          <button class="bg-warning btn btn-primary" id="extractFromGame${i}">
+            Extract from Game
+          </button>
+        </div>
+
+        <div class="col-1">
+          <button class="bg-warning btn btn-primary" id="die${i}">
+            Die
           </button>
         </div>
       `;
       document.querySelector('#tokens').appendChild(newRowDiv);
       document.querySelector(`#enterGame${i}`).addEventListener('click', async ()=>{
         try {
+          console.log('enter game clicked');
+          await snookWeb.allowGame(tokens[i].id);
+          console.log('game allowed');
           await gs.enterGame(tokens[i].id);
+          // wait for notification from game server that snook is inside 
+        } catch(err) {
+          console.log(err)
+        }
+      });
+
+      document.querySelector(`#extractFromGame${i}`).addEventListener('click', async ()=>{
+        try {
+          console.log('extract from game clicked');
+          await snookWeb.allowGame(tokens[i].id);
+          console.log('game allowed');
+          await gs.enterGame(tokens[i].id);
+          // wait for notification from game server that snook is inside 
         } catch(err) {
           console.log(err)
         }
@@ -63,12 +91,12 @@ class App {
     document.querySelector('#connect').addEventListener('click', async ()=>{
       if (this._connected) return;
       try {
-        await snookWeb.login();
+        await snookWeb.login('metamask');
         this._connected = true;
         document.querySelector('#connect').textContent = 'Connected';
         document.querySelector('#connect').classList.remove('btn-primary');
         document.querySelector('#connect').classList.add('btn-success');
-        const tokens = await snookWeb.getTokens();
+        const tokens = await snookWeb.getSnooks();
         this.displayTokens(tokens);
         
         const snookPrice = await snookWeb.getSnookPrice();
@@ -89,12 +117,14 @@ class App {
     });
 
     // subscribe to Birth events
-    snookWeb.on('Birth', async (tokenId)=>{
-      const tokens = await snookWeb.getTokens();
+    snookWeb.on('Transfer', async (tokenId)=>{
+      const tokens = await snookWeb.getSnooks();
       if (!tokens.includes(tokenId)) { // always sends last event; so need to check the reported token is not in the list already
         this.displayTokens(tokens);
       }
     })
+
+
   }
 }
 

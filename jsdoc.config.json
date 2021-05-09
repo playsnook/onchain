@@ -1,0 +1,10 @@
+{
+  "source" : {
+    "include" : [
+      "src/snookweb"
+    ]
+  },
+  "opts": {
+    "destination": "src/snookweb/jsdocs"
+  }
+}
