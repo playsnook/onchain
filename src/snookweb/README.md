@@ -2,7 +2,7 @@
 
 SnookWeb is JS lib to integrate the GameServer (GS) with Ethereum network and Wallet Server (WS).
 
-JS doc of the library is at https://gateway.pinata.cloud/ipfs/QmP85WFue9SGsnV5cqWAdCQw1g6qoBZKCE1eUUpPqJba6j/
+JS doc of the library is at https://snookweb-docs.netlify.app/snookweb
 
 # Usage
 
@@ -46,7 +46,7 @@ try {
 }
 ```
 
-See the format of the returns snooks in the JSDOC of the lib.
+See the format of the returns snooks in the JSDOC of the lib (https://snookweb-docs.netlify.app/snookweb).
 
 ## Buying a new snook
 
