@@ -1,9 +1,8 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-
 module.exports = {
   mode: 'development',
-  entry: './src/snookweb/index.js',
+  entry: `./src/snookweb/index.js`,
   devtool: 'inline-source-map',
   devServer: {
     contentBase: './dist',
@@ -11,7 +10,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Development',
-      template: 'src/snookweb/index.html',
+      template: `src/snookweb/index.html`,
     }),
   ],
   output: {

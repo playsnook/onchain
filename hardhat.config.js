@@ -41,13 +41,39 @@ module.exports = {
   
   networks: {
     mumbai: {
-      url: 'https://rpc-mumbai.maticvigil.com/v1/9a217604b15501748162f79b139336db98d1cdff',
+      url: `https://rpc-mumbai.maticvigil.com/v1/${process.env.MATIC_APP_KEY}`,
+      accounts: [ // private keys of the accounts; namedAccounts fit this array
+        process.env.PK1,
+        process.env.PK2,
+        process.env.PK3
+      ]
+    },
+    goerli: {
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_APP_KEY}`,
+      accounts: [ // private keys of the accounts; namedAccounts fit this array
+        process.env.PK1,
+        process.env.PK2,
+        process.env.PK3
+      ]
+    },
+    ropsten: {
+      url: `https://ropsten.infura.io/v3/${process.env.INFURA_APP_KEY}`,
+      accounts: [ // private keys of the accounts; namedAccounts fit this array
+        process.env.PK1,
+        process.env.PK2,
+        process.env.PK3
+      ]
+
+    },
+    kovan: {
+      url: `https://kovan.infura.io/v3/${process.env.INFURA_APP_KEY}`,
       accounts: [ // private keys of the accounts; namedAccounts fit this array
         process.env.PK1,
         process.env.PK2,
         process.env.PK3
       ]
     }
+
   },
 
   solidity: {
@@ -70,4 +96,3 @@ module.exports = {
     ]
   }
 };
-
