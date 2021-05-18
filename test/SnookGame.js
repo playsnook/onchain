@@ -106,8 +106,8 @@ describe("Game flow", function() {
     ).to.be.revertedWith('Caller is not a minter');
 
     // contract owner mints to user 1
-    await snookGame.mint(signers[1].address, [1], 'test');
-
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    
     // enumerate Snooks of signer1
     const signer1snookBalance = await snookToken.balanceOf(signers[1].address);
     const totalSnookSupply = await snookToken.totalSupply();
@@ -139,7 +139,6 @@ describe("Game flow", function() {
       snookGame.connect(signers[1]).allowGame(1)
     ).to.emit(snookGame, 'GameAllowed').withArgs(signers[1].address, 1);
 
-
     // contract gets the user into the game
     await expect(
       snookGame.enterGame(1)
@@ -151,23 +150,24 @@ describe("Game flow", function() {
       snookToken.connect(signers[1]).transferFrom(signers[1].address, signers[2].address, 1)
     ).to.be.revertedWith('Token is locked');
 
+
     // user 1 tries to extract the snook by itself
     await expect(
-      snookGame.connect(signers[1]).extractSnook(1, [1,2,3], 'myfake')
+      snookGame.connect(signers[1]).extractSnook(1, 10, 10, 10, 'myfake')
     ).to.be.revertedWith('Ownable: caller is not the owner')
 
-    
     // contract owner tries to move snook 1 to itself (steal it) and fails
     await expect(
       snookToken.transferFrom(signers[1].address, signers[0].address, 1)
     ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved');
-
 
     // user 1 approves transfer rights to user 2
     // WARNING: maybe we need to revert this when token is locked?
     await expect(
       snookToken.connect(signers[1]).approve(signers[2].address, 1)
     ).to.emit(snookToken, 'Approval').withArgs(signers[1].address, signers[2].address, 1)
+
+
     
     // // user 2 tries to transfer snook 1 to user 2 (itself) and fails
     await expect(
@@ -175,10 +175,11 @@ describe("Game flow", function() {
     ).to.be.revertedWith('Token is locked')
 
 
+
     // WS gets notification from GS to extract snook
     // contract owner extracts snook of gamer 1
     await expect(
-      snookGame.extractSnook(1, [1,2], 'extracted')
+      snookGame.extractSnook(1, 1, 1, 1, 'extracted')
     ).to.emit(snookGame, 'Extraction').withArgs(signers[1].address, 1);
 
     // contract tries to get the snook 1 to the game but it's not allowed after extraction
@@ -191,7 +192,6 @@ describe("Game flow", function() {
     await expect(
       snookToken.connect(signers[1]).transferFrom(signers[1].address, signers[2].address, 1)
     ).to.emit(snookToken, 'Transfer').withArgs(signers[1].address, signers[2].address, 1);
-
     
 
     // gamer 2 allows gaming
@@ -206,7 +206,7 @@ describe("Game flow", function() {
 
     // gamer 2 dies in the game
     await expect(
-      snookGame.setDeathTime(1, [1], 'ressurect')
+      snookGame.setDeathTime(1, 1, 1, 1, 'ressurect')
     ).to.emit(snookGame, 'Death').withArgs(signers[2].address, 1);
 
     const { ressurectionPrice } = await snookGame.connect(signers[2].address).describe(1);
@@ -235,7 +235,7 @@ describe("Game flow", function() {
     // gamer 1 buys another snook 
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice2);
     await expect(
-      snookGame.mint(signers[1].address, [1], 'again')
+      snookGame.mint(signers[1].address, 1, 1, 1, 'again')
     ).to.emit(snookGame, 'Birth').withArgs(signers[1].address, 2);
     
     // gamer 1 allows game with snook 2

@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const moment = require('moment');
 const { ethers } = require("hardhat");
 
-describe("Treasury", function() {
+describe.skip("Treasury", function() {
 
   let skillToken;  
   let treasury;
@@ -21,7 +21,7 @@ describe("Treasury", function() {
     console.log('skill token deployed')
 
     const Treasury = await ethers.getContractFactory('Treasury');
-    
+
     treasury = await Treasury.deploy(
       skillToken.address,
       specialSkinRewards.address,
