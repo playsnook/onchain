@@ -197,6 +197,7 @@ contract SnookGame is Ownable {
         int128[] memory f; // probability density
         
         uint bin; 
+        // should be refactored to avoid loops
         for (uint i = 0; i < _snook.totalSupply(); i++) {
             uint _tokenId = _snook.tokenByIndex(i);
             

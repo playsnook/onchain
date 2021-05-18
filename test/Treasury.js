@@ -20,19 +20,8 @@ describe("Treasury", function() {
     await skillToken.deployed();
     console.log('skill token deployed')
 
-    const SpecialSkinRewards = await ethers.getContractFactory('SpecialSkinRewards');
-    specialSkinRewards = await SpecialSkinRewards.deploy();
-    await specialSkinRewards.deployed();
-
-    const SnookFoundationRewards = await ethers.getContractFactory('SnookFoundationRewards');
-    snookFoundationRewards = await SnookFoundationRewards.deploy(
-      skillToken.address, 
-      signers[1].address
-    );
-    await snookFoundationRewards.deployed();
-    console.log('snookFoundationRewards deployed');
-
     const Treasury = await ethers.getContractFactory('Treasury');
+    
     treasury = await Treasury.deploy(
       skillToken.address,
       specialSkinRewards.address,
@@ -48,7 +37,6 @@ describe("Treasury", function() {
     console.log(`balance: ${balance.toString()}, TreasuryBalance: ${TreasuryBalance}`);
     await skillToken.transfer(treasury.address, TreasuryBalance);
     
-
   });
 
   it('SnookFoundationRewards', async ()=>{

@@ -10,53 +10,44 @@ import './SnookFoundationRewards.sol';
 import 'hardhat/console.sol';
 
 contract Treasury {
-  uint constant SpecialSkinRewardsAllocationCycle = 30;
-  uint constant SpecialSkinRewardsAllocationPercentage = 10;
   
   SkillToken private _skillToken;
-  SpecialSkinRewards private _specialSkinRewards;
-  SnookFoundationRewards private _snookFoundationRewards;
-  uint _snookFoundationRewardsAllocationCycle;
-  uint _snookFoundationRewardsAllocationPercentage;
-  uint private _prevSSR;
-  uint private _prevSFR;
+  address[] private _allocatees;
+  uint[] private _percentages;
+  uint[] private _periodicities;
+
+  uint[] private _allocTimes;
 
   constructor(
-    address skillToken, 
-    address specialSkinRewards,
-    address snookFoundationRewards,
-    uint snookFoundationRewardsAllocationCycle,
-    uint snookFoundationRewardsAllocationPercentage
+    address skillToken,
+    address[] memory allocatees,
+    uint[] memory percentages,
+    uint[] memory periodicities
   ) 
   {
+    require(allocatees.length == percentages.length && percentages.length == periodicities.length, 'Invalid dimensions');
+    require(_arraySum(percentages) <= 100, 'Invalid percentages');
     _skillToken = SkillToken(skillToken);
-    _specialSkinRewards = SpecialSkinRewards(specialSkinRewards);
-    _snookFoundationRewards = SnookFoundationRewards(snookFoundationRewards);
-    _snookFoundationRewardsAllocationCycle = snookFoundationRewardsAllocationCycle;
-    _snookFoundationRewardsAllocationPercentage = snookFoundationRewardsAllocationPercentage;
-
-    _prevSFR = 0;
-    _prevSSR = 0;
-  } 
-
-
-  // called by anyone; we cannot steal the rewards if we did not run cronjob:
-  // some user will do this
-  function allocate() public {
-    uint balance = _skillToken.balanceOf(address(this));
-    uint amountSSR = balance * SpecialSkinRewardsAllocationPercentage / 100;
-    uint amountSFR = balance * _snookFoundationRewardsAllocationPercentage / 100;
-    console.log('allocate with balance: ', balance);
-    if (_prevSFR + _snookFoundationRewardsAllocationCycle * 1 days < block.timestamp) {
-      console.log('running snookFoundation contract');
-      _skillToken.transfer(address(_snookFoundationRewards), amountSFR);
-      uint releaseTime = block.timestamp + _snookFoundationRewardsAllocationCycle * 1 days;
-      _snookFoundationRewards.timelockRewards(amountSFR, releaseTime);
-      _prevSSR = block.timestamp;
+    _allocatees = allocatees;
+    _percentages = percentages;
+    _periodicities = periodicities;
+  }
+  
+  function _arraySum(uint[] memory array) public pure returns (uint) {
+    uint sum = 0;
+    for (uint i=0; i<array.length; i++) {
+      sum += array[i];
     }
+    return sum;
   }
 
-  
-
-  
+  function allocate() public {
+    uint balance = _skillToken.balanceOf(address(this));
+    for (uint i=0; i<_allocatees.length; i++) {
+      if (_allocTimes[i] + _periodicities[i] * 1 days < block.timestamp) {
+        uint amount = balance * _percentages[i] / 100;
+        _skillToken.transfer(address(this), amount);
+      }
+    }
+  }
 } 
