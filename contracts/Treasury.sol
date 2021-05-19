@@ -10,8 +10,8 @@ import './SnookFoundationRewards.sol';
 import 'hardhat/console.sol';
 
 contract Treasury {
-  
-  SkillToken private _skillToken;
+
+  SkillToken private _skill;
   address[] private _allocatees;
   uint[] private _percentages;
   uint[] private _periodicities;
@@ -19,18 +19,19 @@ contract Treasury {
   uint[] private _allocTimes;
 
   constructor(
-    address skillToken,
+    address skill,
     address[] memory allocatees,
     uint[] memory percentages,
-    uint[] memory periodicities
+    uint[] memory periodicities // in secs
   ) 
   {
     require(allocatees.length == percentages.length && percentages.length == periodicities.length, 'Invalid dimensions');
     require(_arraySum(percentages) <= 100, 'Invalid percentages');
-    _skillToken = SkillToken(skillToken);
+    _skill = SkillToken(skill);
     _allocatees = allocatees;
     _percentages = percentages;
     _periodicities = periodicities;
+    _allocTimes = new uint[](allocatees.length);
   }
   
   function _arraySum(uint[] memory array) public pure returns (uint) {
@@ -42,11 +43,13 @@ contract Treasury {
   }
 
   function allocate() public {
-    uint balance = _skillToken.balanceOf(address(this));
+    uint balance = _skill.balanceOf(address(this));
     for (uint i=0; i<_allocatees.length; i++) {
-      if (_allocTimes[i] + _periodicities[i] * 1 days < block.timestamp) {
+      if (_allocTimes[i] + _periodicities[i] * 1 seconds < block.timestamp) {
         uint amount = balance * _percentages[i] / 100;
-        _skillToken.transfer(address(this), amount);
+        address to = _allocatees[i];
+        _skill.transfer(to, amount);
+        _allocTimes[i] = block.timestamp;
       }
     }
   }
