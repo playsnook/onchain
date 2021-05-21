@@ -15,12 +15,18 @@ contract SpecialSkinRewards {
   SnookToken private _snook;
   SnookGame private _game;
   mapping (address => TokenTimelock) public beneficiaryTokenTimelocks;
+  mapping (address => uint) private _beneficiaryRewards;
+
 
   constructor(address skill, address snook, address game, uint periodicity) {
     _periodicity = periodicity;
     _skill = SkillToken(skill);
     _snook = SnookToken(snook);
     _game = SnookGame(game);
+  }
+
+  function getTokenTimelock(address beneficiary) public view returns (TokenTimelock) {
+    return beneficiaryTokenTimelocks[beneficiary];
   }
 
   function timelockRewards() public {
@@ -38,16 +44,23 @@ contract SpecialSkinRewards {
     for (uint i=0; i<_snook.totalSupply(); i++) {
       uint tokenId = _snook.tokenByIndex(i);
       address beneficiary = _snook.ownerOf(tokenId);
-
       (,,uint stars) = _game.describe(tokenId);
       if (stars > 0) {
         uint amount = balance * stars / totalStars;
-        
-        uint releaseTime = block.timestamp + _periodicity * 1 days; 
-        TokenTimelock tokenTimelock = new TokenTimelock(_skill, beneficiary, releaseTime);
-        beneficiaryTokenTimelocks[beneficiary] = tokenTimelock;
-        _skill.transfer(address(tokenTimelock), amount);
+        _beneficiaryRewards[beneficiary] += amount;
       }
+    }
+
+    // timelock rewards
+    uint releaseTime = block.timestamp + _periodicity * 1 seconds; 
+    for (uint i=0; i < _snook.totalSupply(); i++) {
+      uint tokenId = _snook.tokenByIndex(i);
+      address beneficiary = _snook.ownerOf(tokenId);
+      TokenTimelock tokenTimelock = new TokenTimelock(_skill, beneficiary, releaseTime);
+      beneficiaryTokenTimelocks[beneficiary] = tokenTimelock;
+      uint amount = _beneficiaryRewards[beneficiary];
+      _beneficiaryRewards[beneficiary] = 0;
+      _skill.transfer(address(tokenTimelock), amount);
     }
   } 
 }

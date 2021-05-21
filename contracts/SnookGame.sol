@@ -59,7 +59,6 @@ contract SnookGame is Ownable {
         uint stars
         ) 
     {
-        require(_snook.ownerOf(tokenId) == msg.sender, 'Only token owner has access');
         return (
             _descriptors[tokenId].ressurectionPrice,
             _descriptors[tokenId].ressurectionCount,

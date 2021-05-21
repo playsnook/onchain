@@ -2,23 +2,16 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const delay = require('delay');
 
-describe("Treasury", function() {
+describe.skip("Treasury", function() {
 
   let skillToken;  
   let Treasury;
   let signers;
   beforeEach(async ()=>{
     signers = await ethers.getSigners();
-    console.log(`Owner of contracts: ${signers[0].address}`)
-    console.log(`Signer 1: ${signers[1].address}`);
-    console.log(`Signer 2: ${signers[2].address}`);
-
     const SkillToken = await ethers.getContractFactory('SkillToken');
     skillToken = await SkillToken.deploy();
     await skillToken.deployed();
-    console.log('skill token deployed')
-
-
     Treasury = await ethers.getContractFactory('Treasury');
 
   });

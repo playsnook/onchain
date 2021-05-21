@@ -59,7 +59,7 @@ describe.skip("Game flow", function() {
       ethers.utils.parseEther('249'),
       ethers.utils.parseEther('999'),
       signers[0].address,
-      moment().add(10, 'seconds').unix()
+      moment().add(30, 'seconds').unix()
     );
     console.log('Liquidity added')
 

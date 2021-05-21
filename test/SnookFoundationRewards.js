@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const delay = require('delay');
 
-describe("SnookFoundationRewards", function() {
+describe.skip("SnookFoundationRewards", function() {
 
   let skillToken;  
   let treasury;
@@ -10,19 +10,15 @@ describe("SnookFoundationRewards", function() {
   let signers;
   let SFRBeneficiary;
   const TreasuryBalance = ethers.utils.parseEther('1000');
-  const SFRRewardPercentage = 10;
+  const SFRPercentage = 10;
   beforeEach(async ()=>{
     signers = await ethers.getSigners();
-    console.log(`Owner of contracts: ${signers[0].address}`)
-    console.log(`Signer 1: ${signers[1].address}`);
-    console.log(`Signer 2: ${signers[2].address}`);
-
+    
     const SkillToken = await ethers.getContractFactory('SkillToken');
     skillToken = await SkillToken.deploy();
     await skillToken.deployed();
     
     SFRBeneficiary = signers[1].address;
-    console.log(SFRBeneficiary);
     const SnookFoundationRewards = await ethers.getContractFactory('SnookFoundationRewards');
     snookFoundationRewards = await SnookFoundationRewards.deploy(
       skillToken.address,
@@ -36,7 +32,7 @@ describe("SnookFoundationRewards", function() {
     treasury = await Treasury.deploy(
       skillToken.address,
       [snookFoundationRewards.address],
-      [SFRRewardPercentage],
+      [SFRPercentage],
       [5]
     );
     await treasury.deployed();
@@ -63,7 +59,7 @@ describe("SnookFoundationRewards", function() {
     await tokenTimelock.release();
     expect(
       await skillToken.balanceOf(SFRBeneficiary)
-    ).to.equal(TreasuryBalance.mul(SFRRewardPercentage).div(100));
+    ).to.equal(TreasuryBalance.mul(SFRPercentage).div(100));
   });
 
 });
