@@ -32,7 +32,6 @@
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "@uniswap/v2-sdk": "^1.0.9",
     "abdk-libraries-solidity": "^3.0.0",
-    "bokkypoobahsdatetimelibrary": "git+ssh://git@gitlab.com-rlib:playsnook/bokkypoobahsdatetimelibrary.git",
     "chai": "^4.3.4",
     "dotenv": "^9.0.1",
     "moment": "^2.29.1"
