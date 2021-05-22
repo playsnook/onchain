@@ -5,7 +5,7 @@ const moment = require('moment');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 
-describe("SpecialSkinRewards", function() {
+describe.skip("SpecialSkinRewards", function() {
 
   let skillToken;  
   let snookToken;

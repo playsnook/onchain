@@ -6,7 +6,7 @@ import './SkillToken.sol';
 import './SnookToken.sol';
 import './SnookGame.sol';
 import "@openzeppelin/contracts/token/ERC20/utils/TokenTimelock.sol";
-
+import 'hardhat/console.sol';
 
 contract StakingRewards {
   uint private _maxStakingPeriod; // secs; defines staking cycle; Cmax is calculated once per 3 months
@@ -14,8 +14,9 @@ contract StakingRewards {
   uint private _initialSkillSupply; 
   uint private _dailyInterestRate; // in decimals of a percent, 1 is equal to 0.1 percent
   uint private _minNumberOfStakers;
-  uint private _cmax;
-  uint private _prevCmaxComputeTime;
+  uint private _cmax; // re-calculated every _maxStakingPeriod
+  uint private _cmin;
+  uint private _prevInitTime;
   SkillToken private _skill;
   mapping (address => TokenTimelock[]) public beneficiaryTokenTimelocks;
 
@@ -41,13 +42,21 @@ contract StakingRewards {
   // reward timelocks. Cmax can be computed many times with different output if we don't
   // destrict the call time.
   // Called after treasury allocation.
-  function computeCmax() public {
+  function init() public {
     uint period = _maxStakingPeriod;
-    require(_prevCmaxComputeTime + period * 1 seconds < block.timestamp, 'Previous reward cycle is in progress');
-    _prevCmaxComputeTime = block.timestamp;
+    require(_prevInitTime + period * 1 seconds < block.timestamp, 'Previous reward cycle is in progress');
+    _prevInitTime = block.timestamp;
     uint periodInDays = period * 1 seconds / ( 1 days / 1 seconds);
+    //  !!!! DEBUG ONLY: remove after testing
+    periodInDays = period;
+    // !!!! /DEBUG ONLY
     uint balance = _skill.balanceOf(address(this));
     _cmax = balance * 1000 / periodInDays / _dailyInterestRate / _minNumberOfStakers;
+    _cmin = _cmax / 1000; 
+  }
+
+  function getDepositLimits() public view returns(uint, uint) {
+    return (_cmin, _cmax);
   }
 
   function _computeRewards(uint amount, uint period) private view returns (uint) {
@@ -59,8 +68,10 @@ contract StakingRewards {
   
 
   function deposit(uint amount, uint period) public {
-    require(_skill.approve(address(this), amount), 'Not enough funds to deposit');
+    
+    require(block.timestamp > _prevInitTime && block.timestamp < _prevInitTime + _maxStakingPeriod * 1 seconds, 'Reward cycle is not initialized' );
     require(period >= _minStakingPeriod && period <= _maxStakingPeriod, 'Invalid staking period');
+    require(_skill.approve(address(this), amount), 'Not enough funds to deposit');
     
     uint releaseTime = block.timestamp + period * 1 seconds;
     address beneficiary = msg.sender;
