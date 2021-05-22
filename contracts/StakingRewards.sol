@@ -14,6 +14,7 @@ contract StakingRewards {
   uint private _initialSkillSupply; 
   uint private _dailyInterestRate; // in decimals of a percent, 1 is equal to 0.1 percent
   uint private _minNumberOfStakers;
+  uint private _minStakingValueCoef;
   uint private _cmax; // re-calculated every _maxStakingPeriod
   uint private _cmin;
   uint private _prevInitTime;
@@ -25,8 +26,9 @@ contract StakingRewards {
     uint minStakingPeriod, // secs
     uint maxStakingPeriod, // secs
     uint minNumberOfStakers,
-    uint dailyInterestRate, 
-    uint initialSkillSupply
+    uint dailyInterestRate, // in decimals of a percent, 1 is equal to 0.1 percent
+    uint initialSkillSupply,
+    uint minStakingValueCoef // factor by which Cmax is devided to get Cmin, Cmin = Cmax / minStatkingValueCoef
   ) 
   {
     _skill = SkillToken(skill);
@@ -35,6 +37,7 @@ contract StakingRewards {
     _minNumberOfStakers = minNumberOfStakers;
     _dailyInterestRate = dailyInterestRate;
     _initialSkillSupply = initialSkillSupply;
+    _minStakingValueCoef = minStakingValueCoef;
   }
 
   // Equivalent of timelockRewards of SpecialSkinRewards contract.
@@ -52,7 +55,7 @@ contract StakingRewards {
     // !!!! /DEBUG ONLY
     uint balance = _skill.balanceOf(address(this));
     _cmax = balance * 1000 / periodInDays / _dailyInterestRate / _minNumberOfStakers;
-    _cmin = _cmax / 1000; 
+    _cmin = _cmax / _minStakingValueCoef; 
   }
 
   function getDepositLimits() public view returns(uint, uint) {

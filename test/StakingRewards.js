@@ -9,6 +9,7 @@ describe("StakingRewards", function() {
   let treasury;
   let signers;
   let stakingRewards;
+  let initialSkillSupply; // in SKILLs 
   const gamersBalance = ethers.utils.parseEther('100');
   const TreasuryBalance = ethers.utils.parseEther('1000');
   const SRPercentage = 10;
@@ -17,7 +18,8 @@ describe("StakingRewards", function() {
   const minStakingPeriod = 2;
   const maxStakingPeriod = 5;
   const minNumberOfStakers = 2;
-  const dailyInterestRate = 10; 
+  const minStakingValueCoef = 1000;
+  const dailyInterestRate = 10; // in decimals of percent, 1 = 0.1%
 
   beforeEach(async ()=>{
     TokenTimelock = await ethers.getContractFactory("TokenTimelock");
@@ -27,7 +29,7 @@ describe("StakingRewards", function() {
     const SkillToken = await ethers.getContractFactory('SkillToken');
     skillToken = await SkillToken.deploy();
     await skillToken.deployed();
-    const initialSkillSupply = await skillToken.INITIAL_SUPPLY();
+    initialSkillSupply = await skillToken.INITIAL_SUPPLY(); // in SKILLs 
 
     const StakingRewards = await ethers.getContractFactory('StakingRewards');
     stakingRewards = await StakingRewards.deploy(
@@ -36,7 +38,8 @@ describe("StakingRewards", function() {
       maxStakingPeriod,
       minNumberOfStakers,
       dailyInterestRate,
-      initialSkillSupply
+      initialSkillSupply,
+      minStakingValueCoef
     );
     await stakingRewards.deployed();
     
@@ -69,12 +72,19 @@ describe("StakingRewards", function() {
   it('checks staking rewards init reverts while previous cycle is in progress', async ()=>{
     // start first cycle
     await stakingRewards.init();
+
+    // try to reinit before previous cycle is finished
+    await delay(0.5* maxStakingPeriod * 1000);
     await expect(
       stakingRewards.init()
     ).to.be.revertedWith('Previous reward cycle is in progress');
+  });
 
-    // wait until previous cycle 
-    await delay(5.1*1000);
+  it('checks staking rewards init is ok after previous cycle is finsihed', async ()=>{
+    // start first cycle
+    await stakingRewards.init();
+    // wait until previous cycle is finished
+    await delay(1.2* maxStakingPeriod * 1000);
     await expect(
       stakingRewards.init()
     ).to.be.not.reverted;
@@ -92,12 +102,17 @@ describe("StakingRewards", function() {
     ).to.be.revertedWith('Invalid staking period');
   });
 
-  it('test deposit limits', async ()=>{
+  it('tests deposit limits', async ()=>{
     await stakingRewards.init();
     const [cmin, cmax] = await stakingRewards.getDepositLimits();
     // calculate expected cmax value
-    
-    const cmaxe = SRBudget / maxStakingPeriod; 
+    const S = await skillToken.totalSupply();
+    const S0 = ethers.utils.parseEther(initialSkillSupply.toString());
+    const peMul1000 = S.div(S0).mul(dailyInterestRate);  
+    const cmaxExpected = SRBudget.div(peMul1000).mul(1000).div(maxStakingPeriod).div(minNumberOfStakers);
+    expect(cmax).to.equal(cmaxExpected);
+    const cminExpected = cmaxExpected.div(minStakingValueCoef);
+    expect(cmin).to.equal(cminExpected);
 
   });
 });
