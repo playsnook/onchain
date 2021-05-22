@@ -12,9 +12,10 @@ build:
   before_script:
     - echo $DEV > .env
   script:
-    - npm install
     - chmod +x ./install.sh
     - ./install.sh
+  after_script:
+    - rm .env
   only:
     refs:
       - development
