@@ -31,7 +31,7 @@ deploy:
     - apt-get update
     - apt-get install -y curl
   script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=$CI_COMMIT_REF_SLUG "https://gitlab.com/api/v4/projects/26457710/trigger/pipeline"
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=$CI_COMMIT_REF_SLUG --form tags="onchain" "https://gitlab.com/api/v4/projects/26457710/trigger/pipeline"
   only:
     refs:
       - development
