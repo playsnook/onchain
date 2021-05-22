@@ -37,14 +37,16 @@ contract SpecialSkinRewards {
   function timelockRewards() public {
     // TODO: https://ethereum.stackexchange.com/questions/68934/how-to-manage-big-loops-in-solidity
     uint balance = _skill.balanceOf(address(this));
-    require(balance > 0, 'No funds on the reward contract');
+    require(balance > 0, 'No funds in the reward contract');
     uint totalStars = 0;
     
+    // Not count skins of dead tokens 
+
     // calculate totals
     for (uint i=0; i<_snook.totalSupply(); i++) {
       uint tokenId = _snook.tokenByIndex(i);
       (,,uint stars) = _game.describe(tokenId);
-      totalStars += stars;
+      totalStars += stars; 
     }
 
     // calculate reward PER token owner
@@ -53,7 +55,7 @@ contract SpecialSkinRewards {
       address beneficiary = _snook.ownerOf(tokenId);
       (,,uint stars) = _game.describe(tokenId);
       if (stars > 0) {
-        uint amount = balance * stars / totalStars;
+        uint amount = balance * stars / totalStars; // CHECK DIVISION BY ZERO
         _beneficiaryRewards[beneficiary] += amount;
       }
     }

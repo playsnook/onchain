@@ -71,10 +71,10 @@ contract StakingRewards {
   
 
   function deposit(uint amount, uint period) public {
-    
     require(block.timestamp > _prevInitTime && block.timestamp < _prevInitTime + _maxStakingPeriod * 1 seconds, 'Reward cycle is not initialized' );
     require(period >= _minStakingPeriod && period <= _maxStakingPeriod, 'Invalid staking period');
-    require(_skill.approve(address(this), amount), 'Not enough funds to deposit');
+    require(amount >= _cmin && amount <= _cmax, 'Invalid staking amount'); // lets add valid ammounts
+    require(_skill.approve(msg.sender, amount), 'Not enough funds to deposit');
     
     uint releaseTime = block.timestamp + period * 1 seconds;
     address beneficiary = msg.sender;

@@ -62,9 +62,19 @@ describe("StakingRewards", function() {
     
   });
 
-  it('tests deposit() reverts on uninitialzed cycle', async ()=>{
+  it('checks deposit() reverts on uninitialzed cycle', async ()=>{
+    // revert without initialization
     await expect(
       stakingRewards.connect(signers[1]).deposit(1, 1)
+    ).to.be.revertedWith('Reward cycle is not initialized');
+
+    // initialize
+    await stakingRewards.init();
+    // wait for expiration of the reward cycle
+    await delay(1.2*maxStakingPeriod*1000);
+    //revert depositing after the cycle expired
+    await expect(
+      stakingRewards.connect(signers[1]).deposit(1, minStakingPeriod)
     ).to.be.revertedWith('Reward cycle is not initialized');
   });
 
@@ -90,19 +100,7 @@ describe("StakingRewards", function() {
     ).to.be.not.reverted;
   });
 
-  it('checks deposit() reverts on invalid staking period', async ()=>{
-    await stakingRewards.init();
-    // two short period
-    await expect(
-      stakingRewards.deposit(1, minStakingPeriod-1)
-    ).to.be.revertedWith('Invalid staking period');
-    // two long period
-    await expect(
-      stakingRewards.deposit(1, maxStakingPeriod+1)
-    ).to.be.revertedWith('Invalid staking period');
-  });
-
-  it('tests deposit limits', async ()=>{
+  it('tests deposit limit calculation by contract', async ()=>{
     await stakingRewards.init();
     const [cmin, cmax] = await stakingRewards.getDepositLimits();
     // calculate expected cmax value
@@ -113,6 +111,31 @@ describe("StakingRewards", function() {
     expect(cmax).to.equal(cmaxExpected);
     const cminExpected = cmaxExpected.div(minStakingValueCoef);
     expect(cmin).to.equal(cminExpected);
-
   });
+
+  it('checks deposit() reverts on invalid staking period', async ()=>{
+    await stakingRewards.init();
+    // two short period
+    await expect(
+      stakingRewards.connect(signers[1]).deposit(1, minStakingPeriod-1)
+    ).to.be.revertedWith('Invalid staking period');
+    // two long period
+    await expect(
+      stakingRewards.connect(signers[1]).deposit(1, maxStakingPeriod+1)
+    ).to.be.revertedWith('Invalid staking period');
+  });
+
+  it('checks deposit reverts on invalid staking amount', async ()=>{
+    await stakingRewards.init();
+    const [cmin, cmax] = await stakingRewards.getDepositLimits();
+    console.log(`cmin: ${cmin.toString()} cmax: ${cmax.toString()}`);
+    await expect(
+      stakingRewards.connect(signers[1]).deposit(cmax.mul(2), minStakingPeriod)
+    ).to.be.revertedWith('Invalid staking amount');
+    await expect(
+      stakingRewards.connect(signers[1]).deposit(cmin.div(2), minStakingPeriod)
+    ).to.be.revertedWith('Invalid staking amount');
+  });
+
+  it('')
 });
