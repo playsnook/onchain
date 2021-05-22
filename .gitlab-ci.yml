@@ -13,7 +13,8 @@ build:
     - echo $DEV > .env
   script:
     - npm install
-    - npm run compile
+    - chmod +x ./install.sh
+    - ./install.sh
   only:
     refs:
       - development
