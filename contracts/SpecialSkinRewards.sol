@@ -14,7 +14,7 @@ contract SpecialSkinRewards {
   SkillToken private _skill;
   SnookToken private _snook;
   SnookGame private _game;
-  mapping (address => TokenTimelock) public beneficiaryTokenTimelocks;
+  mapping (address => TokenTimelock[]) public beneficiaryTokenTimelocks;
   mapping (address => uint) private _beneficiaryRewards;
 
 
@@ -25,12 +25,19 @@ contract SpecialSkinRewards {
     _game = SnookGame(game);
   }
 
-  function getTokenTimelock(address beneficiary) public view returns (TokenTimelock) {
+  function getTokenTimelocks(address beneficiary) public view returns (TokenTimelock[] memory) {
     return beneficiaryTokenTimelocks[beneficiary];
   }
 
+
+
+  // After calling this function the entire balance of the contract is used.
+  // So after treasury allocation, only a single call to the function is possible,
+  // other calls will be reverted because of zero balance.  
   function timelockRewards() public {
+    // TODO: https://ethereum.stackexchange.com/questions/68934/how-to-manage-big-loops-in-solidity
     uint balance = _skill.balanceOf(address(this));
+    require(balance > 0, 'No funds on the reward contract');
     uint totalStars = 0;
     
     // calculate totals
@@ -57,7 +64,7 @@ contract SpecialSkinRewards {
       uint tokenId = _snook.tokenByIndex(i);
       address beneficiary = _snook.ownerOf(tokenId);
       TokenTimelock tokenTimelock = new TokenTimelock(_skill, beneficiary, releaseTime);
-      beneficiaryTokenTimelocks[beneficiary] = tokenTimelock;
+      beneficiaryTokenTimelocks[beneficiary].push(tokenTimelock);
       uint amount = _beneficiaryRewards[beneficiary];
       _beneficiaryRewards[beneficiary] = 0;
       _skill.transfer(address(tokenTimelock), amount);
