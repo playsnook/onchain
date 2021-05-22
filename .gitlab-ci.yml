@@ -17,7 +17,7 @@ build:
   script:
     - ./install.sh
     - zip -q deployments-$CI_COMMIT_REF_SLUG.zip -r deployments
-    - aws s3 sync deployments-$CI_COMMIT_REF_SLUG.zip s3://onchain-deployments
+    - aws s3 cp ./deployments-$CI_COMMIT_REF_SLUG.zip s3://onchain-deployments
   after_script:
     - rm .env
   only:
