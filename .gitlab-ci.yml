@@ -1,0 +1,37 @@
+stages:
+  - compile
+  - deploy
+
+build:
+  stage: compile
+  image: node:14.15.5-buster
+  allow_failure: false
+  artifacts:
+    paths:
+      - deployments
+  before_script:
+    - echo $DEV | tee .env
+  script:
+    - npm install
+    - npm run compile
+  only:
+    refs:
+      - development
+
+deploy:
+  stage: deploy
+  image: ubuntu
+  allow_failure: false
+  artifacts:
+    paths:
+      - deployments
+  before_script:
+    - apt-get update
+    - apt-get install -y curl
+  script:
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=$CI_COMMIT_REF_SLUG "https://gitlab.com/api/v4/projects/26457710/trigger/pipeline"
+  only:
+    refs:
+      - development
+  dependencies:
+    - build
