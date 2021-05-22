@@ -10,7 +10,7 @@ build:
     paths:
       - deployments
   before_script:
-    - echo $DEV | tee .env
+    - echo $DEV > .env
   script:
     - npm install
     - npm run compile
