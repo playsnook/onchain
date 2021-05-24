@@ -14,13 +14,6 @@ task("accounts", "Prints the list of accounts", async () => {
   }
 });
 
-task("accounts", "Prints the list of named accounts", async () => {
-  const accounts = await ethers.getSigners();
-  for (const account of accounts) {
-    console.log(`${account.address}`);
-  }
-});
-
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 

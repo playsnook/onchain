@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SnookFoundationRewards", function() {
-
+  const initialSkillSupply = 40000000;
   let skillToken;  
   let treasury;
   let signers;
@@ -13,7 +13,7 @@ describe("SnookFoundationRewards", function() {
     signers = await ethers.getSigners();
     
     const SkillToken = await ethers.getContractFactory('SkillToken');
-    skillToken = await SkillToken.deploy();
+    skillToken = await SkillToken.deploy(initialSkillSupply);
     await skillToken.deployed();
     
     SFRBeneficiary = signers[1].address;

@@ -10,7 +10,7 @@ describe("Treasury", function() {
   beforeEach(async ()=>{
     signers = await ethers.getSigners();
     const SkillToken = await ethers.getContractFactory('SkillToken');
-    skillToken = await SkillToken.deploy();
+    skillToken = await SkillToken.deploy(40000000);
     await skillToken.deployed();
     Treasury = await ethers.getContractFactory('Treasury');
 

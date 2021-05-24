@@ -4,7 +4,7 @@ const moment = require('moment');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 
-describe.skip("SpecialSkinRewards", function() {
+describe("SpecialSkinRewards", function() {
 
   let skillToken;  
   let snookToken;
@@ -16,12 +16,12 @@ describe.skip("SpecialSkinRewards", function() {
   const TreasuryBalance = ethers.utils.parseEther('1000');
   const SSRPercentage = 10;
   const SSRBudget = TreasuryBalance.mul(SSRPercentage).div(100);
-
+  const InitialSkillSupply = 40000000;
   beforeEach(async ()=>{
     signers = await ethers.getSigners();
     
     const SkillToken = await ethers.getContractFactory('SkillToken');
-    skillToken = await SkillToken.deploy();
+    skillToken = await SkillToken.deploy(InitialSkillSupply);
     await skillToken.deployed();
 
     const UsdcToken = await ethers.getContractFactory('UsdcToken');
