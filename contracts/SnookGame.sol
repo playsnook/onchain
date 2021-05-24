@@ -56,13 +56,15 @@ contract SnookGame is Ownable {
     function describe(uint tokenId) public view returns (
         uint ressurectionPrice, 
         uint ressurectionCount,
-        uint stars
-        ) 
+        uint stars,
+        uint deathTime
+    ) 
     {
         return (
             _descriptors[tokenId].ressurectionPrice,
             _descriptors[tokenId].ressurectionCount,
-            _descriptors[tokenId].stars
+            _descriptors[tokenId].stars,
+            _descriptors[tokenId].deathTime
         );
 
     }
@@ -203,6 +205,7 @@ contract SnookGame is Ownable {
         // UNCOMMENT FOR PRODUCTION:
         // require(_descriptors[tokenId].deathTime <= block.timestamp + 60 minutes, 'Ressurection period of snook elapsed');
 
+        // should transfer to Treasury contract!!!!
         require(_skill.transferFrom(snookOwner, address(this), _descriptors[tokenId].ressurectionPrice));
 
         _descriptors[tokenId].ressurectionCount += 1; // no overflow with solc8

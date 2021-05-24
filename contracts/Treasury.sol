@@ -1,13 +1,7 @@
+// SPDX-License-Identifier: MIT
 
-// Test constract 
 pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/token/ERC20/utils/TokenTimelock.sol";
 import './SkillToken.sol';
-import './SpecialSkinRewards.sol';
-import './SnookFoundationRewards.sol';
-
-import 'hardhat/console.sol';
 
 contract Treasury {
 

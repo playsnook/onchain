@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const delay = require('delay');
 
-describe.skip("Treasury", function() {
+describe("Treasury", function() {
 
   let skillToken;  
   let Treasury;
@@ -51,12 +51,12 @@ describe.skip("Treasury", function() {
     await expect(
       skillToken.transfer(treasury.address, TreasuryBalance)
     ).to.emit(skillToken, 'Transfer')
-    .withArgs(signers[0].address, treasury.address, TreasuryBalance);
-    
+    .withArgs(signers[0].address, treasury.address, TreasuryBalance);    
     await treasury.allocate();
     const balance1 = await skillToken.balanceOf(signers[1].address);
     const balance2 = await skillToken.balanceOf(signers[2].address);
     expect(balance1.add(balance2)).to.equal(TreasuryBalance);
+    expect(await skillToken.balanceOf(treasury.address)).to.equal(0);
   });
 
   it('tests allocation time periodicities', async ()=>{

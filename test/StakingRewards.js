@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const delay = require('delay');
 const moment = require('moment');
+const _ = require('lodash');
 
 describe("StakingRewards", function() {
 
@@ -9,8 +10,7 @@ describe("StakingRewards", function() {
   let treasury;
   let signers;
   let stakingRewards;
-  let initialSkillSupply; // in SKILLs 
-  const gamersBalance = ethers.utils.parseEther('100');
+  let initialSkillSupply; // in SKILLs
   const TreasuryBalance = ethers.utils.parseEther('1000');
   const SRPercentage = 10;
   const SRBudget = TreasuryBalance.mul(SRPercentage).div(100);
@@ -19,8 +19,8 @@ describe("StakingRewards", function() {
   const maxStakingPeriod = 5;
   const minNumberOfStakers = 2;
   const minStakingValueCoef = 1000;
-  const dailyInterestRate = 10; // in decimals of percent, 1 = 0.1%
-
+  const interestRate = 10; // in nanopercents
+  const burningRate = 1; // in percents
   beforeEach(async ()=>{
     TokenTimelock = await ethers.getContractFactory("TokenTimelock");
 
@@ -37,15 +37,13 @@ describe("StakingRewards", function() {
       minStakingPeriod,
       maxStakingPeriod,
       minNumberOfStakers,
-      dailyInterestRate,
-      initialSkillSupply,
-      minStakingValueCoef
+      interestRate,
+      ethers.utils.parseEther(initialSkillSupply.toString()),
+      minStakingValueCoef,
+      burningRate
     );
     await stakingRewards.deployed();
-    
-    // stakers
-    await skillToken.transfer(signers[1].address, gamersBalance);
-    await skillToken.transfer(signers[2].address, gamersBalance);
+    await skillToken.grantRole(await skillToken.BURNER_ROLE(), stakingRewards.address);
 
     const Treasury = await ethers.getContractFactory('Treasury');
     treasury = await Treasury.deploy(
@@ -106,11 +104,16 @@ describe("StakingRewards", function() {
     // calculate expected cmax value
     const S = await skillToken.totalSupply();
     const S0 = ethers.utils.parseEther(initialSkillSupply.toString());
-    const peMul1000 = S.div(S0).mul(dailyInterestRate);  
-    const cmaxExpected = SRBudget.div(peMul1000).mul(1000).div(maxStakingPeriod).div(minNumberOfStakers);
+    console.log(`S=${S}, S0=${S0}`);
+    const peMul10P11 = S.div(S0).mul(interestRate);  
+    let cmaxExpected = SRBudget.div(peMul10P11).mul(Math.pow(10,11)).div(maxStakingPeriod).div(minNumberOfStakers);
+    if (cmaxExpected > SRBudget) {
+      cmaxExpected = SRBudget;
+    }
     expect(cmax).to.equal(cmaxExpected);
     const cminExpected = cmaxExpected.div(minStakingValueCoef);
     expect(cmin).to.equal(cminExpected);
+    console.log(`cmax=${cmax}, cmin=${cmin}`);
   });
 
   it('checks deposit() reverts on invalid staking period', async ()=>{
@@ -128,7 +131,6 @@ describe("StakingRewards", function() {
   it('checks deposit reverts on invalid staking amount', async ()=>{
     await stakingRewards.init();
     const [cmin, cmax] = await stakingRewards.getDepositLimits();
-    console.log(`cmin: ${cmin.toString()} cmax: ${cmax.toString()}`);
     await expect(
       stakingRewards.connect(signers[1]).deposit(cmax.mul(2), minStakingPeriod)
     ).to.be.revertedWith('Invalid staking amount');
@@ -137,5 +139,59 @@ describe("StakingRewards", function() {
     ).to.be.revertedWith('Invalid staking amount');
   });
 
-  it('')
+  it('checks deposit reverts on insufficient budget of staker', async ()=>{
+    await stakingRewards.init();
+    const [cmin, cmax] = await stakingRewards.getDepositLimits();
+    console.log(`signer: ${signers[1].address}, cmin: ${ethers.utils.formatEther(cmin.toString())}`);
+    expect(await skillToken.balanceOf(signers[1].address)).to.equal(0);
+    await expect(
+      stakingRewards.connect(signers[1]).deposit(cmin, minStakingPeriod)
+    ).to.be.revertedWith('ERC20: transfer amount exceeds balance');
+  });
+
+  it('checks deposit reward values', async ()=>{
+    await stakingRewards.init();
+    const [ cmin ] = await stakingRewards.getDepositLimits();
+    
+    // tap minimal staking amount to staker 1
+    await skillToken.transfer(signers[1].address, cmin);
+    const depositAmount = cmin;
+    await skillToken.connect(signers[1]).approve(stakingRewards.address, depositAmount);
+    const S = await skillToken.totalSupply();
+    const S0 = ethers.utils.parseEther(initialSkillSupply.toString());
+
+    const rewards = depositAmount
+      .mul(S)
+      .mul(interestRate)
+      .mul(minStakingPeriod)
+      .div(Math.pow(10,9))
+      .div(100)
+      .div(S0);
+      
+    const rewardsToBurn = rewards.mul(burningRate).div(100);
+    const rewardsToPay = rewards.sub(rewardsToBurn);
+    const expectedDepositWithRewards = depositAmount.add(rewardsToPay);
+
+    const tx = await stakingRewards.connect(signers[1]).deposit(cmin, minStakingPeriod);
+    const r = await tx.wait();
+    expect(r).to.have.property('events');
+    expect(r.events).to.be.an('array');
+    const eventDeposit = r.events.find(e => e.event === 'Deposit');
+    expect(eventDeposit).to.be.an('object').and.have.property('args');
+    const { beneficiary, tokenTimelock: lockaddr } = eventDeposit.args;
+    expect(beneficiary).to.be.equal(signers[1].address);
+    const tokenTimelock = await TokenTimelock.attach(lockaddr);
+    
+    await expect(
+      tokenTimelock.release()
+    ).to.be.revertedWith('TokenTimelock: current time is before release time');
+    await delay(1.1*minStakingPeriod*1000);
+
+    await expect(
+      tokenTimelock.release()
+    ).to.not.be.reverted;
+
+    const balance = await skillToken.balanceOf(signers[1].address);
+    expect(balance).to.be.equal(expectedDepositWithRewards);    
+  });
 });
