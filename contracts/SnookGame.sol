@@ -13,6 +13,8 @@ import "./SnookToken.sol";
 import "./SkillToken.sol";
 import "./IUniswapUSDCSkill.sol";
 
+import 'hardhat/console.sol';
+
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
 contract SnookGame is Ownable {
@@ -25,10 +27,12 @@ contract SnookGame is Ownable {
     event Death(address indexed to, uint tokenId);
     event Ressurection(address indexed from, uint tokenId);
     event Birth(address indexed to, uint tokenId);
+    event Bury(uint burialCount);
 
     SnookToken private _snook;
     SkillToken private _skill;
     IUiniswapUSDCSkill private _uniswap;
+    uint private _burialDelay; // in seconds
     
     struct Descriptor {
         uint score;
@@ -47,10 +51,21 @@ contract SnookGame is Ownable {
     // mapping of token ids to descriptors
     mapping (uint => Descriptor) private _descriptors;
 
-    constructor(address snook_, address skill_, address uniswap_) {
-        _snook = SnookToken(snook_);
-        _skill = SkillToken(skill_);
-        _uniswap = IUiniswapUSDCSkill(uniswap_);
+    /*
+        _morgue keeps all the snooks for which setDeathTime was called.
+        _sactuary keeps all the snooks which were not buried on bury() function call
+        because they are still waiting to ressurection.
+    */
+    uint[] private _morgue;
+    uint[] private _sanctuary;
+
+    constructor(address snook, address skill, address uniswap, uint burialDelay) {
+        _snook = SnookToken(snook);
+        _skill = SkillToken(skill);
+        _uniswap = IUiniswapUSDCSkill(uniswap);
+        _morgue = new uint[](0);
+        _sanctuary = new uint[](0);
+        _burialDelay = burialDelay;
     }
 
     function describe(uint tokenId) public view returns (
@@ -99,16 +114,44 @@ contract SnookGame is Ownable {
         emit Birth(to, tokenId);
     }
 
-    // function is called by WS periodically to bury dead snooks
-    function bury() public onlyOwner {
-        for (uint i = 0; i < _snook.totalSupply(); i++ ) {
-            uint tokenId = _snook.tokenByIndex(i);
-            if (_descriptors[tokenId].ingame == true && _descriptors[tokenId].deathTime < block.timestamp + 65 minutes) {
+    /*
+        The function is called by anyone requesting a specific number of burials of 
+        snooks in morgue. 
+        If there is not enough gas in block.gasLimit for the loop, a smaller number 
+        of burials can be requested.
+        The length of the sanctuary is always bounded as it's >= requestedBurials. 
+    */
+    function bury(uint requestedBurials) public {
+        // cannot bury more than in the morgue
+        uint maxBurials = requestedBurials > _morgue.length ? _morgue.length : requestedBurials;
+        uint burials = 0;
+        for (uint i = maxBurials; i > 0; i--) {
+            uint tokenId = _morgue[i-1];
+            if (_descriptors[tokenId].ingame == true && _descriptors[tokenId].deathTime > 0 && _descriptors[tokenId].deathTime + _burialDelay * 1 seconds < block.timestamp) {
+                // tokens to burn
+                burials += 1;
+                _snook.lock(tokenId, false);
                 _snook.burn(tokenId);
                 delete _descriptors[tokenId];
+            } else if (_descriptors[tokenId].ingame == true && _descriptors[tokenId].deathTime > 0 && _descriptors[tokenId].deathTime + _burialDelay * 1 seconds >= block.timestamp) { 
+                // tokens which are in ressurection waiting state
+                _sanctuary.push(_morgue[_morgue.length-1]);
+            } else {
+                // tokens which were ressurected are removed from morgue and will not be in sanctuary: forget them
             }
+            _morgue.pop();
         }
-    }
+
+        // bring saved tokens from sanctury to morgue again for the next call to bury
+        uint k = _sanctuary.length;
+        for (uint i=0; i<k; i++) {
+            uint lastElem = _sanctuary[_sanctuary.length-1];
+            _morgue.push(lastElem);
+            _sanctuary.pop();
+        }
+        
+        emit Bury(burials);
+    } 
     
     // Snook owner calls this function to permit game contract to get him to the game = lock his token
     function allowGame(uint256 tokenId) public {
@@ -191,8 +234,11 @@ contract SnookGame is Ownable {
         _descriptors[tokenId].onRessurectionScore = onRessurectionScore;
         _descriptors[tokenId].onRessurectionTokenURI = onRessurectionTokenURI;
 
+        _morgue.push(tokenId);
+
         emit Death(_snook.ownerOf(tokenId), tokenId);
     }
+
 
     // 1. user should approve contract to get amount of skill
     // 2. skill tokens should go to treasury contract address

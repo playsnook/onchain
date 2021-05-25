@@ -1,11 +1,11 @@
 const { expect } = require("chai");
 const moment = require('moment');
-
+const delay = require('delay');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const { ethers } = require("hardhat");
 
-describe.skip("Game flow", function() {
+describe("SnookGame contract", function() {
 
   let snookToken;
   let skillToken;
@@ -14,6 +14,7 @@ describe.skip("Game flow", function() {
   let snookGame;
   const startBalance = ethers.utils.parseEther('1000');
   const initialSkillSupply = 40000000;
+  const BurialDelay = 5;
   beforeEach(async ()=>{
 
     signers = await ethers.getSigners();
@@ -75,7 +76,7 @@ describe.skip("Game flow", function() {
     console.log(`snookToken deployed`);
 
     const SnookGame = await ethers.getContractFactory('SnookGame');
-    snookGame = await SnookGame.deploy(snookToken.address, skillToken.address, uniswap.address);
+    snookGame = await SnookGame.deploy(snookToken.address, skillToken.address, uniswap.address, BurialDelay);
     await snookGame.deployed();
     console.log(`snookGame deployed`);
 
@@ -92,7 +93,67 @@ describe.skip("Game flow", function() {
 
   });
 
-  it('Flow #1', async ()=>{
+  it.skip('Bury process without ressurection', async () => {
+
+    let snookPrice = await uniswap.getSnookPriceInSkills();
+    
+    // A gamer buys a snook, plays and dies
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.setDeathTime(1, 1, 1, 1, 'ressurect');
+    
+    // no ressurection occurs during burial delay
+    await delay(BurialDelay*1000);
+
+    // A gamer buys another snook, plays and dies
+    snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    await snookGame.connect(signers[1]).allowGame(2);
+    await snookGame.enterGame(2);
+    await snookGame.setDeathTime(2, 1, 1, 1, 'ressurect');
+
+    // Bury function tries to bury snooks in morgue and succeeds only with 
+    // 1st token, the second survives in sanctuary
+    await expect(
+      snookGame.bury(10)
+    ).to.emit(snookGame, 'Bury').withArgs(1);
+
+    // No ressurection for the second token during delay
+    await delay((1 + BurialDelay) * 1000);
+
+    // Bury function buries the second token
+    await expect(
+      snookGame.bury(10)
+    ).to.emit(snookGame, 'Bury').withArgs(1);
+  });
+
+
+  it('Bury process with ressurection', async () => {
+
+    let snookPrice = await uniswap.getSnookPriceInSkills();
+    
+    // A gamer buys a snook, plays and dies
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.setDeathTime(1, 1, 1, 1, 'ressurect');
+
+    // User ressurects snook
+    const { ressurectionPrice } = await snookGame.connect(signers[1].address).describe(1);
+    await skillToken.connect(signers[1]).approve(snookGame.address, ressurectionPrice);
+    await snookGame.connect(signers[1]).ressurect(1);
+
+    // Bury has nothing to bury
+    await expect(
+      snookGame.bury(10)
+    ).to.emit(snookGame, 'Bury').withArgs(0);
+  });
+
+  it.skip('Flow #1', async ()=>{
     const totalSupply1 = await skillToken.totalSupply();   
 
     // gamer 1 approves paying snook price
@@ -100,7 +161,8 @@ describe.skip("Game flow", function() {
     console.log(`price=${ethers.utils.formatEther(snookPrice)}`);
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     
-    // non-minter  tries to mint snook token
+    // non-minter  tries to mint snook token; 
+    // here signers[0] is contract owner but not a minter, the minter is contract SnookGame.
     await expect(
       snookToken.connect(signers[0]).mint(signers[0].address, 'test')
     ).to.be.revertedWith('Caller is not a minter');

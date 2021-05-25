@@ -50,7 +50,7 @@ contract SnookToken is ERC721, AccessControl, ERC721Burnable, ERC721Enumerable {
     }
 
     function burn(uint256 tokenId) public virtual override {
-        require(hasRole(MINTER_ROLE, _msgSender()), 'Caller is not a minter');
+        require(hasRole(MINTER_ROLE, _msgSender()), 'Caller is not a burner');
         _burn(tokenId);
     }
 
