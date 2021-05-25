@@ -4,7 +4,7 @@ const moment = require('moment');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 
-describe.skip("SpecialSkinRewards", function() {
+describe("SpecialSkinRewards", function() {
 
   let skillToken;  
   let snookToken;
@@ -17,6 +17,7 @@ describe.skip("SpecialSkinRewards", function() {
   const SSRPercentage = 10;
   const SSRBudget = TreasuryBalance.mul(SSRPercentage).div(100);
   const InitialSkillSupply = 40000000;
+  const BurialDelay = 1;
   beforeEach(async ()=>{
     signers = await ethers.getSigners();
     
@@ -66,12 +67,15 @@ describe.skip("SpecialSkinRewards", function() {
     await snookToken.deployed();
 
     const SnookGame = await ethers.getContractFactory('SnookGame');
-    snookGame = await SnookGame.deploy(snookToken.address, skillToken.address, uniswap.address);
+    snookGame = await SnookGame.deploy(
+      snookToken.address, 
+      skillToken.address, 
+      uniswap.address,
+      treasury.address,
+      BurialDelay
+    );
     await snookGame.deployed();
 
-    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookGame.address);
-    await snookToken.grantRole(await snookToken.MINTER_ROLE(), snookGame.address);
-   
     const SpecialSkinRewards = await ethers.getContractFactory('SpecialSkinRewards');
     specialSkinRewards = await SpecialSkinRewards.deploy(
       skillToken.address,
@@ -92,6 +96,10 @@ describe.skip("SpecialSkinRewards", function() {
       [5]
     );
     await treasury.deployed();
+
+
+    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookGame.address);
+    await snookToken.grantRole(await snookToken.MINTER_ROLE(), snookGame.address);
     
     // Tap up treasury balance
     await skillToken.transfer(treasury.address, TreasuryBalance);

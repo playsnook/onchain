@@ -33,6 +33,7 @@ contract SnookGame is Ownable {
     SkillToken private _skill;
     IUiniswapUSDCSkill private _uniswap;
     uint private _burialDelay; // in seconds
+    address private _treasury;
     
     struct Descriptor {
         uint score;
@@ -59,13 +60,15 @@ contract SnookGame is Ownable {
     uint[] private _morgue;
     uint[] private _sanctuary;
 
-    constructor(address snook, address skill, address uniswap, uint burialDelay) {
+    constructor(address snook, address skill, address uniswap, address treasury, uint burialDelay) {
         _snook = SnookToken(snook);
         _skill = SkillToken(skill);
         _uniswap = IUiniswapUSDCSkill(uniswap);
         _morgue = new uint[](0);
         _sanctuary = new uint[](0);
+        _treasury = treasury;
         _burialDelay = burialDelay;
+
     }
 
     function describe(uint tokenId) public view returns (
@@ -251,7 +254,7 @@ contract SnookGame is Ownable {
         require(_descriptors[tokenId].deathTime + _burialDelay * 1 seconds >= block.timestamp, 'Ressurection period of snook elapsed');
 
         // should transfer to Treasury contract!!!!
-        require(_skill.transferFrom(snookOwner, address(this), _descriptors[tokenId].ressurectionPrice));
+        require(_skill.transferFrom(snookOwner, _treasury, _descriptors[tokenId].ressurectionPrice));
 
         _descriptors[tokenId].ressurectionCount += 1; // no overflow with solc8
         _descriptors[tokenId].deathTime = 0;

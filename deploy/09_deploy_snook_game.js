@@ -7,14 +7,17 @@ module.exports = async ({
   const SnookToken = await get('SnookToken');
   const SkillToken = await get('SkillToken');
   const UniswapUSDCSkill = await get('UniswapUSDCSkill');
-  
+  const Treasury = await get('Treasury');
+  const BurialDelay = 60*60; // 1 hour
   const deployResult = await deploy('SnookGame', {
     from: deployer,
     gasLimit: 5000000,
     args: [
       SnookToken.address,
       SkillToken.address,
-      UniswapUSDCSkill.address
+      UniswapUSDCSkill.address,
+      Treasury.address,
+      BurialDelay,
     ],
   });  
   if (deployResult.newlyDeployed) {

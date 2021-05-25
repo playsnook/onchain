@@ -7,7 +7,7 @@ module.exports = async ({
   const deployResult = await deploy('SnookToken', {
     from: deployer,
     gasLimit: 4000000,
-    args: [65*60], // 65 minutes
+    args: [],
   });  
   if (deployResult.newlyDeployed) {
     log(
