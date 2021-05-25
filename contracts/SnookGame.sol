@@ -248,8 +248,7 @@ contract SnookGame is Ownable {
         address snookOwner = _snook.ownerOf(tokenId);
         require(snookOwner == msg.sender, 'Only snook owner can ressurect dead snook');
         require(_descriptors[tokenId].deathTime > 0, 'Snook is not dead');
-        // UNCOMMENT FOR PRODUCTION:
-        // require(_descriptors[tokenId].deathTime <= block.timestamp + 60 minutes, 'Ressurection period of snook elapsed');
+        require(_descriptors[tokenId].deathTime + _burialDelay * 1 seconds >= block.timestamp, 'Ressurection period of snook elapsed');
 
         // should transfer to Treasury contract!!!!
         require(_skill.transferFrom(snookOwner, address(this), _descriptors[tokenId].ressurectionPrice));
