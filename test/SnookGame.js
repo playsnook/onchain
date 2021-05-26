@@ -5,7 +5,7 @@ const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factor
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const { ethers } = require("hardhat");
 
-describe.skip("SnookGame contract", function() {
+describe("SnookGame contract", function() {
 
   let snookToken;
   let skillToken;
@@ -77,12 +77,7 @@ describe.skip("SnookGame contract", function() {
     console.log(`snookToken deployed`);
 
     const Treasury = await ethers.getContractFactory('Treasury');
-    treasury = await Treasury.deploy(
-      skillToken.address,
-      [signers[0].address],
-      [10],
-      [1]
-    );
+    treasury = await Treasury.deploy(skillToken.address);
     await treasury.deployed();
     console.log('Treasury deployed');
 
@@ -106,7 +101,10 @@ describe.skip("SnookGame contract", function() {
     // tap up Skill balances of signers
     await skillToken.transfer(signers[1].address, startBalance); 
     await skillToken.transfer(signers[2].address, startBalance); 
-    console.log(`Tapped account balances up to ${startBalance}`)
+    console.log(`Tapped account balances up to ${startBalance}`);
+
+    // tap up Skill balance of treasury
+    await skillToken.transfer(treasury.address, startBalance); 
 
   });
 
@@ -148,7 +146,7 @@ describe.skip("SnookGame contract", function() {
   });
 
 
-  it('Bury process with ressurection', async () => {
+  it('Bury process with ressurection and treasury balance', async () => {
 
     let snookPrice = await uniswap.getSnookPriceInSkills();
     
@@ -159,15 +157,25 @@ describe.skip("SnookGame contract", function() {
     await snookGame.enterGame(1);
     await snookGame.setDeathTime(1, 1, 1, 1, 'ressurect');
 
+    // treasure balance before ressurection
+    const treasuryBalance1 = await skillToken.balanceOf(treasury.address);
+
     // User ressurects snook
     const { ressurectionPrice } = await snookGame.connect(signers[1].address).describe(1);
     await skillToken.connect(signers[1]).approve(snookGame.address, ressurectionPrice);
-    await snookGame.connect(signers[1]).ressurect(1);
+    await expect(
+      snookGame.connect(signers[1]).ressurect(1)
+    ).to.emit(snookGame, 'Ressurection').withArgs(signers[1].address, 1);
+
+    // treasure balance after ressurection
+    const treasuryBalance2 = await skillToken.balanceOf(treasury.address);
+    expect(treasuryBalance1).to.equal(treasuryBalance2.sub(ressurectionPrice));
 
     // Bury has nothing to bury
     await expect(
       snookGame.bury(10)
     ).to.emit(snookGame, 'Bury').withArgs(0);
+
   });
 
   it.skip('Flow #1', async ()=>{

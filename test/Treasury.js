@@ -5,7 +5,7 @@ const delay = require('delay');
 describe.skip("Treasury", function() {
 
   let skillToken;  
-  let Treasury;
+  let treasury;
   let signers;
   beforeEach(async ()=>{
     signers = await ethers.getSigners();
@@ -13,40 +13,33 @@ describe.skip("Treasury", function() {
     skillToken = await SkillToken.deploy(40000000);
     await skillToken.deployed();
     Treasury = await ethers.getContractFactory('Treasury');
-
+    treasury = await Treasury.deploy(skillToken.address);
+    await treasury.deployed();
   });
 
-  it('tests deployment', async ()=>{
+  it('tests upsert', async ()=>{
+    await treasury.upsert(signers[1].address, 50, 1);
     await expect(
-      Treasury.deploy(
-        skillToken.address,
-        // for tests only; should be contract addresses
-        [ signers[1].address, signers[2].address], 
-        [10],
-        [1]
-      )
-    ).to.be.revertedWith('Invalid dimensions');
-    
+      treasury.upsert(signers[2].address, 53, 1)
+    ).to.be.revertedWith('Invalid percentage');
+  });
+
+  it('tests remove', async ()=>{
+    await treasury.upsert(signers[1].address, 50, 1);
     await expect(
-      Treasury.deploy(
-        skillToken.address,
-        // for tests only; should be contract addresses
-        [ signers[1].address, signers[2].address], 
-        [10,100],
-        [1,1]
-      )
-    ).to.be.revertedWith('Invalid percentages');
+      treasury.remove(signers[2].address)
+    ).to.be.revertedWith('No such allocatee');
+
+    await expect(
+      treasury.remove(signers[1].address)
+    ).to.be.not.reverted;
   });
 
   it('tests allocation percentages', async ()=>{
-    const treasury = await Treasury.deploy(
-      skillToken.address,
-      [ signers[1].address, signers[2].address ], 
-      [ 60,40 ],
-      [ 1, 1 ] 
-    );
-    await treasury.deployed();
-
+    
+    await treasury.upsert(signers[1].address, 60, 1);
+    await treasury.upsert(signers[2].address, 40, 1);
+    
     const TreasuryBalance = ethers.utils.parseEther('1000');
     await expect(
       skillToken.transfer(treasury.address, TreasuryBalance)
@@ -60,13 +53,8 @@ describe.skip("Treasury", function() {
   });
 
   it('tests allocation time periodicities', async ()=>{
-    const treasury = await Treasury.deploy(
-      skillToken.address,
-      [ signers[1].address ], 
-      [ 10 ],
-      [ 5 ] // sec 
-    );
-    await treasury.deployed();
+    
+    await treasury.upsert(signers[1].address, 10, 5);
 
     const TreasuryBalance = ethers.utils.parseEther('1000');
     await expect(

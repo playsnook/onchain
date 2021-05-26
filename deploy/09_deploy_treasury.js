@@ -8,12 +8,7 @@ module.exports = async ({
   // Making deployer to be Snook Foundatiion
   const deployResult = await deploy('Treasury', {
     from: deployer,
-    args: [
-      SkillToken.address,
-      [deployer],
-      [10], // 10%
-      [3600*24*30], // 30 days 
-    ]
+    args: [ SkillToken.address ]
   });
   if (deployResult.newlyDeployed) {
     log(
