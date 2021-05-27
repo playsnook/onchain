@@ -146,7 +146,7 @@ describe("SnookGame contract", function() {
   });
 
 
-  it('Bury process with ressurection and treasury balance', async () => {
+  it.skip('Bury process with ressurection and treasury balance', async () => {
 
     let snookPrice = await uniswap.getSnookPriceInSkills();
     
@@ -178,7 +178,7 @@ describe("SnookGame contract", function() {
 
   });
 
-  it.skip('Flow #1', async ()=>{
+  it('Flow #1', async ()=>{
     const totalSupply1 = await skillToken.totalSupply();   
 
     // gamer 1 approves paying snook price
@@ -229,7 +229,7 @@ describe("SnookGame contract", function() {
     // contract gets the user into the game
     await expect(
       snookGame.enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 1);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[1].address, 1);
 
 
     // user 1 tries to send locked token to user 2 and reverted
@@ -289,7 +289,7 @@ describe("SnookGame contract", function() {
     // smart contract gets him to the game
     await expect(
       snookGame.enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[2].address, 1);
 
     // gamer 2 dies in the game
     await expect(
@@ -331,7 +331,7 @@ describe("SnookGame contract", function() {
     // contract gets gamer 1 into the game with snook 2
     await expect(
       snookGame.enterGame(2)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 2);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[1].address, 2);
     
     // gamer 2 allows the game with snook 1
     await expect(
@@ -341,7 +341,7 @@ describe("SnookGame contract", function() {
     // gamer 2 is to the game with snook 1
     await expect(
       snookGame.enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[2].address, 1);
 
     // emergency with game server, extract all snooks
     await snookGame.extractSnooksWithoutUpdate([1,2])

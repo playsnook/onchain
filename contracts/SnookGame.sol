@@ -22,7 +22,7 @@ contract SnookGame is Ownable {
     using EnumerableSet for EnumerableSet.UintSet;
 
     event GameAllowed(address indexed from, uint tokenId);
-    event Entrance(address indexed from, uint tokenId);
+    event Entry(address indexed from, uint tokenId);
     event Extraction(address indexed to, uint tokenId);
     event Death(address indexed to, uint tokenId);
     event Ressurection(address indexed from, uint tokenId);
@@ -34,12 +34,15 @@ contract SnookGame is Ownable {
     IUiniswapUSDCSkill private _uniswap;
     uint private _burialDelay; // in seconds
     address private _treasury;
-    
+
     struct Descriptor {
         uint score;
         uint onRessurectionScore;
         uint stars;
         uint onRessurectionStars;
+        // required to recalculate probability density on exit from the game
+        uint onGameEntryTraitCount; 
+        // traitCount is current trait count 
         uint traitCount;
         uint onRessurectionTraitCount;
         uint ressurectionPrice;
@@ -60,6 +63,9 @@ contract SnookGame is Ownable {
     uint[] private _morgue;
     uint[] private _sanctuary;
 
+    int128[] private _traitHist;
+    uint private _aliveSnookCount; // totalSupply() cannot be used as hist is updated on death event, not on burn event
+
     constructor(address snook, address skill, address uniswap, address treasury, uint burialDelay) {
         _snook = SnookToken(snook);
         _skill = SkillToken(skill);
@@ -68,7 +74,8 @@ contract SnookGame is Ownable {
         _sanctuary = new uint[](0);
         _treasury = treasury;
         _burialDelay = burialDelay;
-
+        _traitHist = new int128[](0);
+        _aliveSnookCount = 0;
     }
 
     function describe(uint tokenId) public view returns (
@@ -87,6 +94,35 @@ contract SnookGame is Ownable {
 
     }
     
+    function _updateTraitHistOnMint(uint traitCount) private {
+        uint bin = traitCount; // bin starts from 0
+        if (_traitHist.length < (bin+1) ) {
+            // resize array
+            int128[] memory temp = new int128[](bin+1);
+            for (uint i=0; i<_traitHist.length; i++) {
+                temp[i] = _traitHist[i];
+            }
+            _traitHist = temp;
+        }
+        _traitHist[bin] = ABDKMath64x64.add(_traitHist[bin], ABDKMath64x64.fromUInt(1));
+    }
+
+    function _updateTraitHistOnDeath(uint traitCount) private {
+        uint bin = traitCount;
+        _traitHist[bin] = ABDKMath64x64.sub(_traitHist[bin], ABDKMath64x64.fromUInt(1));
+    }
+
+    function _updateTraitHistOnRessurection(uint traitCount) private {
+        _updateTraitHistOnMint(traitCount);
+    }
+
+    function _updateTraitHistOnExtraction(uint onEntryTraitCount, uint onExtractionTraitCount) private {
+        uint bin1 = onEntryTraitCount;
+        uint bin2 = onExtractionTraitCount;
+        _traitHist[bin1] = ABDKMath64x64.sub(_traitHist[bin1], ABDKMath64x64.fromUInt(1));
+        _traitHist[bin2] = ABDKMath64x64.add(_traitHist[bin2], ABDKMath64x64.fromUInt(1));
+    }
+
     // Wallet Server got trait ids from game server and mints a token
     function mint(
         address to, 
@@ -104,6 +140,7 @@ contract SnookGame is Ownable {
             onRessurectionScore: 0,
             stars: stars,
             onRessurectionStars: 0,
+            onGameEntryTraitCount: traitCount,
             traitCount: traitCount,
             onRessurectionTraitCount: 0,
             onRessurectionTokenURI: "",
@@ -113,7 +150,11 @@ contract SnookGame is Ownable {
             ingame: false,
             gameAllowed: false
         });
-        _skill.burn(address(this), price);     
+        _skill.burn(address(this), price);
+
+        _updateTraitHistOnMint(traitCount);
+        _aliveSnookCount += 1;
+
         emit Birth(to, tokenId);
     }
 
@@ -122,7 +163,7 @@ contract SnookGame is Ownable {
         snooks in morgue. 
         If there is not enough gas in block.gasLimit for the loop, a smaller number 
         of burials can be requested.
-        The length of the sanctuary is always bounded as it's >= requestedBurials. 
+        The length of the sanctuary is always bounded as it's <= requestedBurials. 
     */
     function bury(uint requestedBurials) public {
         // cannot bury more than in the morgue
@@ -169,7 +210,7 @@ contract SnookGame is Ownable {
         require(_descriptors[tokenId].gameAllowed == true, 'Snook is not allowed for playing');
         _snook.lock(tokenId, true);
         _descriptors[tokenId].ingame = true;
-        emit Entrance(_snook.ownerOf(tokenId), tokenId);
+        emit Entry(_snook.ownerOf(tokenId), tokenId);
     }
 
     // extract snook without updating traits and url
@@ -205,8 +246,11 @@ contract SnookGame is Ownable {
         require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
 
+        _updateTraitHistOnExtraction(_descriptors[tokenId].onGameEntryTraitCount, traitCount);
+
         _snook.setTokenURI(tokenId, tokenURI_); 
         _descriptors[tokenId].traitCount = traitCount; 
+        _descriptors[tokenId].onGameEntryTraitCount = traitCount;
         _descriptors[tokenId].stars = stars;
         _descriptors[tokenId].score = score;
         _descriptors[tokenId].ingame = false;
@@ -239,6 +283,9 @@ contract SnookGame is Ownable {
 
         _morgue.push(tokenId);
 
+        _updateTraitHistOnDeath(_descriptors[tokenId].traitCount);
+        _aliveSnookCount -= 1;
+
         emit Death(_snook.ownerOf(tokenId), tokenId);
     }
 
@@ -260,12 +307,16 @@ contract SnookGame is Ownable {
 
         _snook.setTokenURI(tokenId, _descriptors[tokenId].onRessurectionTokenURI);
         _descriptors[tokenId].traitCount = _descriptors[tokenId].onRessurectionTraitCount;
+        _descriptors[tokenId].onGameEntryTraitCount = _descriptors[tokenId].onRessurectionTraitCount;
         _descriptors[tokenId].stars = _descriptors[tokenId].onRessurectionStars;
         _descriptors[tokenId].score = _descriptors[tokenId].onRessurectionScore;
         
         _descriptors[tokenId].ingame = false;
         _descriptors[tokenId].gameAllowed = false;
         _snook.lock(tokenId, false);
+
+        _updateTraitHistOnRessurection(_descriptors[tokenId].onRessurectionTraitCount);
+        _aliveSnookCount += 1;
 
         emit Ressurection(snookOwner, tokenId);
     }
@@ -278,6 +329,22 @@ contract SnookGame is Ownable {
     }
 
     function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
+        uint bin = _descriptors[tokenId].traitCount;
+        int128 s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
+        for (uint i=0; i<bin ; i++) {
+            s = ABDKMath64x64.add(s, _traitHist[i]);
+        }
+
+        
+        s = ABDKMath64x64.div(s, ABDKMath64x64.fromUInt(_aliveSnookCount)); // standing, s(b)
+        int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
+        
+        // difficulty coef,  d = exp(s) * traits^2
+        return ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
+    }
+
+    /// To remove
+    function _getRessurectionDifficulty1(uint256 tokenId) private view returns (int128) {
         int128 s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
         int128[] memory f; // probability density
         
