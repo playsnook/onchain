@@ -178,7 +178,7 @@ describe("SnookGame contract", function() {
 
   });
 
-  it('tests ressurection price for a single snook with 1 trait', async ()=>{
+  it.skip('tests ressurection price for a single snook with 1 trait', async ()=>{
     const snookPrice = await uniswap.getSnookPriceInSkills();
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
@@ -204,7 +204,7 @@ describe("SnookGame contract", function() {
 
   });
 
-  it('tests ressurection price for a single snook with 2 traits', async ()=>{
+  it.skip('tests ressurection price for a single snook with 2 traits', async ()=>{
     const snookPrice = await uniswap.getSnookPriceInSkills();
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     await snookGame.mint(signers[1].address, 2, 0, 0, 'tokenURI');
@@ -277,7 +277,7 @@ describe("SnookGame contract", function() {
 
   });
 
-  it('tests trait hist when a single snook is minted, extracted, died and ressurected', async ()=>{
+  it.skip('tests trait hist when a single snook is minted, extracted, died and ressurected', async ()=>{
     const snookPrice = await uniswap.getSnookPriceInSkills();
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     const hist1 = await snookGame.getTraitHist();
@@ -314,7 +314,7 @@ describe("SnookGame contract", function() {
     expect(hist5str).to.have.ordered.members(['0','1','0']);
   });
 
-  it.skip('Flow #1', async ()=>{
+  it('Flow #1', async ()=>{
     const totalSupply1 = await skillToken.totalSupply();   
 
     // gamer 1 approves paying snook price
