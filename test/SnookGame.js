@@ -178,39 +178,21 @@ describe("SnookGame contract", function() {
 
   });
 
-  it.skip('tests ressurection price for a single snook with 1 trait', async ()=>{
+  it('tests ressurection price for a single snook with 1 trait', async ()=>{
     const snookPrice = await uniswap.getSnookPriceInSkills();
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
-    const result1 = await snookGame.getTraitHist();
-    console.log('Result before mint:')
-    console.log(result1);
-
     await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
-    const result2 = await snookGame.getTraitHist();
-    
-    console.log(result2);
     
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.enterGame(1);
     
-    const CC = ethers.BigNumber.from(2).pow(64);
-    console.log(CC);
-    const {numOfTraits, exp, d, s, k} = await snookGame._getRessurectionDifficulty2(1);
-    console.log('Result4:');
-    console.log('k=', ethers.utils.formatEther(k), 'exp=', exp.div(CC), 's=', s.div(CC), 'd=', d.div(CC), 'traits=', numOfTraits.div(CC));
-
     
     await snookGame.setDeathTime(1,1,0,0,'test');
-    const result3 = await snookGame.getTraitHist();
-    
-    console.log('Result after death:')
-    console.log(result3);
-
     const { ressurectionPrice } = await snookGame.describe(1);
     
     const rpEthersFloat = parseFloat(ethers.utils.formatEther(ressurectionPrice));
     const rpEthersFixed = rpEthersFloat.toFixed(2);
-    console.log(typeof rpEthersFixed);
+    
 
     // precalculation, need to know algo
     const expectedS = 1;
@@ -233,24 +215,11 @@ describe("SnookGame contract", function() {
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.enterGame(1);
     
-    const CC = ethers.BigNumber.from(2).pow(64);
-    console.log(CC);
-    const {numOfTraits, exp, d, s, k} = await snookGame._getRessurectionDifficulty2(1);
-    console.log('Result4:');
-    console.log('k=', ethers.utils.formatEther(k), 'exp=', exp.div(CC), 's=', s.div(CC), 'd=', d.div(CC), 'traits=', numOfTraits.div(CC));
-
-    
     await snookGame.setDeathTime(1,1,0,0,'test');
-    const result3 = await snookGame.getTraitHist();
-    
-    console.log('Result after death:')
-    console.log(result3);
-
     const { ressurectionPrice } = await snookGame.describe(1);
     
     const rpEthersFloat = parseFloat(ethers.utils.formatEther(ressurectionPrice));
     const rpEthersFixed = rpEthersFloat.toFixed(2);
-    console.log(typeof rpEthersFixed);
 
     // precalculation, need to know algo
     const expectedS = 1; // only one snook with 2 traits
@@ -262,7 +231,7 @@ describe("SnookGame contract", function() {
 
   });
 
-  it('tests ressurection price for two snooks with 1 and 2 traits', async ()=>{
+  it.skip('tests ressurection price for two snooks with 1 and 2 traits', async ()=>{
     const snookPrice1 = await uniswap.getSnookPriceInSkills();
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
     // snook with 1 trait
@@ -272,27 +241,15 @@ describe("SnookGame contract", function() {
     await skillToken.connect(signers[2]).approve(snookGame.address, snookPrice2);
     // snook with 2 traits
     await snookGame.mint(signers[2].address, 2, 0, 0, 'tokenURI');
-
-    console.log('Result after mints:', await snookGame.getTraitHist());
-
-    const CC = ethers.BigNumber.from(2).pow(64);
-    const {numOfTraits, exp, d, s, k} = await snookGame._getRessurectionDifficulty2(1);
-    console.log('k=', ethers.utils.formatEther(k), 'exp=', exp.div(CC), 'sOrig=', s, 's=', s.div(CC), 'd=', d.div(CC), 'traits=', numOfTraits.div(CC));
-
     
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.enterGame(1);
     await snookGame.setDeathTime(1,1,0,0,'test');
  
-    console.log('Hist after first death:', await snookGame.getTraitHist());
-    
-
+ 
     await snookGame.connect(signers[2]).allowGame(2);
     await snookGame.enterGame(2);
     await snookGame.setDeathTime(2,1,0,0,'test');
-
-    console.log('Hist after second death:', await snookGame.getTraitHist());
-
     
     const { ressurectionPrice: rp1 } = await snookGame.describe(1);
     const rp1EthersFloat = parseFloat(ethers.utils.formatEther(rp1));
@@ -302,13 +259,12 @@ describe("SnookGame contract", function() {
     const rp2EthersFloat = parseFloat(ethers.utils.formatEther(rp2));
     const rp2EthersFixed = rp2EthersFloat.toFixed(2);
     
-
-    // precalculation, need to know algo
-    const s1 = 0.5; // only one snook with 2 traits
+    // precalculation, need to know algo; should move calculation of difficulty to the test
+    const s1 = 0.5; // value of S, only one snook with 2 traits
     const traits1 = 1; 
     const difficulty1 = Math.exp(s1) * traits1*traits1;
-    const sp1 = 1; // in ethers
-    const erp1 = sp1 * difficulty1; // expected res price
+    const sp1 = 1; // snook price from uniswap in ethers
+    const erp1 = sp1 * difficulty1; // expected ressurection price
     expect(erp1.toFixed(2)).to.equal(rp1EthersFixed);
 
     // precalculation, need to know algo
@@ -319,6 +275,43 @@ describe("SnookGame contract", function() {
     const erp2 = sp2 * difficulty2; // expected res price
     expect(erp2.toFixed(2)).to.equal(rp2EthersFixed);
 
+  });
+
+  it('tests trait hist when a single snook is minted, extracted, died and ressurected', async ()=>{
+    const snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    const hist1 = await snookGame.getTraitHist();
+    expect(hist1).to.have.lengthOf(0);
+
+    // mint a snook with 1 trait
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    const hist2 = await snookGame.getTraitHist();
+    expect(hist2).to.have.lengthOf(2);
+    const hist2str = hist2.map(n=>n.toString());
+    expect(hist2str).to.include.ordered.members(['0','1']);
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    // extract snook with 2 traits
+    await snookGame.extractSnook(1, 2, 0,0, 'test');
+    hist3 = await snookGame.getTraitHist();
+    expect(hist3).to.have.lengthOf(3);
+    const hist3str = hist3.map(n=>n.toString());
+    expect(hist3str).to.include.ordered.members(['0','0','1']);
+
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    // snook is dead and will have 1 trait on ressurection
+    await snookGame.setDeathTime(1, 1, 0, 0, 'dead');
+    const hist4 = await snookGame.getTraitHist();
+    const hist4str = hist4.map(n=>n.toString());
+    expect(hist4str).to.include.ordered.members(['0','0','0']);
+    const {ressurectionPrice} = await snookGame.describe(1);
+    await skillToken.connect(signers[1]).approve(snookGame.address, ressurectionPrice);
+    await snookGame.connect(signers[1]).ressurect(1);
+    const hist5 = await snookGame.getTraitHist();
+    const hist5str = hist5.map(n=>n.toString());
+    expect(hist5str).to.have.ordered.members(['0','1','0']);
   });
 
   it.skip('Flow #1', async ()=>{

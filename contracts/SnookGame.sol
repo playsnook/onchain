@@ -94,13 +94,12 @@ contract SnookGame is Ownable {
 
     }
     
-    // Debug only
-    function getTraitHist() public view onlyOwner returns (uint64[] memory) {
+    // Mostly for tests
+    function getTraitHist() public view returns (uint64[] memory) {
         uint bins = _traitHist.length;
         uint64[] memory result = new uint64[](bins);
         for (uint i=0; i<bins; i++) {
             result[i] = ABDKMath64x64.toUInt(_traitHist[i]);
-            console.log('i=', i, 'result[i]=', result[i]);
         }
         return result;
     }
@@ -129,10 +128,8 @@ contract SnookGame is Ownable {
     }
 
     function _updateTraitHistOnExtraction(uint onEntryTraitCount, uint onExtractionTraitCount) private {
-        uint bin1 = onEntryTraitCount;
-        uint bin2 = onExtractionTraitCount;
-        _traitHist[bin1] = ABDKMath64x64.sub(_traitHist[bin1], ABDKMath64x64.fromUInt(1));
-        _traitHist[bin2] = ABDKMath64x64.add(_traitHist[bin2], ABDKMath64x64.fromUInt(1));
+        _updateTraitHistOnDeath(onEntryTraitCount);
+        _updateTraitHistOnRessurection(onExtractionTraitCount);
     }
 
     // Wallet Server got trait ids from game server and mints a token
@@ -355,54 +352,4 @@ contract SnookGame is Ownable {
         // difficulty coef,  d = exp(s) * traits^2
         return ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
     }
-
-    function _getRessurectionDifficulty2(uint256 tokenId) public view returns 
-    (int128 numOfTraits, int128 s, int128 d, int128 exp, uint256 k)  
-    {
-        uint bin = _descriptors[tokenId].traitCount;
-        s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
-        for (uint i=0; i<=bin ; i++) {
-            s = ABDKMath64x64.add(s, _traitHist[i]);
-        }
-
-        s = ABDKMath64x64.div(s, ABDKMath64x64.fromUInt(_aliveSnookCount)); // standing, s(b)
-        numOfTraits = ABDKMath64x64.fromUInt(bin);
-        
-        // difficulty coef,  d = exp(s) * traits^2
-        exp = ABDKMath64x64.exp(ABDKMath64x64.fromUInt(1));
-        d = ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
-        k = _uniswap.getSnookPriceInSkills();
-        console.log('From contract, k= ', k);
-    }
-
-    /// To remove
-    function _getRessurectionDifficulty1(uint256 tokenId) private view returns (int128) {
-        int128 s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
-        int128[] memory f; // probability density
-        
-        uint bin; 
-        // should be refactored to avoid loops
-        for (uint i = 0; i < _snook.totalSupply(); i++) {
-            uint _tokenId = _snook.tokenByIndex(i);
-            
-            bin = _descriptors[_tokenId].traitCount;
-            if (f.length < bin) { 
-                f = new int128[](bin);
-            }
-            f[bin-1] = ABDKMath64x64.add(f[bin-1], ABDKMath64x64.fromUInt(1));
-        }
-
-        bin = _descriptors[tokenId].traitCount;
-        for (uint i=0; i<bin ; i++) {
-            s = ABDKMath64x64.add(s, f[i]);
-        }
-
-        int128 totalLiveSnooks = ABDKMath64x64.fromUInt(_snook.totalSupply());
-        s = ABDKMath64x64.div(s, totalLiveSnooks); // standing, s(b)
-        int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
-        
-        // difficulty coef,  d = exp(s) * traits^2
-        return ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
-    }
-
 }
