@@ -178,7 +178,150 @@ describe("SnookGame contract", function() {
 
   });
 
-  it('Flow #1', async ()=>{
+  it.skip('tests ressurection price for a single snook with 1 trait', async ()=>{
+    const snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    const result1 = await snookGame.getTraitHist();
+    console.log('Result before mint:')
+    console.log(result1);
+
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    const result2 = await snookGame.getTraitHist();
+    
+    console.log(result2);
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    
+    const CC = ethers.BigNumber.from(2).pow(64);
+    console.log(CC);
+    const {numOfTraits, exp, d, s, k} = await snookGame._getRessurectionDifficulty2(1);
+    console.log('Result4:');
+    console.log('k=', ethers.utils.formatEther(k), 'exp=', exp.div(CC), 's=', s.div(CC), 'd=', d.div(CC), 'traits=', numOfTraits.div(CC));
+
+    
+    await snookGame.setDeathTime(1,1,0,0,'test');
+    const result3 = await snookGame.getTraitHist();
+    
+    console.log('Result after death:')
+    console.log(result3);
+
+    const { ressurectionPrice } = await snookGame.describe(1);
+    
+    const rpEthersFloat = parseFloat(ethers.utils.formatEther(ressurectionPrice));
+    const rpEthersFixed = rpEthersFloat.toFixed(2);
+    console.log(typeof rpEthersFixed);
+
+    // precalculation, need to know algo
+    const expectedS = 1;
+    const expectedTraits = 1; 
+    const difficulty = Math.exp(expectedS) * expectedTraits*expectedTraits;
+    const snookPriceInSkills = 1; // in ethers
+    const expectedRP = snookPriceInSkills * difficulty;
+    expect(expectedRP.toFixed(2)).to.equal(rpEthersFixed);
+
+  });
+
+  it('tests ressurection price for a single snook with 2 traits', async ()=>{
+    const snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 2, 0, 0, 'tokenURI');
+
+    const result1 = await snookGame.getTraitHist();
+    console.log('Result after mint:', result1);
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    
+    const CC = ethers.BigNumber.from(2).pow(64);
+    console.log(CC);
+    const {numOfTraits, exp, d, s, k} = await snookGame._getRessurectionDifficulty2(1);
+    console.log('Result4:');
+    console.log('k=', ethers.utils.formatEther(k), 'exp=', exp.div(CC), 's=', s.div(CC), 'd=', d.div(CC), 'traits=', numOfTraits.div(CC));
+
+    
+    await snookGame.setDeathTime(1,1,0,0,'test');
+    const result3 = await snookGame.getTraitHist();
+    
+    console.log('Result after death:')
+    console.log(result3);
+
+    const { ressurectionPrice } = await snookGame.describe(1);
+    
+    const rpEthersFloat = parseFloat(ethers.utils.formatEther(ressurectionPrice));
+    const rpEthersFixed = rpEthersFloat.toFixed(2);
+    console.log(typeof rpEthersFixed);
+
+    // precalculation, need to know algo
+    const expectedS = 1; // only one snook with 2 traits
+    const expectedTraits = 2; 
+    const difficulty = Math.exp(expectedS) * expectedTraits*expectedTraits;
+    const snookPriceInSkills = 1; // in ethers
+    const expectedRP = snookPriceInSkills * difficulty;
+    expect(expectedRP.toFixed(2)).to.equal(rpEthersFixed);
+
+  });
+
+  it('tests ressurection price for two snooks with 1 and 2 traits', async ()=>{
+    const snookPrice1 = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
+    // snook with 1 trait
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    
+    const snookPrice2 = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[2]).approve(snookGame.address, snookPrice2);
+    // snook with 2 traits
+    await snookGame.mint(signers[2].address, 2, 0, 0, 'tokenURI');
+
+    console.log('Result after mints:', await snookGame.getTraitHist());
+
+    const CC = ethers.BigNumber.from(2).pow(64);
+    const {numOfTraits, exp, d, s, k} = await snookGame._getRessurectionDifficulty2(1);
+    console.log('k=', ethers.utils.formatEther(k), 'exp=', exp.div(CC), 'sOrig=', s, 's=', s.div(CC), 'd=', d.div(CC), 'traits=', numOfTraits.div(CC));
+
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.setDeathTime(1,1,0,0,'test');
+ 
+    console.log('Hist after first death:', await snookGame.getTraitHist());
+    
+
+    await snookGame.connect(signers[2]).allowGame(2);
+    await snookGame.enterGame(2);
+    await snookGame.setDeathTime(2,1,0,0,'test');
+
+    console.log('Hist after second death:', await snookGame.getTraitHist());
+
+    
+    const { ressurectionPrice: rp1 } = await snookGame.describe(1);
+    const rp1EthersFloat = parseFloat(ethers.utils.formatEther(rp1));
+    const rp1EthersFixed = rp1EthersFloat.toFixed(2);
+
+    const { ressurectionPrice: rp2 } = await snookGame.describe(2);
+    const rp2EthersFloat = parseFloat(ethers.utils.formatEther(rp2));
+    const rp2EthersFixed = rp2EthersFloat.toFixed(2);
+    
+
+    // precalculation, need to know algo
+    const s1 = 0.5; // only one snook with 2 traits
+    const traits1 = 1; 
+    const difficulty1 = Math.exp(s1) * traits1*traits1;
+    const sp1 = 1; // in ethers
+    const erp1 = sp1 * difficulty1; // expected res price
+    expect(erp1.toFixed(2)).to.equal(rp1EthersFixed);
+
+    // precalculation, need to know algo
+    const s2 = 1; // only one snook with 2 traits
+    const traits2 = 2; 
+    const difficulty2 = Math.exp(s2) * traits2*traits2;
+    const sp2 = 1; // in ethers
+    const erp2 = sp2 * difficulty2; // expected res price
+    expect(erp2.toFixed(2)).to.equal(rp2EthersFixed);
+
+  });
+
+  it.skip('Flow #1', async ()=>{
     const totalSupply1 = await skillToken.totalSupply();   
 
     // gamer 1 approves paying snook price

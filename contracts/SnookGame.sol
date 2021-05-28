@@ -94,6 +94,18 @@ contract SnookGame is Ownable {
 
     }
     
+    // Debug only
+    function getTraitHist() public view onlyOwner returns (uint64[] memory) {
+        uint bins = _traitHist.length;
+        uint64[] memory result = new uint64[](bins);
+        for (uint i=0; i<bins; i++) {
+            result[i] = ABDKMath64x64.toUInt(_traitHist[i]);
+            console.log('i=', i, 'result[i]=', result[i]);
+        }
+        return result;
+    }
+
+
     function _updateTraitHistOnMint(uint traitCount) private {
         uint bin = traitCount; // bin starts from 0
         if (_traitHist.length < (bin+1) ) {
@@ -154,6 +166,7 @@ contract SnookGame is Ownable {
 
         _updateTraitHistOnMint(traitCount);
         _aliveSnookCount += 1;
+        console.log('Mint: traitCount:', traitCount, 'alive;', _aliveSnookCount);
 
         emit Birth(to, tokenId);
     }
@@ -323,24 +336,43 @@ contract SnookGame is Ownable {
 
     function _getRessurectionPrice(uint256 tokenId) private view returns (uint256 price) {
         require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
-        uint256 k = _uniswap.getSnookPriceInSkills();
+        uint256 k = _uniswap.getSnookPriceInSkills(); // in wei
         int128 d = _getRessurectionDifficulty(tokenId); 
-        price = ABDKMath64x64.mulu(d, k);
+        price = ABDKMath64x64.mulu(d, k); // in wei
+        console.log('Contract ressurection price:', price);
     }
 
     function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
         uint bin = _descriptors[tokenId].traitCount;
         int128 s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
-        for (uint i=0; i<bin ; i++) {
+        for (uint i=0; i<=bin ; i++) {
             s = ABDKMath64x64.add(s, _traitHist[i]);
         }
 
-        
         s = ABDKMath64x64.div(s, ABDKMath64x64.fromUInt(_aliveSnookCount)); // standing, s(b)
         int128 numOfTraits = ABDKMath64x64.fromUInt(bin);
         
         // difficulty coef,  d = exp(s) * traits^2
         return ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
+    }
+
+    function _getRessurectionDifficulty2(uint256 tokenId) public view returns 
+    (int128 numOfTraits, int128 s, int128 d, int128 exp, uint256 k)  
+    {
+        uint bin = _descriptors[tokenId].traitCount;
+        s = ABDKMath64x64.fromUInt(0);  // difficulty to be calculated
+        for (uint i=0; i<=bin ; i++) {
+            s = ABDKMath64x64.add(s, _traitHist[i]);
+        }
+
+        s = ABDKMath64x64.div(s, ABDKMath64x64.fromUInt(_aliveSnookCount)); // standing, s(b)
+        numOfTraits = ABDKMath64x64.fromUInt(bin);
+        
+        // difficulty coef,  d = exp(s) * traits^2
+        exp = ABDKMath64x64.exp(ABDKMath64x64.fromUInt(1));
+        d = ABDKMath64x64.mul(ABDKMath64x64.exp(s), ABDKMath64x64.mul(numOfTraits, numOfTraits));
+        k = _uniswap.getSnookPriceInSkills();
+        console.log('From contract, k= ', k);
     }
 
     /// To remove
