@@ -16,8 +16,8 @@ describe("Treasury", function() {
   const startBalance = ethers.utils.parseEther('1000');
   const initialSkillSupply = 40000000;
   const BurialDelay = 5;
-  beforeEach(async ()=>{
 
+  before(async ()=> {
     signers = await ethers.getSigners();
     console.log(`Owner of contracts: ${signers[0].address}`)
     console.log(`Signer 1: ${signers[1].address}`);
@@ -69,13 +69,16 @@ describe("Treasury", function() {
     uniswap = await Uniswap.deploy(uniswapV2Factory.address, usdcToken.address, skillToken.address);
     await uniswap.deployed();
     const k = await uniswap.getSnookPriceInSkills();
-    console.log('k=', ethers.utils.formatEther(k))
+    console.log('k=', ethers.utils.formatEther(k));
 
     const SnookToken = await ethers.getContractFactory('SnookToken');
     snookToken = await SnookToken.deploy();
     await snookToken.deployed();
     console.log(`snookToken deployed`);
 
+  });
+
+  beforeEach(async ()=>{
     const Treasury = await ethers.getContractFactory('Treasury');
     treasury = await Treasury.deploy(skillToken.address);
     await treasury.deployed();
@@ -97,14 +100,13 @@ describe("Treasury", function() {
 
     await snookToken.grantRole(await snookToken.MINTER_ROLE(), snookGame.address);
     console.log('SnookToken granted MINTER role to SnookGame contract');
-
   
     // tap up Skill balance of treasury
     await skillToken.transfer(treasury.address, startBalance); 
 
   });
 
-  it.skip('tests initialization fails on invalid shares', async ()=>{
+  it('tests initialization fails on invalid shares', async ()=>{
     const payees = [
       signers[0].address, // founders
       signers[1].address, // should be staking contract address 
@@ -125,7 +127,7 @@ describe("Treasury", function() {
     ).to.be.revertedWith('Invalid shares');
   });
 
-  it.skip('tests double initialization fails', async ()=>{
+  it('tests double initialization fails', async ()=>{
     const payees = [
       signers[0].address, // founders
       signers[1].address, // should be staking contract address 

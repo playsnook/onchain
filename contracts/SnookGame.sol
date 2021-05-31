@@ -12,7 +12,6 @@ import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 import "./SnookToken.sol";
 import "./SkillToken.sol";
 import "./IUniswapUSDCSkill.sol";
-import "./SpecialSkinRewards.sol";
 
 import 'hardhat/console.sol';
 
@@ -31,7 +30,6 @@ contract SnookGame is Ownable {
 
     SnookToken private _snook;
     SkillToken private _skill;
-    SpecialSkinRewards private _ssr;
     IUiniswapUSDCSkill private _uniswap;
     uint private _burialDelay; // in seconds
     address private _treasury;
@@ -80,7 +78,7 @@ contract SnookGame is Ownable {
     // period number to period mapping
     mapping(uint => Period) private _periods;
     uint private _periodCount; // total periods till now
-    mapping(uint => uint) private _tokenRewardedPeriod;
+    mapping(uint => uint) private _tokenRewardedPeriodNumbers;
 
     constructor(
         address snook, 
@@ -99,7 +97,6 @@ contract SnookGame is Ownable {
         _burialDelay = burialDelay;
         _traitHist = new int128[](0);
         _aliveSnookCount = 0;
-
     }
 
     function describe(uint tokenId) public view returns (
@@ -129,7 +126,6 @@ contract SnookGame is Ownable {
         }
     }
 
-
     // rename 
     function _updatePeriod(uint tokenId, uint stars) private {
         Period storage period = _periods[_periodCount];
@@ -143,14 +139,16 @@ contract SnookGame is Ownable {
 
     // rewards user for tokenCount
     function getRewards(uint tokenId) public {
-        uint rewardedPeriod = _tokenRewardedPeriod[tokenId];
+        uint rewardedPeriodNumber = _tokenRewardedPeriodNumbers[tokenId];
         // take next period after rewarded one
-        Period storage period = _periods[rewardedPeriod + 1]; 
+        uint currentPeriodNumber = rewardedPeriodNumber + 1;
+        Period storage period = _periods[currentPeriodNumber]; 
         require(period.releaseTime <= block.timestamp, 'Rewards are yet not released');
         if (period.tokenStars[tokenId] == 0 && _periodCount > 0) {
             period.tokenStars[tokenId] = _periods[_periodCount-1].tokenStars[tokenId];
         }
         uint amount = period.budget * 100 * period.tokenStars[tokenId] / period.totalStars;
+        _tokenRewardedPeriodNumbers[tokenId] = currentPeriodNumber;
         _skill.transfer(_snook.ownerOf(tokenId), amount);
     }
 
