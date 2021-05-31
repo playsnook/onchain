@@ -4,56 +4,71 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-
 import './SkillToken.sol';
+import './SnookGame.sol';
 
 contract Treasury is Ownable {
+  enum PayeeIds { FOUNDERS, GAME, STAKING }
 
-  using EnumerableSet for EnumerableSet.AddressSet;
-  EnumerableSet.AddressSet private _allocatees;
-  mapping (address => uint) private _percentages;
-  mapping (address => uint) private _periodicities; // in secs
-  mapping (address => uint) private _allocTimes;
+  PayeeIds[] private _payeeIds;
+  address[] private _payees;
+  uint[] private _shares;
+  uint[] private _cycles;
+  uint[] private _payTimes;
+
   SkillToken private _skill;
-  
+  bool _initialized;
   constructor(address skill) 
   {
+    _initialized = false;
     _skill = SkillToken(skill);
   }
 
-  // remove constructor; add this function and removeAllocatee function; use enumarableSet
-  function upsert(address allocatee, uint percentage, uint periodicity) public onlyOwner {
-    require(_percentageSum() + percentage <= 100, "Invalid percentage");
-    _allocatees.add(allocatee);
-    _percentages[allocatee] = percentage;
-    _periodicities[allocatee] = periodicity;
+  function initialize(
+    PayeeIds[] memory payeeIds, // for special actions per contract
+    address[] memory payees, 
+    uint[] memory shares, 
+    uint[] memory cycles
+  ) public onlyOwner
+  {
+    require(_initialized == false, 'Already initialized');
+    require(
+      (payees.length == shares.length) && 
+      (shares.length == cycles.length) && 
+      (cycles.length == payeeIds.length), 
+      'Invalid dimensions'
+    );
+    require(_arraySum(shares) <= 100, "Invalid percentage");
+    _payeeIds = payeeIds;
+    _payees = payees;
+    _shares = shares;
+    _cycles = cycles;
+    _initialized = true;
   }
 
-  function remove(address allocatee) public onlyOwner {
-    require(_allocatees.contains(allocatee), 'No such allocatee');
-    _allocatees.remove(allocatee);
-    delete _percentages[allocatee];
-    delete _periodicities[allocatee];
-    delete _allocTimes[allocatee];
-  }
-
-  function _percentageSum() public view returns (uint) {
+  function _arraySum(uint[] memory array) public pure returns (uint) {
     uint sum = 0;
-    for (uint i=0; i<_allocatees.length(); i++) {
-      address allocatee = _allocatees.at(i);
-      sum += _percentages[allocatee];
+    for (uint i=0; i<array.length; i++) {
+      sum += array[i];
     }
     return sum;
   }
 
-  function allocate() public {
+  function transfer() public {
     uint balance = _skill.balanceOf(address(this));
-    for (uint i=0; i<_allocatees.length(); i++) {
-      address allocatee = _allocatees.at(i);
-      if (_allocTimes[allocatee] + _periodicities[allocatee] * 1 seconds < block.timestamp) {
-        uint amount = balance * _percentages[allocatee] / 100;
-        _skill.transfer(allocatee, amount);
-        _allocTimes[allocatee] = block.timestamp;
+
+    for (uint i=0; i<_payees.length; i++) {
+      address payee = _payees[i];
+      if (_payTimes[i] + _cycles[i] * 1 seconds < block.timestamp) {
+        uint amount = balance * _shares[i] / 100;
+        _skill.transfer(payee, amount);
+        _payTimes[i] = block.timestamp;
+
+        if (_payeeIds[i] == PayeeIds.GAME) {
+          SnookGame game = SnookGame(_payees[i]);
+          uint releaseTime = block.timestamp + _cycles[i] * 1 seconds;
+          game.startNewPeriod(amount, releaseTime);
+        }
       }
     }
   }

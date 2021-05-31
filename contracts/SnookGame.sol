@@ -5,21 +5,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 
 import {ABDKMath64x64} from "abdk-libraries-solidity/ABDKMath64x64.sol";
 
 import "./SnookToken.sol";
 import "./SkillToken.sol";
 import "./IUniswapUSDCSkill.sol";
+import "./SpecialSkinRewards.sol";
 
 import 'hardhat/console.sol';
 
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
 contract SnookGame is Ownable {
-    using EnumerableSet for EnumerableSet.AddressSet;
-    using EnumerableSet for EnumerableSet.UintSet;
+    
 
     event GameAllowed(address indexed from, uint tokenId);
     event Entry(address indexed from, uint tokenId);
@@ -31,6 +31,7 @@ contract SnookGame is Ownable {
 
     SnookToken private _snook;
     SkillToken private _skill;
+    SpecialSkinRewards private _ssr;
     IUiniswapUSDCSkill private _uniswap;
     uint private _burialDelay; // in seconds
     address private _treasury;
@@ -63,10 +64,32 @@ contract SnookGame is Ownable {
     uint[] private _morgue;
     uint[] private _sanctuary;
 
+    // Ressurection variables
     int128[] private _traitHist;
     uint private _aliveSnookCount; // totalSupply() cannot be used as hist is updated on death event, not on burn event
+    
+    // Special Skin Rewards variables
+    // Why not array of structures? 
+    // https://ethereum.stackexchange.com/questions/87451/solidity-error-struct-containing-a-nested-mapping-cannot-be-constructed/97883#97883
+    struct Period {
+        uint budget;
+        uint releaseTime; // when rewards can be claimed on that period
+        mapping(uint => uint) tokenStars;
+        uint totalStars;
+    }
+    // period number to period mapping
+    mapping(uint => Period) private _periods;
+    uint private _periodCount; // total periods till now
+    mapping(uint => uint) private _tokenRewardedPeriod;
 
-    constructor(address snook, address skill, address uniswap, address treasury, uint burialDelay) {
+    constructor(
+        address snook, 
+        address skill, 
+        address uniswap, 
+        address treasury, 
+        uint burialDelay
+    ) 
+    {
         _snook = SnookToken(snook);
         _skill = SkillToken(skill);
         _uniswap = IUiniswapUSDCSkill(uniswap);
@@ -76,6 +99,7 @@ contract SnookGame is Ownable {
         _burialDelay = burialDelay;
         _traitHist = new int128[](0);
         _aliveSnookCount = 0;
+
     }
 
     function describe(uint tokenId) public view returns (
@@ -94,6 +118,44 @@ contract SnookGame is Ownable {
 
     }
     
+    // rename 
+    function startNewPeriod(uint budget, uint releaseTime) public {
+        require(msg.sender == _treasury, 'Only treasury can call this function');
+        Period storage period = _periods[_periodCount];
+        period.budget = budget;
+        period.releaseTime = releaseTime;
+        if (_periodCount > 0) {
+            period.totalStars = _periods[_periodCount - 1].totalStars;
+        }
+    }
+
+
+    // rename 
+    function _updatePeriod(uint tokenId, uint stars) private {
+        Period storage period = _periods[_periodCount];
+        uint prevStars = period.tokenStars[tokenId];
+        if (prevStars == 0 && _periodCount > 0) {
+            prevStars = _periods[_periodCount - 1].tokenStars[tokenId];
+        }
+        period.totalStars = period.totalStars - prevStars + stars;
+        period.tokenStars[tokenId] = stars;
+    }
+
+    // rewards user for tokenCount
+    function getRewards(uint tokenId) public {
+        uint rewardedPeriod = _tokenRewardedPeriod[tokenId];
+        // take next period after rewarded one
+        Period storage period = _periods[rewardedPeriod + 1]; 
+        require(period.releaseTime <= block.timestamp, 'Rewards are yet not released');
+        if (period.tokenStars[tokenId] == 0 && _periodCount > 0) {
+            period.tokenStars[tokenId] = _periods[_periodCount-1].tokenStars[tokenId];
+        }
+        uint amount = period.budget * 100 * period.tokenStars[tokenId] / period.totalStars;
+        _skill.transfer(_snook.ownerOf(tokenId), amount);
+    }
+
+
+
     // Mostly for tests
     function getTraitHist() public view returns (uint64[] memory) {
         uint bins = _traitHist.length;
@@ -163,7 +225,7 @@ contract SnookGame is Ownable {
 
         _updateTraitHistOnMint(traitCount);
         _aliveSnookCount += 1;
-        console.log('Mint: traitCount:', traitCount, 'alive;', _aliveSnookCount);
+        _updatePeriod(tokenId, stars);
 
         emit Birth(to, tokenId);
     }
@@ -327,6 +389,7 @@ contract SnookGame is Ownable {
 
         _updateTraitHistOnRessurection(_descriptors[tokenId].onRessurectionTraitCount);
         _aliveSnookCount += 1;
+        _updatePeriod(tokenId, _descriptors[tokenId].onRessurectionStars);
 
         emit Ressurection(snookOwner, tokenId);
     }
@@ -336,7 +399,6 @@ contract SnookGame is Ownable {
         uint256 k = _uniswap.getSnookPriceInSkills(); // in wei
         int128 d = _getRessurectionDifficulty(tokenId); 
         price = ABDKMath64x64.mulu(d, k); // in wei
-        console.log('Contract ressurection price:', price);
     }
 
     function _getRessurectionDifficulty(uint256 tokenId) private view returns (int128) {
