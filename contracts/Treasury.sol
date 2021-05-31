@@ -8,14 +8,16 @@ import './SkillToken.sol';
 import './SnookGame.sol';
 
 contract Treasury is Ownable {
-  enum PayeeIds { FOUNDERS, GAME, STAKING }
+  enum PayeeIds { FOUNDERS, STAKING, GAME }
+  uint constant PayeeCount = 3;
+  uint constant ToPercent = 100; // devide shares by that factor
 
-  PayeeIds[] private _payeeIds;
-  address[] private _payees;
-  uint[] private _shares;
-  uint[] private _cycles;
-  uint[] private _payTimes;
-
+  // payees should be in the order defined by PayeeIds
+  address[PayeeCount] private _payees;
+  uint[PayeeCount] private _shares; // in hunderedth of percent, 1 = 0.01%
+  uint[PayeeCount] private _cycles;
+  
+  uint[PayeeCount] private _payTimes;
   SkillToken private _skill;
   bool _initialized;
   constructor(address skill) 
@@ -25,46 +27,42 @@ contract Treasury is Ownable {
   }
 
   function initialize(
-    PayeeIds[] memory payeeIds, // for special actions per contract
-    address[] memory payees, 
-    uint[] memory shares, 
-    uint[] memory cycles
+    address[PayeeCount] memory payees, 
+    uint[PayeeCount] memory shares, 
+    uint[PayeeCount] memory cycles
   ) public onlyOwner
   {
     require(_initialized == false, 'Already initialized');
-    require(
-      (payees.length == shares.length) && 
-      (shares.length == cycles.length) && 
-      (cycles.length == payeeIds.length), 
-      'Invalid dimensions'
-    );
-    require(_arraySum(shares) <= 100, "Invalid percentage");
-    _payeeIds = payeeIds;
+    require(_sharesOk(shares) == true, "Invalid shares");
     _payees = payees;
     _shares = shares;
     _cycles = cycles;
     _initialized = true;
   }
 
-  function _arraySum(uint[] memory array) public pure returns (uint) {
+  function _sharesOk(uint[PayeeCount] memory shares) public pure returns (bool) {
     uint sum = 0;
-    for (uint i=0; i<array.length; i++) {
-      sum += array[i];
+    for (uint i=0; i<PayeeCount; i++) {
+      sum += shares[i] / ToPercent;
     }
-    return sum;
+    bool ok = false;
+    if (sum <= 100) {
+      ok = true;
+    }
+    return ok;
   }
 
   function transfer() public {
     uint balance = _skill.balanceOf(address(this));
 
-    for (uint i=0; i<_payees.length; i++) {
+    for (uint i=0; i< PayeeCount; i++) {
       address payee = _payees[i];
       if (_payTimes[i] + _cycles[i] * 1 seconds < block.timestamp) {
-        uint amount = balance * _shares[i] / 100;
+        uint amount = balance * _shares[i] / ToPercent / 100;
         _skill.transfer(payee, amount);
         _payTimes[i] = block.timestamp;
 
-        if (_payeeIds[i] == PayeeIds.GAME) {
+        if (PayeeIds(i) == PayeeIds.GAME) {
           SnookGame game = SnookGame(_payees[i]);
           uint releaseTime = block.timestamp + _cycles[i] * 1 seconds;
           game.startNewPeriod(amount, releaseTime);
