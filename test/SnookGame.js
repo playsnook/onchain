@@ -16,8 +16,8 @@ describe.skip("SnookGame contract", function() {
   const startBalance = ethers.utils.parseEther('1000');
   const initialSkillSupply = 40000000;
   const BurialDelay = 5;
-  beforeEach(async ()=>{
 
+  beforeEach(async ()=>{
     signers = await ethers.getSigners();
     console.log(`Owner of contracts: ${signers[0].address}`)
     console.log(`Signer 1: ${signers[1].address}`);
@@ -314,7 +314,7 @@ describe.skip("SnookGame contract", function() {
     expect(hist5str).to.have.ordered.members(['0','1','0']);
   });
 
-  it('Flow #1', async ()=>{
+  it.skip('Flow #1', async ()=>{
     const totalSupply1 = await skillToken.totalSupply();   
 
     // gamer 1 approves paying snook price

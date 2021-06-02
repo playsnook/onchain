@@ -18,7 +18,7 @@ import 'hardhat/console.sol';
 // about tokenURI in v4: https://forum.openzeppelin.com/t/function-settokenuri-in-erc721-is-gone-with-pragma-0-8-0/5978
 
 contract SnookGame is Ownable {
-    
+    uint constant NPERIODS = 6;
 
     event GameAllowed(address indexed from, uint tokenId);
     event Entry(address indexed from, uint tokenId);
@@ -72,13 +72,13 @@ contract SnookGame is Ownable {
     struct Period {
         uint budget;
         uint releaseTime; // when rewards can be claimed on that period
-        mapping(uint => uint) tokenStars;
+        mapping(uint => uint) tokenStars; // default: 0
+        mapping(uint => bool) tokenRewarded; // default: false
+        mapping(uint => bool) tokenStarsWereChangedInThisPeriod; // default: false
         uint totalStars;
     }
-    // period number to period mapping
-    mapping(uint => Period) private _periods;
-    uint private _periodCount; // total periods till now
-    mapping(uint => uint) private _tokenRewardedPeriodNumbers;
+    Period[NPERIODS] private _periods;
+    uint private _currentPeriod;
 
     constructor(
         address snook, 
@@ -118,16 +118,22 @@ contract SnookGame is Ownable {
     // rename 
     function startNewPeriod(uint budget, uint releaseTime) public {
         require(msg.sender == _treasury, 'Only treasury can call this function');
+        _periodCount += 1;
+        console.log('NP: _periodCount:', _periodCount, 'budget: ', budget);
         Period storage period = _periods[_periodCount];
         period.budget = budget;
         period.releaseTime = releaseTime;
-        if (_periodCount > 0) {
-            period.totalStars = _periods[_periodCount - 1].totalStars;
-        }
+        period.totalStars = _periods[_periodCount - 1].totalStars;
+    
+        console.log('NP: periodTotalStars', period.totalStars);
     }
 
     // rename 
     function _updatePeriod(uint tokenId, uint stars) private {
+        console.log('--- Start ---');
+        console.log('UP: tokenId:', tokenId, 'stars: ', stars);
+        console.log('UP: _periodCount: ', _periodCount);
+        console.log('--- End ---');
         Period storage period = _periods[_periodCount];
         uint prevStars = period.tokenStars[tokenId];
         if (prevStars == 0 && _periodCount > 0) {
@@ -135,23 +141,48 @@ contract SnookGame is Ownable {
         }
         period.totalStars = period.totalStars - prevStars + stars;
         period.tokenStars[tokenId] = stars;
+        
     }
 
     // rewards user for tokenCount
     function getRewards(uint tokenId) public {
         uint rewardedPeriodNumber = _tokenRewardedPeriodNumbers[tokenId];
+        console.log('rewardedPeriodNumber:', rewardedPeriodNumber, 'periodCount:', _periodCount);
+        require(rewardedPeriodNumber < _periodCount, 'All periods are already rewarded');
         // take next period after rewarded one
         uint currentPeriodNumber = rewardedPeriodNumber + 1;
         Period storage period = _periods[currentPeriodNumber]; 
+        console.log('GR: tokenId', tokenId, ' rewardedPeriodNumber:', rewardedPeriodNumber);
+        console.log('GR: currentPeriodNumber: ', currentPeriodNumber);
         require(period.releaseTime <= block.timestamp, 'Rewards are yet not released');
         if (period.tokenStars[tokenId] == 0 && _periodCount > 0) {
-            period.tokenStars[tokenId] = _periods[_periodCount-1].tokenStars[tokenId];
+            // if the current period has 0 in stars (default of storage), this can be either because of 
+            // death or no change in stars from the previous period; but death means that 0 is stars is 
+            // that it's 0 in stars, not that there was no change, so we should keep 0.
+            
+            // dead is by default (storage) is false; this false is because of either 
+            // ressurection from previous dead state or the snook was alive.
+            // if in previous period snook was dead and no ressurection occured in 
+            // this period then we propage dead state to this period.
+            
+
+            //period.tokenDead[tokenId] = _periods[currentPeriodNumber-1].tokenDead[tokenId];
         }
-        uint amount = period.budget * 100 * period.tokenStars[tokenId] / period.totalStars;
+        console.log('GR: tokenStars: ', period.tokenStars[tokenId], 'totalStars:', period.totalStars);
+        
+        uint amount = period.budget * period.tokenStars[tokenId] / period.totalStars;
+        console.log('GR: amount: ', amount);
         _tokenRewardedPeriodNumbers[tokenId] = currentPeriodNumber;
-        _skill.transfer(_snook.ownerOf(tokenId), amount);
+        
     }
 
+    /*
+        Returns last rewarded period number for tokenId and total period count. 
+    */
+    function getRewardedPeriod(uint tokenId) public view returns (uint, uint) {
+        uint rewardedPeriodNumber = _tokenRewardedPeriodNumbers[tokenId];
+        return (rewardedPeriodNumber, _periodCount);
+    }
 
 
     // Mostly for tests
@@ -223,7 +254,7 @@ contract SnookGame is Ownable {
 
         _updateTraitHistOnMint(traitCount);
         _aliveSnookCount += 1;
-        _updatePeriod(tokenId, stars);
+        // _updatePeriod(tokenId, stars, false);
 
         emit Birth(to, tokenId);
     }
@@ -317,6 +348,7 @@ contract SnookGame is Ownable {
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
 
         _updateTraitHistOnExtraction(_descriptors[tokenId].onGameEntryTraitCount, traitCount);
+        // _updatePeriod(tokenId, stars, false);
 
         _snook.setTokenURI(tokenId, tokenURI_); 
         _descriptors[tokenId].traitCount = traitCount; 
@@ -355,6 +387,7 @@ contract SnookGame is Ownable {
 
         _updateTraitHistOnDeath(_descriptors[tokenId].traitCount);
         _aliveSnookCount -= 1;
+        // _updatePeriod(tokenId, 0, true); // to update totalStars in the _periods
 
         emit Death(_snook.ownerOf(tokenId), tokenId);
     }
@@ -387,7 +420,7 @@ contract SnookGame is Ownable {
 
         _updateTraitHistOnRessurection(_descriptors[tokenId].onRessurectionTraitCount);
         _aliveSnookCount += 1;
-        _updatePeriod(tokenId, _descriptors[tokenId].onRessurectionStars);
+        // _updatePeriod(tokenId, _descriptors[tokenId].onRessurectionStars, false);
 
         emit Ressurection(snookOwner, tokenId);
     }
