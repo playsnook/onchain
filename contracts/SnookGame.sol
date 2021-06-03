@@ -190,6 +190,8 @@ contract SnookGame is Ownable {
         uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
         require(periodIdx >= i, 'The period is unrewardable');
 
+        require(_periods[periodIdx].tokenRewarded[tokenId] == true, 'Already rewarded');
+        
         uint amount = 0;
         // the first of saved periods cannot be updated from previous periods 
         if ( _periods[i].tokenRewarded[tokenId] == false) {
