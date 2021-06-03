@@ -141,16 +141,19 @@ contract SnookGame is Ownable {
     }
 
     // https://hackernoon.com/how-much-can-i-do-in-a-block-163q3xp2
-    function getRewards(uint tokenId) public {
-        console.log('Rewards for SnookId: ', tokenId);
+    function getAllRewards(uint tokenId) public {
+        console.log('REWARDS for SnookId: ', tokenId, 'currentPeriod:', _currentPeriodIdx);
 
         require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
-        require(_currentPeriodIdx > 0, 'No rewards periods');    
+        require(_currentPeriodIdx > 0, 'No reward periods');    
         uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
-        require(_periods[i].tokenRewarded[tokenId] == false, 'Token already rewarded');
+        require(i<_currentPeriodIdx, 'No reward periods'); // possible when _currentPeriodIdx <= _RewardPeriods
+        uint amount = 0;
         // the first of saved periods cannot be updated from previous periods 
-        uint amount = _periods[i].tokenStars[tokenId] * _periods[i].budget / _periods[i].totalStars;
-        _periods[i].tokenRewarded[tokenId] = true; 
+        if ( _periods[i].tokenRewarded[tokenId] == false) {
+            amount = _periods[i].tokenStars[tokenId] * _periods[i].budget / _periods[i].totalStars;
+            _periods[i].tokenRewarded[tokenId] = true; 
+        }
 
         console.log('i=', i);
         console.log('stars=',_periods[i].tokenStars[tokenId], 'total=', _periods[i].totalStars);
@@ -160,18 +163,60 @@ contract SnookGame is Ownable {
                 _periods[j].tokenStars[tokenId] = _periods[j-1].tokenStars[tokenId];
                 _periods[j].tokenStarsUpdated[tokenId] == true;
             }
-            amount += _periods[j].tokenStars[tokenId] * _periods[j].budget / _periods[j].totalStars;
-            _periods[j].tokenRewarded[tokenId] = true; 
+            if ( _periods[j].tokenRewarded[tokenId] == false) {
+                amount += _periods[j].tokenStars[tokenId] * _periods[j].budget / _periods[j].totalStars;
+                _periods[j].tokenRewarded[tokenId] = true; 
+            }
 
             console.log('j=', j);
             console.log('stars=',_periods[j].tokenStars[tokenId], 'total=', _periods[j].totalStars);
         }
         _skill.transfer(_snook.ownerOf(tokenId), amount);
 
-        console.log('END OF Rewards for SnookId: ', tokenId);
+        console.log('END OF Rewards for SnookId: ', tokenId, 'amount:', amount);
 
     }
 
+    function getRewards(uint tokenId, uint periodIdx) public {
+        console.log('REWARDS for SnookId: ', tokenId, 'currentPeriod:', _currentPeriodIdx);
+
+        require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
+
+        // detecting upper limit of rewardable periods
+        require(_currentPeriodIdx > 1, 'No reward periods');    
+        require(periodIdx < _currentPeriodIdx, 'The period is unrewardable');
+
+        // i is a first rewardable period back from now (lower limit)
+        uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
+        require(periodIdx >= i, 'The period is unrewardable');
+
+        uint amount = 0;
+        // the first of saved periods cannot be updated from previous periods 
+        if ( _periods[i].tokenRewarded[tokenId] == false) {
+            amount = _periods[i].tokenStars[tokenId] * _periods[i].budget / _periods[i].totalStars;
+            _periods[i].tokenRewarded[tokenId] = true; 
+        }
+
+        console.log('i=', i);
+        console.log('stars=',_periods[i].tokenStars[tokenId], 'total=', _periods[i].totalStars);
+
+        for (uint j = i+1; j<_currentPeriodIdx; j++) {
+            if ( _periods[j].tokenStarsUpdated[tokenId] == false) {
+                _periods[j].tokenStars[tokenId] = _periods[j-1].tokenStars[tokenId];
+                _periods[j].tokenStarsUpdated[tokenId] == true;
+            }
+            if ( _periods[j].tokenRewarded[tokenId] == false) {
+                amount += _periods[j].tokenStars[tokenId] * _periods[j].budget / _periods[j].totalStars;
+                _periods[j].tokenRewarded[tokenId] = true; 
+            }
+
+            console.log('j=', j);
+            console.log('stars=',_periods[j].tokenStars[tokenId], 'total=', _periods[j].totalStars);
+        }
+        _skill.transfer(_snook.ownerOf(tokenId), amount);
+
+        console.log('END OF Rewards for SnookId: ', tokenId, 'amount:', amount);
+    }
     
     // Mostly for tests
     function getTraitHist() public view returns (uint64[] memory) {
