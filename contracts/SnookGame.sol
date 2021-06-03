@@ -215,9 +215,10 @@ contract SnookGame is Ownable {
         emit GameAllowed(owner, tokenId);
     }
 
-    function enterGame(uint256 tokenId) public onlyOwner {
+    function enterGame(uint256 tokenId, uint ressurectionCount) public onlyOwner {
         require(_descriptors[tokenId].ingame == false, 'Snook is already in play');
         require(_descriptors[tokenId].gameAllowed == true, 'Snook is not allowed for playing');
+        require(_descriptors[tokenId].ressurectionCount == ressurectionCount, 'Invalid ressurection count');
         _snook.lock(tokenId, true);
         _descriptors[tokenId].ingame = true;
         emit Entry(_snook.ownerOf(tokenId), tokenId);
