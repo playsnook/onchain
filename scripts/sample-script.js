@@ -19,11 +19,10 @@ async function main() {
   console.log(test)
   await test.deployed();
   console.log('deployed');
-  const tx = await test.increase();
-  console.log('increase tx:')
-  console.log(tx);
-  await tx.wait(2)
-  console.log(tx);
+  await test.push(1);
+  await test.push(2);
+  const arr = await test.read();
+  console.log(arr);
 
   console.log("Test deployed to:", test.address);
 }

@@ -1,11 +1,10 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const delay = require('delay');
 const moment = require('moment');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 
-describe("SpecialSkinRewards", function() {
+describe.skip("SpecialSkinRewards", function() {
 
   let skillToken;  
   let snookToken;
@@ -17,15 +16,13 @@ describe("SpecialSkinRewards", function() {
   const TreasuryBalance = ethers.utils.parseEther('1000');
   const SSRPercentage = 10;
   const SSRBudget = TreasuryBalance.mul(SSRPercentage).div(100);
-  let TokenTimelock;
-
+  const InitialSkillSupply = 40000000;
+  const BurialDelay = 1;
   beforeEach(async ()=>{
-    TokenTimelock = await ethers.getContractFactory("TokenTimelock");
-
     signers = await ethers.getSigners();
     
     const SkillToken = await ethers.getContractFactory('SkillToken');
-    skillToken = await SkillToken.deploy();
+    skillToken = await SkillToken.deploy(InitialSkillSupply);
     await skillToken.deployed();
 
     const UsdcToken = await ethers.getContractFactory('UsdcToken');
@@ -69,13 +66,20 @@ describe("SpecialSkinRewards", function() {
     snookToken = await SnookToken.deploy();
     await snookToken.deployed();
 
+    const Treasury = await ethers.getContractFactory('Treasury');
+    treasury = await Treasury.deploy(skillToken.address);
+    await treasury.deployed();
+
     const SnookGame = await ethers.getContractFactory('SnookGame');
-    snookGame = await SnookGame.deploy(snookToken.address, skillToken.address, uniswap.address);
+    snookGame = await SnookGame.deploy(
+      snookToken.address, 
+      skillToken.address, 
+      uniswap.address,
+      treasury.address,
+      BurialDelay
+    );
     await snookGame.deployed();
 
-    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookGame.address);
-    await snookToken.grantRole(await snookToken.MINTER_ROLE(), snookGame.address);
-   
     const SpecialSkinRewards = await ethers.getContractFactory('SpecialSkinRewards');
     specialSkinRewards = await SpecialSkinRewards.deploy(
       skillToken.address,
@@ -84,18 +88,14 @@ describe("SpecialSkinRewards", function() {
       3
     );
     await specialSkinRewards.deployed();
+
+    await treasury.upsert(specialSkinRewards.address, SSRPercentage, 5);
     
     await skillToken.transfer(signers[1].address, gamersBalance);
     await skillToken.transfer(signers[2].address, gamersBalance);
 
-    const Treasury = await ethers.getContractFactory('Treasury');
-    treasury = await Treasury.deploy(
-      skillToken.address,
-      [specialSkinRewards.address],
-      [SSRPercentage],
-      [5]
-    );
-    await treasury.deployed();
+    await skillToken.grantRole(await skillToken.BURNER_ROLE(), snookGame.address);
+    await snookToken.grantRole(await snookToken.MINTER_ROLE(), snookGame.address);
     
     // Tap up treasury balance
     await skillToken.transfer(treasury.address, TreasuryBalance);
@@ -108,11 +108,7 @@ describe("SpecialSkinRewards", function() {
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     await snookGame.mint(signers[1].address, 1, 1, 1, 'test');
     const balanceStart = await skillToken.balanceOf(signers[1].address);
-    await specialSkinRewards.timelockRewards();
-    const tokenTimelockAddresses = await specialSkinRewards.getTokenTimelocks(signers[1].address);
-    const tokenTimelock = await TokenTimelock.attach(tokenTimelockAddresses[0]);
-    await delay(5.1*1000);
-    await tokenTimelock.release();
+    await specialSkinRewards.sendRewards();
     // signer[1] should get all the rewards as it's the only special skin owner
     const balanceEnd = await skillToken.balanceOf(signers[1].address);
     expect(balanceEnd).to.be.equal(balanceStart.add(SSRBudget));
@@ -128,17 +124,9 @@ describe("SpecialSkinRewards", function() {
     const balanceStart1 = await skillToken.balanceOf(signers[1].address);
     const balanceStart2 = await skillToken.balanceOf(signers[2].address);
 
-    await specialSkinRewards.timelockRewards();
+    await specialSkinRewards.sendRewards();
 
-    const tokenTimelockAddresses1 = await specialSkinRewards.getTokenTimelocks(signers[1].address);
-    const tokenTimelockAddresses2 = await specialSkinRewards.getTokenTimelocks(signers[2].address);
-
-    const tokenTimelock1 = await TokenTimelock.attach(tokenTimelockAddresses1[0]);
-    const tokenTimelock2 = await TokenTimelock.attach(tokenTimelockAddresses2[0]);
-    await delay(5.1*1000);
-    await tokenTimelock1.release();
-    await tokenTimelock2.release();
-    // signer[1] should get halft of the rewards
+    // signer[1] should get half of the rewards
     const balanceEnd1 = await skillToken.balanceOf(signers[1].address);
     expect(balanceEnd1).to.be.equal(balanceStart1.add(SSRBudget.div(2)));
     // signer[2] should get halft of the rewards

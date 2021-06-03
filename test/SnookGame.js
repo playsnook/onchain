@@ -1,19 +1,21 @@
 const { expect } = require("chai");
 const moment = require('moment');
-
+const delay = require('delay');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const { ethers } = require("hardhat");
 
-describe.skip("Game flow", function() {
+describe("SnookGame contract", function() {
 
   let snookToken;
   let skillToken;
   let uniswap;
   let signers; 
   let snookGame;
+  let treasury;
   const startBalance = ethers.utils.parseEther('1000');
-
+  const initialSkillSupply = 40000000;
+  const BurialDelay = 5;
   beforeEach(async ()=>{
 
     signers = await ethers.getSigners();
@@ -22,7 +24,7 @@ describe.skip("Game flow", function() {
     console.log(`Signer 2: ${signers[2].address}`);
 
     const SkillToken = await ethers.getContractFactory('SkillToken');
-    skillToken = await SkillToken.deploy();
+    skillToken = await SkillToken.deploy(initialSkillSupply);
     await skillToken.deployed();
     console.log('skill token deployed')
 
@@ -74,8 +76,19 @@ describe.skip("Game flow", function() {
     await snookToken.deployed();
     console.log(`snookToken deployed`);
 
+    const Treasury = await ethers.getContractFactory('Treasury');
+    treasury = await Treasury.deploy(skillToken.address);
+    await treasury.deployed();
+    console.log('Treasury deployed');
+
     const SnookGame = await ethers.getContractFactory('SnookGame');
-    snookGame = await SnookGame.deploy(snookToken.address, skillToken.address, uniswap.address);
+    snookGame = await SnookGame.deploy(
+      snookToken.address, 
+      skillToken.address, 
+      uniswap.address,
+      treasury.address,
+      BurialDelay
+    );
     await snookGame.deployed();
     console.log(`snookGame deployed`);
 
@@ -88,8 +101,217 @@ describe.skip("Game flow", function() {
     // tap up Skill balances of signers
     await skillToken.transfer(signers[1].address, startBalance); 
     await skillToken.transfer(signers[2].address, startBalance); 
-    console.log(`Tapped account balances up to ${startBalance}`)
+    console.log(`Tapped account balances up to ${startBalance}`);
 
+    // tap up Skill balance of treasury
+    await skillToken.transfer(treasury.address, startBalance); 
+
+  });
+
+  it.skip('Bury process without ressurection', async () => {
+
+    let snookPrice = await uniswap.getSnookPriceInSkills();
+    
+    // A gamer buys a snook, plays and dies
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.setDeathTime(1, 1, 1, 1, 'ressurect');
+    
+    // no ressurection occurs during burial delay
+    await delay(BurialDelay*1000);
+
+    // A gamer buys another snook, plays and dies
+    snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    await snookGame.connect(signers[1]).allowGame(2);
+    await snookGame.enterGame(2);
+    await snookGame.setDeathTime(2, 1, 1, 1, 'ressurect');
+
+    // Bury function tries to bury snooks in morgue and succeeds only with 
+    // 1st token, the second survives in sanctuary
+    await expect(
+      snookGame.bury(10)
+    ).to.emit(snookGame, 'Bury').withArgs(1);
+
+    // No ressurection for the second token during delay
+    await delay((1 + BurialDelay) * 1000);
+
+    // Bury function buries the second token
+    await expect(
+      snookGame.bury(10)
+    ).to.emit(snookGame, 'Bury').withArgs(1);
+  });
+
+
+  it.skip('Bury process with ressurection and treasury balance', async () => {
+
+    let snookPrice = await uniswap.getSnookPriceInSkills();
+    
+    // A gamer buys a snook, plays and dies
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.setDeathTime(1, 1, 1, 1, 'ressurect');
+
+    // treasure balance before ressurection
+    const treasuryBalance1 = await skillToken.balanceOf(treasury.address);
+
+    // User ressurects snook
+    const { ressurectionPrice } = await snookGame.connect(signers[1].address).describe(1);
+    await skillToken.connect(signers[1]).approve(snookGame.address, ressurectionPrice);
+    await expect(
+      snookGame.connect(signers[1]).ressurect(1)
+    ).to.emit(snookGame, 'Ressurection').withArgs(signers[1].address, 1);
+
+    // treasure balance after ressurection
+    const treasuryBalance2 = await skillToken.balanceOf(treasury.address);
+    expect(treasuryBalance1).to.equal(treasuryBalance2.sub(ressurectionPrice));
+
+    // Bury has nothing to bury
+    await expect(
+      snookGame.bury(10)
+    ).to.emit(snookGame, 'Bury').withArgs(0);
+
+  });
+
+  it.skip('tests ressurection price for a single snook with 1 trait', async ()=>{
+    const snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    
+    
+    await snookGame.setDeathTime(1,1,0,0,'test');
+    const { ressurectionPrice } = await snookGame.describe(1);
+    
+    const rpEthersFloat = parseFloat(ethers.utils.formatEther(ressurectionPrice));
+    const rpEthersFixed = rpEthersFloat.toFixed(2);
+    
+
+    // precalculation, need to know algo
+    const expectedS = 1;
+    const expectedTraits = 1; 
+    const difficulty = Math.exp(expectedS) * expectedTraits*expectedTraits;
+    const snookPriceInSkills = 1; // in ethers
+    const expectedRP = snookPriceInSkills * difficulty;
+    expect(expectedRP.toFixed(2)).to.equal(rpEthersFixed);
+
+  });
+
+  it.skip('tests ressurection price for a single snook with 2 traits', async ()=>{
+    const snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    await snookGame.mint(signers[1].address, 2, 0, 0, 'tokenURI');
+
+    const result1 = await snookGame.getTraitHist();
+    console.log('Result after mint:', result1);
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    
+    await snookGame.setDeathTime(1,1,0,0,'test');
+    const { ressurectionPrice } = await snookGame.describe(1);
+    
+    const rpEthersFloat = parseFloat(ethers.utils.formatEther(ressurectionPrice));
+    const rpEthersFixed = rpEthersFloat.toFixed(2);
+
+    // precalculation, need to know algo
+    const expectedS = 1; // only one snook with 2 traits
+    const expectedTraits = 2; 
+    const difficulty = Math.exp(expectedS) * expectedTraits*expectedTraits;
+    const snookPriceInSkills = 1; // in ethers
+    const expectedRP = snookPriceInSkills * difficulty;
+    expect(expectedRP.toFixed(2)).to.equal(rpEthersFixed);
+
+  });
+
+  it.skip('tests ressurection price for two snooks with 1 and 2 traits', async ()=>{
+    const snookPrice1 = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
+    // snook with 1 trait
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    
+    const snookPrice2 = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[2]).approve(snookGame.address, snookPrice2);
+    // snook with 2 traits
+    await snookGame.mint(signers[2].address, 2, 0, 0, 'tokenURI');
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.setDeathTime(1,1,0,0,'test');
+ 
+ 
+    await snookGame.connect(signers[2]).allowGame(2);
+    await snookGame.enterGame(2);
+    await snookGame.setDeathTime(2,1,0,0,'test');
+    
+    const { ressurectionPrice: rp1 } = await snookGame.describe(1);
+    const rp1EthersFloat = parseFloat(ethers.utils.formatEther(rp1));
+    const rp1EthersFixed = rp1EthersFloat.toFixed(2);
+
+    const { ressurectionPrice: rp2 } = await snookGame.describe(2);
+    const rp2EthersFloat = parseFloat(ethers.utils.formatEther(rp2));
+    const rp2EthersFixed = rp2EthersFloat.toFixed(2);
+    
+    // precalculation, need to know algo; should move calculation of difficulty to the test
+    const s1 = 0.5; // value of S, only one snook with 2 traits
+    const traits1 = 1; 
+    const difficulty1 = Math.exp(s1) * traits1*traits1;
+    const sp1 = 1; // snook price from uniswap in ethers
+    const erp1 = sp1 * difficulty1; // expected ressurection price
+    expect(erp1.toFixed(2)).to.equal(rp1EthersFixed);
+
+    // precalculation, need to know algo
+    const s2 = 1; // only one snook with 2 traits
+    const traits2 = 2; 
+    const difficulty2 = Math.exp(s2) * traits2*traits2;
+    const sp2 = 1; // in ethers
+    const erp2 = sp2 * difficulty2; // expected res price
+    expect(erp2.toFixed(2)).to.equal(rp2EthersFixed);
+
+  });
+
+  it.skip('tests trait hist when a single snook is minted, extracted, died and ressurected', async ()=>{
+    const snookPrice = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
+    const hist1 = await snookGame.getTraitHist();
+    expect(hist1).to.have.lengthOf(0);
+
+    // mint a snook with 1 trait
+    await snookGame.mint(signers[1].address, 1, 0, 0, 'tokenURI');
+    const hist2 = await snookGame.getTraitHist();
+    expect(hist2).to.have.lengthOf(2);
+    const hist2str = hist2.map(n=>n.toString());
+    expect(hist2str).to.include.ordered.members(['0','1']);
+    
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    // extract snook with 2 traits
+    await snookGame.extractSnook(1, 2, 0,0, 'test');
+    hist3 = await snookGame.getTraitHist();
+    expect(hist3).to.have.lengthOf(3);
+    const hist3str = hist3.map(n=>n.toString());
+    expect(hist3str).to.include.ordered.members(['0','0','1']);
+
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    // snook is dead and will have 1 trait on ressurection
+    await snookGame.setDeathTime(1, 1, 0, 0, 'dead');
+    const hist4 = await snookGame.getTraitHist();
+    const hist4str = hist4.map(n=>n.toString());
+    expect(hist4str).to.include.ordered.members(['0','0','0']);
+    const {ressurectionPrice} = await snookGame.describe(1);
+    await skillToken.connect(signers[1]).approve(snookGame.address, ressurectionPrice);
+    await snookGame.connect(signers[1]).ressurect(1);
+    const hist5 = await snookGame.getTraitHist();
+    const hist5str = hist5.map(n=>n.toString());
+    expect(hist5str).to.have.ordered.members(['0','1','0']);
   });
 
   it('Flow #1', async ()=>{
@@ -100,7 +322,8 @@ describe.skip("Game flow", function() {
     console.log(`price=${ethers.utils.formatEther(snookPrice)}`);
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice);
     
-    // non-minter  tries to mint snook token
+    // non-minter  tries to mint snook token; 
+    // here signers[0] is contract owner but not a minter, the minter is contract SnookGame.
     await expect(
       snookToken.connect(signers[0]).mint(signers[0].address, 'test')
     ).to.be.revertedWith('Caller is not a minter');
@@ -142,7 +365,7 @@ describe.skip("Game flow", function() {
     // contract gets the user into the game
     await expect(
       snookGame.enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 1);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[1].address, 1);
 
 
     // user 1 tries to send locked token to user 2 and reverted
@@ -202,7 +425,7 @@ describe.skip("Game flow", function() {
     // smart contract gets him to the game
     await expect(
       snookGame.enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[2].address, 1);
 
     // gamer 2 dies in the game
     await expect(
@@ -244,7 +467,7 @@ describe.skip("Game flow", function() {
     // contract gets gamer 1 into the game with snook 2
     await expect(
       snookGame.enterGame(2)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[1].address, 2);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[1].address, 2);
     
     // gamer 2 allows the game with snook 1
     await expect(
@@ -254,7 +477,7 @@ describe.skip("Game flow", function() {
     // gamer 2 is to the game with snook 1
     await expect(
       snookGame.enterGame(1)
-    ).to.emit(snookGame, 'Entrance').withArgs(signers[2].address, 1);
+    ).to.emit(snookGame, 'Entry').withArgs(signers[2].address, 1);
 
     // emergency with game server, extract all snooks
     await snookGame.extractSnooksWithoutUpdate([1,2])

@@ -14,7 +14,6 @@ contract SpecialSkinRewards {
   SkillToken private _skill;
   SnookToken private _snook;
   SnookGame private _game;
-  mapping (address => TokenTimelock[]) public beneficiaryTokenTimelocks;
   mapping (address => uint) private _beneficiaryRewards;
 
 
@@ -25,25 +24,25 @@ contract SpecialSkinRewards {
     _game = SnookGame(game);
   }
 
-  function getTokenTimelocks(address beneficiary) public view returns (TokenTimelock[] memory) {
-    return beneficiaryTokenTimelocks[beneficiary];
-  }
-
-
 
   // After calling this function the entire balance of the contract is used.
   // So after treasury allocation, only a single call to the function is possible,
   // other calls will be reverted because of zero balance.  
-  function timelockRewards() public {
+  function sendRewards() public {
     // TODO: https://ethereum.stackexchange.com/questions/68934/how-to-manage-big-loops-in-solidity
     uint balance = _skill.balanceOf(address(this));
-    require(balance > 0, 'No funds on the reward contract');
+    require(balance > 0, 'No funds in the reward contract');
     uint totalStars = 0;
     
+    // Not count skins of dead tokens 
+
     // calculate totals
     for (uint i=0; i<_snook.totalSupply(); i++) {
       uint tokenId = _snook.tokenByIndex(i);
-      (,,uint stars) = _game.describe(tokenId);
+      (,,uint stars,uint deathTime) = _game.describe(tokenId);
+      if (deathTime != 0) {
+        continue;
+      }
       totalStars += stars;
     }
 
@@ -51,23 +50,24 @@ contract SpecialSkinRewards {
     for (uint i=0; i<_snook.totalSupply(); i++) {
       uint tokenId = _snook.tokenByIndex(i);
       address beneficiary = _snook.ownerOf(tokenId);
-      (,,uint stars) = _game.describe(tokenId);
+      (,,uint stars,uint deathTime) = _game.describe(tokenId);
+      if (deathTime != 0) {
+        continue;
+      }
       if (stars > 0) {
-        uint amount = balance * stars / totalStars;
+        uint amount = balance * stars / totalStars; // CHECK DIVISION BY ZERO
         _beneficiaryRewards[beneficiary] += amount;
       }
     }
 
-    // timelock rewards
-    uint releaseTime = block.timestamp + _periodicity * 1 seconds; 
     for (uint i=0; i < _snook.totalSupply(); i++) {
       uint tokenId = _snook.tokenByIndex(i);
       address beneficiary = _snook.ownerOf(tokenId);
-      TokenTimelock tokenTimelock = new TokenTimelock(_skill, beneficiary, releaseTime);
-      beneficiaryTokenTimelocks[beneficiary].push(tokenTimelock);
       uint amount = _beneficiaryRewards[beneficiary];
-      _beneficiaryRewards[beneficiary] = 0;
-      _skill.transfer(address(tokenTimelock), amount);
+      if (amount > 0) {
+        _beneficiaryRewards[beneficiary] = 0;
+        _skill.transfer(beneficiary, amount);
+      }
     }
   } 
 }

@@ -9,7 +9,7 @@ module.exports = async ({
   const deployResult = await deploy('SkillToken', {
     from: deployer,
     gasLimit: 4000000,
-    args: [],
+    args: [40000000],
   });
   if (deployResult.newlyDeployed) {
     log(

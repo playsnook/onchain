@@ -1,55 +1,59 @@
+// SPDX-License-Identifier: MIT
 
-// Test constract 
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import "@openzeppelin/contracts/token/ERC20/utils/TokenTimelock.sol";
+
 import './SkillToken.sol';
-import './SpecialSkinRewards.sol';
-import './SnookFoundationRewards.sol';
 
-import 'hardhat/console.sol';
+contract Treasury is Ownable {
 
-contract Treasury {
-
+  using EnumerableSet for EnumerableSet.AddressSet;
+  EnumerableSet.AddressSet private _allocatees;
+  mapping (address => uint) private _percentages;
+  mapping (address => uint) private _periodicities; // in secs
+  mapping (address => uint) private _allocTimes;
   SkillToken private _skill;
-  address[] private _allocatees;
-  uint[] private _percentages;
-  uint[] private _periodicities;
-
-  uint[] private _allocTimes;
-
-  constructor(
-    address skill,
-    address[] memory allocatees,
-    uint[] memory percentages,
-    uint[] memory periodicities // in secs
-  ) 
-  {
-    require(allocatees.length == percentages.length && percentages.length == periodicities.length, 'Invalid dimensions');
-    require(_arraySum(percentages) <= 100, 'Invalid percentages');
-    _skill = SkillToken(skill);
-    _allocatees = allocatees;
-    _percentages = percentages;
-    _periodicities = periodicities;
-    _allocTimes = new uint[](allocatees.length);
-  }
   
-  function _arraySum(uint[] memory array) public pure returns (uint) {
+  constructor(address skill) 
+  {
+    _skill = SkillToken(skill);
+  }
+
+  // remove constructor; add this function and removeAllocatee function; use enumarableSet
+  function upsert(address allocatee, uint percentage, uint periodicity) public onlyOwner {
+    require(_percentageSum() + percentage <= 100, "Invalid percentage");
+    _allocatees.add(allocatee);
+    _percentages[allocatee] = percentage;
+    _periodicities[allocatee] = periodicity;
+  }
+
+  function remove(address allocatee) public onlyOwner {
+    require(_allocatees.contains(allocatee), 'No such allocatee');
+    _allocatees.remove(allocatee);
+    delete _percentages[allocatee];
+    delete _periodicities[allocatee];
+    delete _allocTimes[allocatee];
+  }
+
+  function _percentageSum() public view returns (uint) {
     uint sum = 0;
-    for (uint i=0; i<array.length; i++) {
-      sum += array[i];
+    for (uint i=0; i<_allocatees.length(); i++) {
+      address allocatee = _allocatees.at(i);
+      sum += _percentages[allocatee];
     }
     return sum;
   }
 
   function allocate() public {
     uint balance = _skill.balanceOf(address(this));
-    for (uint i=0; i<_allocatees.length; i++) {
-      if (_allocTimes[i] + _periodicities[i] * 1 seconds < block.timestamp) {
-        uint amount = balance * _percentages[i] / 100;
-        address to = _allocatees[i];
-        _skill.transfer(to, amount);
-        _allocTimes[i] = block.timestamp;
+    for (uint i=0; i<_allocatees.length(); i++) {
+      address allocatee = _allocatees.at(i);
+      if (_allocTimes[allocatee] + _periodicities[allocatee] * 1 seconds < block.timestamp) {
+        uint amount = balance * _percentages[allocatee] / 100;
+        _skill.transfer(allocatee, amount);
+        _allocTimes[allocatee] = block.timestamp;
       }
     }
   }
