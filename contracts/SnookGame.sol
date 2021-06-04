@@ -190,31 +190,22 @@ contract SnookGame is Ownable {
         uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
         require(periodIdx >= i, 'The period is unrewardable');
 
-        require(_periods[periodIdx].tokenRewarded[tokenId] == true, 'Already rewarded');
-        
+        require(_periods[periodIdx].tokenRewarded[tokenId] == false, 'Already rewarded');
+
         uint amount = 0;
-        // the first of saved periods cannot be updated from previous periods 
-        if ( _periods[i].tokenRewarded[tokenId] == false) {
-            amount = _periods[i].tokenStars[tokenId] * _periods[i].budget / _periods[i].totalStars;
-            _periods[i].tokenRewarded[tokenId] = true; 
-        }
-
-        console.log('i=', i);
-        console.log('stars=',_periods[i].tokenStars[tokenId], 'total=', _periods[i].totalStars);
-
-        for (uint j = i+1; j<_currentPeriodIdx; j++) {
-            if ( _periods[j].tokenStarsUpdated[tokenId] == false) {
-                _periods[j].tokenStars[tokenId] = _periods[j-1].tokenStars[tokenId];
-                _periods[j].tokenStarsUpdated[tokenId] == true;
+        // the first of saved periods cannot be updated from previous periods therefore || periodIdx == 1
+        if (_periods[periodIdx].tokenStarsUpdated[tokenId] == true || periodIdx == i) { 
+            amount = _periods[periodIdx].tokenStars[tokenId] * _periods[periodIdx].budget / _periods[periodIdx].totalStars;
+        } else {
+            // find first updated from requested non-updated one and use it as current balance or reach the first of rewardable periods (k==1)
+            for (uint k = periodIdx - 1; k >= i; k--) { 
+                if (_periods[k].tokenStarsUpdated[tokenId] == true || k == i) {
+                    amount = _periods[k].tokenStars[tokenId] * _periods[k].budget / _periods[k].totalStars;
+                    break;
+                }
             }
-            if ( _periods[j].tokenRewarded[tokenId] == false) {
-                amount += _periods[j].tokenStars[tokenId] * _periods[j].budget / _periods[j].totalStars;
-                _periods[j].tokenRewarded[tokenId] = true; 
-            }
-
-            console.log('j=', j);
-            console.log('stars=',_periods[j].tokenStars[tokenId], 'total=', _periods[j].totalStars);
         }
+        _periods[periodIdx].tokenRewarded[tokenId] = true; 
         _skill.transfer(_snook.ownerOf(tokenId), amount);
 
         console.log('END OF Rewards for SnookId: ', tokenId, 'amount:', amount);
