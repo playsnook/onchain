@@ -127,7 +127,7 @@ contract SnookGame is Ownable {
         period.budget = budget;
         period.releaseTime = releaseTime;
         period.totalStars = _periods[_currentPeriodIdx - 1].totalStars;
-        console.log('startNewPeriod:', _currentPeriodIdx);
+        console.log('startNewPeriod:', _currentPeriodIdx, 'budget:', period.budget);
     }
 
     // rename 
@@ -140,47 +140,34 @@ contract SnookGame is Ownable {
         console.log('Update period:', _currentPeriodIdx, 'totalStars:', period.totalStars);
     }
 
-    // https://hackernoon.com/how-much-can-i-do-in-a-block-163q3xp2
-    function getAllRewards(uint tokenId) public {
-        console.log('REWARDS for SnookId: ', tokenId, 'currentPeriod:', _currentPeriodIdx);
-
-        require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
-        require(_currentPeriodIdx > 0, 'No reward periods');    
-        uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
-        require(i<_currentPeriodIdx, 'No reward periods'); // possible when _currentPeriodIdx <= _RewardPeriods
-        uint amount = 0;
-        // the first of saved periods cannot be updated from previous periods 
-        if ( _periods[i].tokenRewarded[tokenId] == false) {
-            amount = _periods[i].tokenStars[tokenId] * _periods[i].budget / _periods[i].totalStars;
-            _periods[i].tokenRewarded[tokenId] = true; 
-        }
-
-        console.log('i=', i);
-        console.log('stars=',_periods[i].tokenStars[tokenId], 'total=', _periods[i].totalStars);
-
-        for (uint j = i+1; j<_currentPeriodIdx; j++) {
-            if ( _periods[j].tokenStarsUpdated[tokenId] == false) {
-                _periods[j].tokenStars[tokenId] = _periods[j-1].tokenStars[tokenId];
-                _periods[j].tokenStarsUpdated[tokenId] == true;
-            }
-            if ( _periods[j].tokenRewarded[tokenId] == false) {
-                amount += _periods[j].tokenStars[tokenId] * _periods[j].budget / _periods[j].totalStars;
-                _periods[j].tokenRewarded[tokenId] = true; 
-            }
-
-            console.log('j=', j);
-            console.log('stars=',_periods[j].tokenStars[tokenId], 'total=', _periods[j].totalStars);
-        }
+    
+    function claimRewards(uint tokenId, uint periodIdx) public {
+        uint amount = computeRewards(tokenId, periodIdx);
+        _periods[periodIdx].tokenRewarded[tokenId] = true; 
         _skill.transfer(_snook.ownerOf(tokenId), amount);
-
-        console.log('END OF Rewards for SnookId: ', tokenId, 'amount:', amount);
-
     }
 
-    function getRewards(uint tokenId, uint periodIdx) public {
-        console.log('REWARDS for SnookId: ', tokenId, 'currentPeriod:', _currentPeriodIdx);
+    function getPeriodBudget(uint periodIdx) public view returns(uint) {
+        return _periods[periodIdx].budget;
+    }
 
-        require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
+    function getRewardablePeriods() public view returns(uint[] memory) {
+        uint[] memory periods = new uint[](_RewardPeriods);
+        if (_currentPeriodIdx <= 1) {
+            return periods;
+        }  
+        uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
+        uint k = 0;
+        for (; i<_currentPeriodIdx; i++) {
+            periods[k++] = i;
+        }
+        return periods;
+    }
+
+    function computeRewards(uint tokenId, uint periodIdx) public view returns (uint) {
+        console.log('REWARDS for SnookId: ', tokenId, 'period:', periodIdx);
+
+        require(_descriptors[tokenId].deathTime == 0, 'Dead');
 
         // detecting upper limit of rewardable periods
         require(_currentPeriodIdx > 1, 'No reward periods');    
@@ -190,7 +177,7 @@ contract SnookGame is Ownable {
         uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
         require(periodIdx >= i, 'The period is unrewardable');
 
-        require(_periods[periodIdx].tokenRewarded[tokenId] == false, 'Already rewarded');
+        require(_periods[periodIdx].tokenRewarded[tokenId] == false, 'Rewarded');
 
         uint amount = 0;
         // the first of saved periods cannot be updated from previous periods therefore || periodIdx == 1
@@ -199,16 +186,18 @@ contract SnookGame is Ownable {
         } else {
             // find first updated from requested non-updated one and use it as current balance or reach the first of rewardable periods (k==1)
             for (uint k = periodIdx - 1; k >= i; k--) { 
+                console.log('k=', k, 'updated=', _periods[k].tokenStarsUpdated[tokenId]);
                 if (_periods[k].tokenStarsUpdated[tokenId] == true || k == i) {
-                    amount = _periods[k].tokenStars[tokenId] * _periods[k].budget / _periods[k].totalStars;
+                    console.log('stars=', _periods[k].tokenStars[tokenId], 'total=', _periods[periodIdx].totalStars);
+                    console.log('periodIdx=', periodIdx, 'budget: ', _periods[periodIdx].budget);
+                    amount = _periods[k].tokenStars[tokenId] * _periods[periodIdx].budget / _periods[periodIdx].totalStars;
                     break;
                 }
             }
         }
-        _periods[periodIdx].tokenRewarded[tokenId] = true; 
-        _skill.transfer(_snook.ownerOf(tokenId), amount);
 
         console.log('END OF Rewards for SnookId: ', tokenId, 'amount:', amount);
+        return amount;
     }
     
     // Mostly for tests
@@ -259,7 +248,7 @@ contract SnookGame is Ownable {
     ) public onlyOwner 
     {
         uint price = _uniswap.getSnookPriceInSkills();
-        require(_skill.transferFrom(to, address(this), price), 'Not enough funds for minting');
+        require(_skill.transferFrom(to, address(this), price), 'No funds');
         uint tokenId = _snook.mint(to, tokenURI_);
         _descriptors[tokenId] = Descriptor({
             score: score,
@@ -327,14 +316,14 @@ contract SnookGame is Ownable {
     // Snook owner calls this function to permit game contract to get him to the game = lock his token
     function allowGame(uint256 tokenId) public {
         address owner = _snook.ownerOf(tokenId);
-        require(owner == msg.sender, 'Not token owner');
+        require(owner == msg.sender, 'Not owner');
         _descriptors[tokenId].gameAllowed = true;
         emit GameAllowed(owner, tokenId);
     }
 
     function enterGame(uint256 tokenId) public onlyOwner {
-        require(_descriptors[tokenId].ingame == false, 'Snook is already in play');
-        require(_descriptors[tokenId].gameAllowed == true, 'Snook is not allowed for playing');
+        require(_descriptors[tokenId].ingame == false, 'In play');
+        require(_descriptors[tokenId].gameAllowed == true, 'Not allowed');
         _snook.lock(tokenId, true);
         _descriptors[tokenId].ingame = true;
         emit Entry(_snook.ownerOf(tokenId), tokenId);
@@ -342,8 +331,8 @@ contract SnookGame is Ownable {
 
     // extract snook without updating traits and url
     function _extractSnookWithoutUpdate(uint256 tokenId) private {
-        require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
-        require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
+        require(_descriptors[tokenId].ingame == true, 'Not in play');
+        require(_descriptors[tokenId].deathTime == 0, 'Dead');
 
         _descriptors[tokenId].ingame = false;
         _descriptors[tokenId].gameAllowed = false;
@@ -370,8 +359,8 @@ contract SnookGame is Ownable {
         string memory tokenURI_
     ) public onlyOwner 
     {
-        require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
-        require(_descriptors[tokenId].deathTime == 0, 'Snook is dead');
+        require(_descriptors[tokenId].ingame == true, 'Not in play');
+        require(_descriptors[tokenId].deathTime == 0, 'Dead');
 
         _updateTraitHistOnExtraction(_descriptors[tokenId].onGameEntryTraitCount, traitCount);
         _updatePeriod(tokenId, _descriptors[tokenId].stars, stars);
@@ -397,7 +386,7 @@ contract SnookGame is Ownable {
         string memory onRessurectionTokenURI
     ) public onlyOwner 
     {
-        require(_descriptors[tokenId].ingame == true, 'Snook is not in play'); // prevent wallet server from errors
+        require(_descriptors[tokenId].ingame == true, 'Not in play'); // prevent wallet server from errors
         _descriptors[tokenId].deathTime = block.timestamp;
 
         // ressurection price is based on traits of dying snook 
@@ -425,9 +414,9 @@ contract SnookGame is Ownable {
     // 4. Resurrection with penalty can lead to a snook with 0 traits. 
     function ressurect(uint256 tokenId) public {
         address snookOwner = _snook.ownerOf(tokenId);
-        require(snookOwner == msg.sender, 'Only snook owner can ressurect dead snook');
-        require(_descriptors[tokenId].deathTime > 0, 'Snook is not dead');
-        require(_descriptors[tokenId].deathTime + _BurialDelay * 1 seconds >= block.timestamp, 'Ressurection period of snook elapsed');
+        require(snookOwner == msg.sender, 'Not owner');
+        require(_descriptors[tokenId].deathTime > 0, 'Alive');
+        require(_descriptors[tokenId].deathTime + _BurialDelay * 1 seconds >= block.timestamp, 'Too late');
 
         require(_skill.transferFrom(snookOwner, _treasury, _descriptors[tokenId].ressurectionPrice));
         
@@ -452,7 +441,7 @@ contract SnookGame is Ownable {
     }
 
     function _getRessurectionPrice(uint256 tokenId) private view returns (uint256 price) {
-        require(_descriptors[tokenId].ingame == true, 'Snook is not in play');
+        require(_descriptors[tokenId].ingame == true, 'Not in play');
         uint256 k = _uniswap.getSnookPriceInSkills(); // in wei
         int128 d = _getRessurectionDifficulty(tokenId); 
         price = ABDKMath64x64.mulu(d, k); // in wei

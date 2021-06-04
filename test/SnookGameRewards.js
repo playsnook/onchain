@@ -107,7 +107,7 @@ describe("SnookGame rewards", function() {
 
   });
 
-  it.skip('Two players, 4 periods', async ()=>{
+  it('Two players, 4 periods', async ()=>{
 
     // tap up Skill balance of treasury
     await skillToken.transfer(treasury.address, startBalance); 
@@ -127,12 +127,12 @@ describe("SnookGame rewards", function() {
       2
     ];
     await treasury.initialize(payees,shares,cycles);
-    const balance0 = await skillToken.balanceOf(treasury.address);
+    const treasuryBalanceP0 = await skillToken.balanceOf(treasury.address);
 
     // started period 1
     await treasury.transfer();    
-    const balance1 = await skillToken.balanceOf(snookGame.address);
-    expect(balance1.eq(balance0.mul(8).div(10))).to.be.true;
+    const gameBalanceP1 = await skillToken.balanceOf(snookGame.address);
+    expect(gameBalanceP1.eq(treasuryBalanceP0.mul(8).div(10))).to.be.true;
 
     const snookPrice1 = await uniswap.getSnookPriceInSkills();
     await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
@@ -146,23 +146,40 @@ describe("SnookGame rewards", function() {
     await snookGame.connect(signers[2]).allowGame(2);
     await snookGame.enterGame(1);
     await snookGame.enterGame(2);
-    await snookGame.extractSnook(1, 0, 9, 0, 'now 9 stars');
-    await snookGame.extractSnook(2, 0, 1, 0, 'now 1 stars');
+    await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
+    await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
 
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.connect(signers[2]).allowGame(2);
     await snookGame.enterGame(1);
     await snookGame.enterGame(2);
-    await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
-    await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
+    await snookGame.extractSnook(1, 0, 3, 0, 'now 3 stars');
+    await snookGame.extractSnook(2, 0, 7, 0, 'now 7 stars');
+
+    const rewardablePeriodsAtP1BeforeEnd = await snookGame.getRewardablePeriods();
+    expect(rewardablePeriodsAtP1BeforeEnd[0].eq(0)).to.be.true;
+    expect(rewardablePeriodsAtP1BeforeEnd[1].eq(0)).to.be.true;
 
     await delay(2.1*1000);
     // ended period 1
 
+
+    const rewardablePeriodsAtP1 = await snookGame.getRewardablePeriods();
+    expect(rewardablePeriodsAtP1[0].eq(1));
+    expect(rewardablePeriodsAtP1[1].eq(1));
+    
     // started period 2
-    await skillToken.transfer(treasury.address, startBalance); 
+    const tx = await skillToken.transfer(treasury.address, startBalance); 
+    await tx.wait(1);
     await treasury.transfer();
 
+    const budgetP1 = await snookGame.getPeriodBudget(1);
+    const rewardsAtP2ForT1P1 = await snookGame.computeRewards(1,1);
+    expect(rewardsAtP2ForT1P1.eq(
+      budgetP1.mul(3).div(10)
+    ));
+
+    
     await snookGame.connect(signers[2]).allowGame(2);
     await snookGame.enterGame(2);
     await snookGame.setDeathTime(2, 0, 6, 0, 'dead');
@@ -174,11 +191,31 @@ describe("SnookGame rewards", function() {
     await skillToken.transfer(treasury.address, startBalance); 
     await treasury.transfer();
     
+    
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.enterGame(1);
     await snookGame.extractSnook(1, 0, 3, 0, '3 stars now');
     await delay(2.1*1000);
     // ended period 3
+
+    const rewardablePeriodsAtP3 = await snookGame.getRewardablePeriods();
+    expect(rewardablePeriodsAtP3[0].eq(1)).to.be.true;
+    expect(rewardablePeriodsAtP3[1].eq(2)).to.be.true;
+    const rewardsAtP3ForT1P1 = await snookGame.computeRewards(1,1);
+    expect(rewardsAtP3ForT1P1
+      .eq(
+        budgetP1.mul(3).div(10)
+      )
+    ).to.be.true;
+
+    const rewardsAtP3ForT1P2 = await snookGame.computeRewards(1,2);
+    const budgetP2 = await snookGame.getPeriodBudget(2);
+    expect(rewardsAtP3ForT1P2
+      .eq(
+        budgetP2.mul(3).div(3)
+      )
+    ).to.be.true;
+
 
     // started period 4
     // tap treasury balance
@@ -199,252 +236,17 @@ describe("SnookGame rewards", function() {
 
     /*
       Current period is 4 (no new period was started by treasury treansfer function).
-      As we defined rewardPeriods to be 2, the rewards include periods 2 and 3,
-      Stars of snook 1 in Period 2 are 0 as it did not play and tokenStarsUpdated
-      is false for the snook but we don't retrive stars from period 1 as it's out
-      of the reward periods. So snook 1 at period 2 has 0 stars for the rewards. 
-      The result is that snook 1 gets 100% of the rewards.
+      As we defined rewardPeriods to be 2, the rewards include periods 2 and 3.
     */
-    await snookGame.getAllRewards(1);
-  });
-
-  it.skip('Two players, 4 periods with ressurection', async ()=>{
-
-    // tap up Skill balance of treasury
-    await skillToken.transfer(treasury.address, startBalance); 
-    const payees = [
-      signers[0].address, // founders
-      signers[1].address, // should be staking contract address 
-      snookGame.address, // game
-    ];
-    const shares = [
-      1000, // = 0.01 * 1000 = 10%
-      1000, // 10%
-      8000, // 80% 
-    ];
-    const cycles = [
-      2,
-      2,
-      2
-    ];
-    await treasury.initialize(payees,shares,cycles);
-    const balance0 = await skillToken.balanceOf(treasury.address);
-
-    // started period 1
-    await treasury.transfer();    
-    const balance1 = await skillToken.balanceOf(snookGame.address);
-    expect(balance1.eq(balance0.mul(8).div(10))).to.be.true;
-
-    const snookPrice1 = await uniswap.getSnookPriceInSkills();
-    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
-    await snookGame.mint(signers[1].address, 0, 1, 0, 'minted with 1 star');
+    const rewardablePeriodsAtP4 = await snookGame.getRewardablePeriods();
+    expect(rewardablePeriodsAtP4[0].eq(2));
+    expect(rewardablePeriodsAtP4[1].eq(3));
+    const rewardsAtP4ForT1P2 = await snookGame.computeRewards(1, 2);
+    expect(rewardsAtP4ForT1P2.eq(0)).to.be.true;
+    const rewardsAtP4ForT1P3 = await snookGame.computeRewards(1, 3);
+    const budgetP3 = await snookGame.getPeriodBudget(3);
+    expect(rewardsAtP4ForT1P3.eq(budgetP3)).to.be.true;
     
-    const snookPrice2 = await uniswap.getSnookPriceInSkills();
-    await skillToken.connect(signers[2]).approve(snookGame.address, snookPrice2);
-    await snookGame.mint(signers[2].address, 0, 2, 0, 'minted with 2 stars');
-    
-    await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
-    await snookGame.extractSnook(1, 0, 9, 0, 'now 9 stars');
-    await snookGame.extractSnook(2, 0, 1, 0, 'now 1 stars');
-
-    await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
-    await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
-    await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
-
-    await delay(2.1*1000);
-    // ended period 1
-
-    // started period 2
-    await skillToken.transfer(treasury.address, startBalance); 
-    await treasury.transfer();
-
-    await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(2);
-    await snookGame.setDeathTime(2, 0, 6, 0, 'on ressurection 6 stars');
-    const { ressurectionPrice } = await snookGame.connect(signers[2].address).describe(2);
-    await skillToken.connect(signers[2]).approve(snookGame.address, ressurectionPrice);
-    await snookGame.connect(signers[2]).ressurect(2);
-
-    await delay(2.1*1000);
-    // ended period 2
-
-    // started period 3
-    // tap treasury balance
-    await skillToken.transfer(treasury.address, startBalance); 
-    await treasury.transfer();
-    
-    await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.enterGame(1);
-    await snookGame.extractSnook(1, 0, 3, 0, '3 stars now');
-    await delay(2.1*1000);
-    // ended period 3
-
-    // started period 4
-    // tap treasury balance
-    await skillToken.transfer(treasury.address, startBalance); 
-    await treasury.transfer();
-
-    /* 
-      Snook 1 is alive and has the history:
-        Period 1: 4
-        Period 2: no play, so should have 4 stars
-        Period 3: 3 
-        Period 4: no play, should gave 3 stars
-      Snook 2 history:
-        Period 1: 1
-        Period 2: 6 (after ressurection)
-        Period 3: 0 (no play)
-        Period 4: no play
-    */
-
-    await delay(2.1*1000);
-    // ended period 4
-
-    /*
-      Current period is 4 (no new period was started by treasury treansfer function).
-      As we defined rewardPeriods to be 2, the rewards include periods 2 and 3,
-      Stars of snook 1 in Period 2 are 0 as it did not play and tokenStarsUpdated
-      is false for the snook but we don't retrive stars from period 1 as it's out
-      of the reward periods. So snook 1 at period 2 has 0 stars for the rewards.  
-    */
-    await snookGame.getAllRewards(1);
-    await snookGame.getAllRewards(2);
-  });
-
-
-  it('tests rewards are not dupliacted for the same period', async ()=>{
-
-    // tap up Skill balance of treasury
-    await skillToken.transfer(treasury.address, startBalance); 
-    const payees = [
-      signers[0].address, // founders
-      signers[1].address, // should be staking contract address 
-      snookGame.address, // game
-    ];
-    const shares = [
-      1000, // = 0.01 * 1000 = 10%
-      1000, // 10%
-      8000, // 80% 
-    ];
-    const cycles = [
-      2,
-      2,
-      2
-    ];
-    await treasury.initialize(payees,shares,cycles);
-    const balance0 = await skillToken.balanceOf(treasury.address);
-
-    // Try to get rewards before the first reward period
-    await expect(
-      snookGame.getAllRewards(1)
-    ).to.be.revertedWith('No reward periods');
-    
-    // started period 1
-    await treasury.transfer();    
-    const balance1 = await skillToken.balanceOf(snookGame.address);
-    expect(balance1.eq(balance0.mul(8).div(10))).to.be.true;
-
-    const snookPrice1 = await uniswap.getSnookPriceInSkills();
-    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
-    await snookGame.mint(signers[1].address, 0, 1, 0, 'minted with 1 star');
-    
-    const snookPrice2 = await uniswap.getSnookPriceInSkills();
-    await skillToken.connect(signers[2]).approve(snookGame.address, snookPrice2);
-    await snookGame.mint(signers[2].address, 0, 2, 0, 'minted with 2 stars');
-    
-    await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
-    await snookGame.extractSnook(1, 0, 9, 0, 'now 9 stars');
-    await snookGame.extractSnook(2, 0, 1, 0, 'now 1 stars');
-    
-    await expect(
-      snookGame.getAllRewards(1)
-    ).to.be.revertedWith('No reward periods');
-    
-    await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
-    await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
-    await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
-
-    await delay(2.1*1000);
-    // ended period 1
-
-    // started period 2
-    await skillToken.transfer(treasury.address, startBalance); 
-    await treasury.transfer();
-
-    // take rewards on period 1
-    await snookGame.getAllRewards(1);
-    // taking again will result in 
-    await snookGame.getAllRewards(1)
-    
-
-    await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(2);
-    await snookGame.setDeathTime(2, 0, 6, 0, 'on ressurection 6 stars');
-    const { ressurectionPrice } = await snookGame.connect(signers[2].address).describe(2);
-    await skillToken.connect(signers[2]).approve(snookGame.address, ressurectionPrice);
-    await snookGame.connect(signers[2]).ressurect(2);
-
-    await delay(2.1*1000);
-    // ended period 2
-
-    // started period 3
-    // tap treasury balance
-    await skillToken.transfer(treasury.address, startBalance); 
-    await treasury.transfer();
-    
-    await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.enterGame(1);
-    await snookGame.extractSnook(1, 0, 3, 0, '3 stars now');
-    await delay(2.1*1000);
-
-    // take rewards on period 2 and 1 (1 if yet not rewarded)
-    await snookGame.getAllRewards(1);
-
-    // ended period 3
-
-    // started period 4
-    // tap treasury balance
-    await skillToken.transfer(treasury.address, startBalance); 
-    await treasury.transfer();
-
-    /* 
-      Snook 1 is alive and has the history:
-        Period 1: 4
-        Period 2: no play, so should have 4 stars
-        Period 3: 3 
-        Period 4: no play, should gave 3 stars
-      Snook 2 history:
-        Period 1: 1
-        Period 2: 6 (after ressurection)
-        Period 3: 0 (no play)
-        Period 4: no play
-    */
-
-    await delay(2.1*1000);
-    // ended period 4
-
-    /*
-      Current period is 4 (no new period was started by treasury treansfer function).
-      As we defined rewardPeriods to be 2, the rewards include periods 2 and 3,
-      Stars of snook 1 in Period 2 are 0 as it did not play and tokenStarsUpdated
-      is false for the snook but we don't retrive stars from period 1 as it's out
-      of the reward periods. So snook 1 at period 2 has 0 stars for the rewards.  
-    */
-    await snookGame.getAllRewards(1);
-    await snookGame.getAllRewards(2);
-
 
   });
 
