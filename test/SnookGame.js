@@ -5,7 +5,7 @@ const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factor
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const { ethers } = require("hardhat");
 
-describe("SnookGame contract", function() {
+describe.skip("SnookGame contract", function() {
 
   let snookToken;
   let skillToken;
@@ -16,8 +16,8 @@ describe("SnookGame contract", function() {
   const startBalance = ethers.utils.parseEther('1000');
   const initialSkillSupply = 40000000;
   const BurialDelay = 5;
-  beforeEach(async ()=>{
 
+  beforeEach(async ()=>{
     signers = await ethers.getSigners();
     console.log(`Owner of contracts: ${signers[0].address}`)
     console.log(`Signer 1: ${signers[1].address}`);
@@ -314,7 +314,7 @@ describe("SnookGame contract", function() {
     expect(hist5str).to.have.ordered.members(['0','1','0']);
   });
 
-  it('Flow #1', async ()=>{
+  it.skip('Flow #1', async ()=>{
     const totalSupply1 = await skillToken.totalSupply();   
 
     // gamer 1 approves paying snook price
