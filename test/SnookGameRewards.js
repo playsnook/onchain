@@ -107,7 +107,7 @@ describe("SnookGame rewards", function() {
 
   });
 
-  it('Two players, 4 periods', async ()=>{
+  it.skip('tests scenario 1: 2 players, 4 periods', async ()=>{
 
     // tap up Skill balance of treasury
     await skillToken.transfer(treasury.address, startBalance); 
@@ -169,8 +169,7 @@ describe("SnookGame rewards", function() {
     expect(rewardablePeriodsAtP1[1].eq(1));
     
     // started period 2
-    const tx = await skillToken.transfer(treasury.address, startBalance); 
-    await tx.wait(1);
+    await skillToken.transfer(treasury.address, startBalance); 
     await treasury.transfer();
 
     const budgetP1 = await snookGame.getPeriodBudget(1);
@@ -246,6 +245,103 @@ describe("SnookGame rewards", function() {
     const rewardsAtP4ForT1P3 = await snookGame.computeRewards(1, 3);
     const budgetP3 = await snookGame.getPeriodBudget(3);
     expect(rewardsAtP4ForT1P3.eq(budgetP3)).to.be.true;
+    
+
+  });
+
+  it('tests scenario 2: playing between two periods', async ()=>{
+
+    // tap up Skill balance of treasury
+    await skillToken.transfer(treasury.address, startBalance); 
+    const payees = [
+      signers[0].address, // founders
+      signers[1].address, // should be staking contract address 
+      snookGame.address, // game
+    ];
+    const shares = [
+      1000, // = 0.01 * 1000 = 10%
+      1000, // 10%
+      8000, // 80% 
+    ];
+    const cycles = [
+      2,
+      2,
+      2
+    ];
+    await treasury.initialize(payees,shares,cycles);
+    
+
+    // started period 1
+    await treasury.transfer();    
+    const snookPrice1 = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[1]).approve(snookGame.address, snookPrice1);
+    await snookGame.mint(signers[1].address, 0, 0, 0, 'minted with 0 star');
+    
+    const snookPrice2 = await uniswap.getSnookPriceInSkills();
+    await skillToken.connect(signers[2]).approve(snookGame.address, snookPrice2);
+    await snookGame.mint(signers[2].address, 0, 0, 0, 'minted with 0 stars');
+    
+    await delay(2.1*1000);
+    // ended period 1
+
+
+    // started period 2
+    await skillToken.transfer(treasury.address, startBalance); 
+    await treasury.transfer();
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.connect(signers[2]).allowGame(2);
+    await snookGame.enterGame(1);
+    await snookGame.enterGame(2);
+    await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
+    await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
+
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.connect(signers[2]).allowGame(2);
+    await snookGame.enterGame(1);
+    await snookGame.enterGame(2);
+    await snookGame.extractSnook(1, 0, 3, 0, 'now 3 stars');
+       
+    await delay(2.1*1000);
+    // ended period 2
+
+    // started period 3
+    await skillToken.transfer(treasury.address, startBalance); 
+    await treasury.transfer(); 
+    await snookGame.extractSnook(2, 0, 7, 0, 'now 7 stars');
+    await delay(2.1*1000);
+    // ended period 3
+    
+    // started period 4
+    await skillToken.transfer(treasury.address, startBalance); 
+    await treasury.transfer();
+
+    const rewardsAtP4ForT2P3 = await snookGame.computeRewards(2,3);
+    const budgetP3 = await snookGame.getPeriodBudget(3);
+    expect(rewardsAtP4ForT2P3.eq(
+      budgetP3.mul(7).div(10)
+    ));
+
+    const rewardsAtP4ForT2P2 = await snookGame.computeRewards(2,2);
+    const budgetP2 = await snookGame.getPeriodBudget(2);
+    expect(rewardsAtP4ForT2P2.eq(
+      budgetP2.mul(8).div(11)
+    ));
+
+    const rewardsAtP4ForT1P3 = await snookGame.computeRewards(1,3);
+    expect(rewardsAtP4ForT1P3.eq(
+      budgetP3.mul(3).div(10)
+    ));
+
+    const rewardsAtP4ForT1P2 = await snookGame.computeRewards(1,2);
+    expect(rewardsAtP4ForT1P2.eq(
+      budgetP2.mul(3).div(11)
+    ));
+
+    await snookGame.connect(signers[1]).allowGame(1);
+    await snookGame.enterGame(1);
+    await snookGame.extractSnook(1, 0, 6, 0, 'now 6 stars');
+    await delay(2.1*1000);
+    // ended period 4
     
 
   });
