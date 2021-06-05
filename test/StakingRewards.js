@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 const delay = require('delay');
 
 
-describe.skip("StakingRewards", function() {
+describe("StakingRewards", function() {
 
   let skillToken;  
   let treasury;
@@ -29,7 +29,6 @@ describe.skip("StakingRewards", function() {
     skillToken = await SkillToken.deploy(initialSkillSupply);
     await skillToken.deployed();
     
-
     const StakingRewards = await ethers.getContractFactory('StakingRewards');
     stakingRewards = await StakingRewards.deploy(
       skillToken.address,
@@ -45,22 +44,46 @@ describe.skip("StakingRewards", function() {
     await skillToken.grantRole(await skillToken.BURNER_ROLE(), stakingRewards.address);
 
     const Treasury = await ethers.getContractFactory('Treasury');
-    treasury = await Treasury.deploy(
-      skillToken.address,
-      [stakingRewards.address],
-      [SRPercentage],
-      [5]
-    );
+    treasury = await Treasury.deploy(skillToken.address);
     await treasury.deployed();
+
+    const SnookGame = await ethers.getContractFactory('SnookGame');
+    const snookGame = await SnookGame.deploy(
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero, 
+      ethers.constants.AddressZero,
+      treasury.address,
+      0,
+      0
+    );
+    await snookGame.deployed();
+
+    const payees = [
+      signers[0].address, // founders
+      stakingRewards.address, 
+      snookGame.address, // should be game
+    ];
+    const shares = [
+      1000, // = 0.01 * 1000 = 10%
+      1000, // 10%
+      8000, // 80% 
+    ];
+    const cycles = [
+      2,
+      2,
+      2
+    ];
+    await treasury.initialize(payees,shares,cycles);
     
     // Tap up treasury balance
     await skillToken.transfer(treasury.address, TreasuryBalance);
-    await treasury.allocate();
+    await treasury.transfer();
     
   });
 
   it('checks deposit() reverts on uninitialzed cycle', async ()=>{
     // revert without initialization
+    console.log('address: ', stakingRewards.address);
     await expect(
       stakingRewards.connect(signers[1]).deposit(1, 1)
     ).to.be.revertedWith('Reward cycle is not initialized');

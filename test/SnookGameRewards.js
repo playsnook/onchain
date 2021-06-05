@@ -5,7 +5,7 @@ const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factor
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const { ethers } = require("hardhat");
 
-describe("SnookGame rewards", function() {
+describe.skip("SnookGame rewards", function() {
 
   let snookToken;
   let skillToken;
