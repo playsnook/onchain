@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 const delay = require('delay');
 
 
-describe("StakingRewards", function() {
+describe.skip("StakingRewards", function() {
 
   let skillToken;  
   let treasury;

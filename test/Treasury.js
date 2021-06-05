@@ -5,7 +5,7 @@ const moment = require('moment');
 const UniswapV2FactoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const UniswapV2Router02Artifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 
-describe.skip("Treasury", function() {
+describe("Treasury", function() {
 
   let snookToken;
   let skillToken;
@@ -16,6 +16,7 @@ describe.skip("Treasury", function() {
   const startBalance = ethers.utils.parseEther('1000');
   const initialSkillSupply = 40000000;
   const BurialDelay = 5;
+  const RewardPeriods = 2;
 
   before(async ()=> {
     signers = await ethers.getSigners();
@@ -89,7 +90,8 @@ describe.skip("Treasury", function() {
       skillToken.address, 
       uniswap.address,
       treasury.address,
-      BurialDelay
+      BurialDelay,
+      RewardPeriods
     );
     await snookGame.deployed();
     console.log(`snookGame deployed`);
