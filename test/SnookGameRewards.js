@@ -107,7 +107,7 @@ describe("SnookGame rewards", function() {
 
   });
 
-  it.skip('tests scenario 1: 2 players, 4 periods', async ()=>{
+  it('tests scenario 1: 2 players, 4 periods', async ()=>{
 
     // tap up Skill balance of treasury
     await skillToken.transfer(treasury.address, startBalance); 
@@ -144,15 +144,15 @@ describe("SnookGame rewards", function() {
     
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
+    await snookGame.enterGame(1,0);
+    await snookGame.enterGame(2,0);
     await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
     await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
 
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
+    await snookGame.enterGame(1,0);
+    await snookGame.enterGame(2,0);
     await snookGame.extractSnook(1, 0, 3, 0, 'now 3 stars');
     await snookGame.extractSnook(2, 0, 7, 0, 'now 7 stars');
 
@@ -180,7 +180,7 @@ describe("SnookGame rewards", function() {
 
     
     await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(2);
+    await snookGame.enterGame(2,0);
     await snookGame.setDeathTime(2, 0, 6, 0, 'dead');
     await delay(2.1*1000);
     // ended period 2
@@ -192,7 +192,7 @@ describe("SnookGame rewards", function() {
     
     
     await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.enterGame(1);
+    await snookGame.enterGame(1, 0);
     await snookGame.extractSnook(1, 0, 3, 0, '3 stars now');
     await delay(2.1*1000);
     // ended period 3
@@ -249,7 +249,7 @@ describe("SnookGame rewards", function() {
 
   });
 
-  it('tests scenario 2: playing between two periods', async ()=>{
+  it.skip('tests scenario 2: playing between two periods', async ()=>{
 
     // tap up Skill balance of treasury
     await skillToken.transfer(treasury.address, startBalance); 
@@ -290,15 +290,15 @@ describe("SnookGame rewards", function() {
     await treasury.transfer();
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
+    await snookGame.enterGame(1, 0);
+    await snookGame.enterGame(2, 0);
     await snookGame.extractSnook(1, 0, 4, 0, 'now 4 stars');
     await snookGame.extractSnook(2, 0, 8, 0, 'now 8 stars');
 
     await snookGame.connect(signers[1]).allowGame(1);
     await snookGame.connect(signers[2]).allowGame(2);
-    await snookGame.enterGame(1);
-    await snookGame.enterGame(2);
+    await snookGame.enterGame(1, 0);
+    await snookGame.enterGame(2, 0);
     await snookGame.extractSnook(1, 0, 3, 0, 'now 3 stars');
        
     await delay(2.1*1000);
@@ -338,7 +338,7 @@ describe("SnookGame rewards", function() {
     ));
 
     await snookGame.connect(signers[1]).allowGame(1);
-    await snookGame.enterGame(1);
+    await snookGame.enterGame(1, 0);
     await snookGame.extractSnook(1, 0, 6, 0, 'now 6 stars');
     await delay(2.1*1000);
     // ended period 4

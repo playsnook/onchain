@@ -127,7 +127,6 @@ contract SnookGame is Ownable {
         period.budget = budget;
         period.releaseTime = releaseTime;
         period.totalStars = _periods[_currentPeriodIdx - 1].totalStars;
-        console.log('startNewPeriod:', _currentPeriodIdx, 'budget:', period.budget);
     }
 
     // rename 
@@ -137,7 +136,6 @@ contract SnookGame is Ownable {
         period.tokenStars[tokenId] = newStars;
         period.tokenStarsUpdated[tokenId] = true;
         
-        console.log('Update period:', _currentPeriodIdx, 'totalStars:', period.totalStars);
     }
 
     
@@ -165,17 +163,16 @@ contract SnookGame is Ownable {
     }
 
     function computeRewards(uint tokenId, uint periodIdx) public view returns (uint) {
-        console.log('REWARDS for SnookId: ', tokenId, 'period:', periodIdx);
 
         require(_descriptors[tokenId].deathTime == 0, 'Dead');
 
         // detecting upper limit of rewardable periods
         require(_currentPeriodIdx > 1, 'No reward periods');    
-        require(periodIdx < _currentPeriodIdx, 'The period is unrewardable');
+        require(periodIdx < _currentPeriodIdx, 'Unrewardable');
 
         // i is a first rewardable period back from now (lower limit)
         uint i = _currentPeriodIdx <= _RewardPeriods ? 1 : _currentPeriodIdx - _RewardPeriods;
-        require(periodIdx >= i, 'The period is unrewardable');
+        require(periodIdx >= i, 'Unrewardable');
 
         require(_periods[periodIdx].tokenRewarded[tokenId] == false, 'Rewarded');
 
@@ -186,17 +183,13 @@ contract SnookGame is Ownable {
         } else {
             // find first updated from requested non-updated one and use it as current balance or reach the first of rewardable periods (k==1)
             for (uint k = periodIdx - 1; k >= i; k--) { 
-                console.log('k=', k, 'updated=', _periods[k].tokenStarsUpdated[tokenId]);
                 if (_periods[k].tokenStarsUpdated[tokenId] == true || k == i) {
-                    console.log('stars=', _periods[k].tokenStars[tokenId], 'total=', _periods[periodIdx].totalStars);
-                    console.log('periodIdx=', periodIdx, 'budget: ', _periods[periodIdx].budget);
                     amount = _periods[k].tokenStars[tokenId] * _periods[periodIdx].budget / _periods[periodIdx].totalStars;
                     break;
                 }
             }
         }
 
-        console.log('END OF Rewards for SnookId: ', tokenId, 'amount:', amount);
         return amount;
     }
     
