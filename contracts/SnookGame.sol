@@ -310,6 +310,7 @@ contract SnookGame is Ownable {
     function allowGame(uint256 tokenId) public {
         address owner = _snook.ownerOf(tokenId);
         require(owner == msg.sender, 'Not owner');
+        require(_descriptors[tokenId].ingame == false, 'In play');
         _descriptors[tokenId].gameAllowed = true;
         emit GameAllowed(owner, tokenId);
     }
