@@ -9,6 +9,7 @@ module.exports = async ({
   const UniswapUSDCSkill = await get('UniswapUSDCSkill');
   const Treasury = await get('Treasury');
   const BurialDelay = 60*60; // 1 hour
+  const RewardPeriods = 2;
   const deployResult = await deploy('SnookGame', {
     from: deployer,
     gasLimit: 5000000,
@@ -18,6 +19,7 @@ module.exports = async ({
       UniswapUSDCSkill.address,
       Treasury.address,
       BurialDelay,
+      RewardPeriods,
     ],
   });  
   if (deployResult.newlyDeployed) {
