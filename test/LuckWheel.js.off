@@ -1,0 +1,135 @@
+require('dotenv').config();
+const { expect, assert } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+const { utils: {parseEther: PE, formatEther: FE}} = ethers;
+const {nextXDays} = require('../scripts/lib');
+const RequiredCheckinsToGoldenWheel = parseInt(process.env.REQUIRED_CHECKINS_TO_GOLDEN_WHEEL);
+const RequiredCheckinsToSilverWheel = parseInt(process.env.REQUIRED_CHECKINS_TO_SILVER_WHEEL);
+const ChanceToMintSNOOK1in = parseInt(process.env.CHANCE_TO_MINT_SNOOK_1_IN);
+const ChanceToWin200SNK1in = parseInt(process.env.CHANCE_TO_WIN_200SNK_1_IN);
+
+describe('Luckwheel', () => {
+  let LuckWheel;
+  let deployer;
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    LuckWheel = await ethers.getContract('LuckWheel'); 
+    const Vesting = await ethers.getContract('Vesting');
+    const Treasury = await ethers.getContract('Treasury');
+    const tx = await Vesting.release(Treasury.address);
+    await tx.wait(1); 
+    ({deployer} = await getNamedAccounts());
+  });
+
+  it('tests 1 silver wheel was gained in 7 checkins', async ()=>{
+    for (let i=0; i<RequiredCheckinsToSilverWheel; i++) {
+      await LuckWheel.checkin();
+      await nextXDays(1);
+    }
+    const {silverWheels, goldenWheels, checkinCount, lastCheckinTimestamp} = await LuckWheel.getStatusFor(deployer);
+    expect(checkinCount).eq(RequiredCheckinsToSilverWheel);
+    expect(silverWheels).eq(1);
+  });
+
+  it('tests 1 golden wheel was gained in 30 checkins', async ()=>{
+    for (let i=0; i<RequiredCheckinsToGoldenWheel; i++) {
+      await LuckWheel.checkin();
+      await nextXDays(1);
+    }
+    const {silverWheels, goldenWheels, checkinCount, lastCheckinTimestamp} = await LuckWheel.getStatusFor(deployer);
+    expect(checkinCount).eq(RequiredCheckinsToGoldenWheel);
+    expect(goldenWheels).eq(1);
+  });
+
+  it('tests spinning silver wheel', async ()=>{
+    
+    const Trials = 100;
+    for (let i=0; i<RequiredCheckinsToSilverWheel * Trials; i++) {
+      await LuckWheel.checkin();
+      await nextXDays(1);
+    }
+    let noLucks = 0;
+    let prizeWins = 0;
+    for (let i=0; i<Trials; i++) {
+      const txRequest = await LuckWheel.spinSilverWheel();
+      const txReceipt = await txRequest.wait(1);
+      const eventSnookPrizeWin = txReceipt.events.find(e=>e.event === "SNOOKPrizeWin");  
+      if (eventSnookPrizeWin === undefined) {
+        const eventNoLuck = txReceipt.events.find(e=>e.event === "NoLuck");
+        assert(eventNoLuck !== undefined, 'Something strange');
+        noLucks += 1;
+      } else {
+        prizeWins += 1;
+      }
+    }
+    
+    expect(prizeWins).closeTo(Trials*(1/ChanceToMintSNOOK1in), 10);
+  });
+
+  it('tests spinning golden wheel', async ()=>{
+    assert(ChanceToWin200SNK1in == 1, 'Need to upgrade tests for any value');
+    const Trials = 100;
+    for (let i=0; i<RequiredCheckinsToGoldenWheel * Trials; i++) {
+      await LuckWheel.checkin();
+      await nextXDays(1);
+    }
+
+    let noLucks = 0;
+    let prizeWins = 0;
+    for (let i=0; i<Trials; i++) {
+      const txRequest = await LuckWheel.spinGoldenWheel();
+      const txReceipt = await txRequest.wait(1);
+      const eventSNKPrizeWin = txReceipt.events.find(e=>e.event === "SNKPrizeWin");  
+      if (eventSNKPrizeWin === undefined) {
+        const eventNoLuck = txReceipt.events.find(e=>e.event === "NoLuck");
+        assert(eventNoLuck !== undefined, 'Something strange');
+        noLucks += 1;
+      } else {
+        prizeWins += 1;
+      }
+    }
+    console.log(`prizeWins: ${prizeWins} noLucks: ${noLucks}`);
+    expect(prizeWins).closeTo(Trials*(1/ChanceToWin200SNK1in), 10);
+
+  });
+
+  it('tests number of silver and golden wheels, 1 check in', async ()=>{
+    assert(ChanceToWin200SNK1in == 1, 'Need to upgrade tests for any value');
+    await LuckWheel.checkin();
+    const {silverWheels, goldenWheels, checkinCount, lastCheckinTimestamp} = await LuckWheel.getStatusFor(deployer);
+    expect(checkinCount).eq(1);
+    expect(silverWheels).eq(0);
+    expect(goldenWheels).eq(0);
+  });
+
+  it('tests number of silver and golden wheels, 40 check ins', async ()=>{
+    assert(ChanceToWin200SNK1in == 1, 'Need to upgrade tests for any value');
+    assert(40>RequiredCheckinsToGoldenWheel && 40>RequiredCheckinsToSilverWheel, '40 is too small');
+    for (let i=0; i<40; i++) {
+      await LuckWheel.checkin();
+      await nextXDays(1);
+    }
+    const {silverWheels, goldenWheels, checkinCount, lastCheckinTimestamp} = await LuckWheel.getStatusFor(deployer);
+    expect(checkinCount).eq(40);
+    expect(silverWheels).eq(Math.floor(40/RequiredCheckinsToSilverWheel));
+    expect(goldenWheels).eq(Math.floor(40/RequiredCheckinsToGoldenWheel));
+  });
+
+  it('tests number of silver and golden wheels, 40 check ins, then spinning golden wheel', async ()=>{
+    assert(ChanceToWin200SNK1in == 1, 'Need to upgrade tests for any value');
+    assert(40>RequiredCheckinsToGoldenWheel && 40>RequiredCheckinsToSilverWheel, '40 is too small');
+
+    for (let i=0; i<40; i++) {
+      await LuckWheel.checkin();
+      await nextXDays(1);
+    }
+    await expect(LuckWheel.spinGoldenWheel()).to.emit(LuckWheel, 'SNKPrizeWin').withArgs(deployer, PE('200'));
+
+    const {silverWheels, goldenWheels, checkinCount, lastCheckinTimestamp} = await LuckWheel.getStatusFor(deployer);
+    expect(checkinCount).eq(40-RequiredCheckinsToGoldenWheel);
+    expect(silverWheels).eq(Math.floor((40-RequiredCheckinsToGoldenWheel)/RequiredCheckinsToSilverWheel));
+    expect(goldenWheels).eq(Math.floor((40-RequiredCheckinsToGoldenWheel)/RequiredCheckinsToGoldenWheel));
+  });
+
+});

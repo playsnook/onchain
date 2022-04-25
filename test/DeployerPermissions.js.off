@@ -1,0 +1,38 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+
+describe('DeployerPermissions', () => {
+  let SnookGameDeployer;
+  let SnookTokenDeployer;
+  let TreasuryGamer;
+  let deployer;
+  let gamer;
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    const accounts = await getNamedAccounts();
+    deployer = accounts.deployer;
+    gamer = accounts.gamer1;
+    
+    SkillTokenDeployer = await ethers.getContract('SkillToken', deployer);
+    SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    SnookTokenDeployer = await ethers.getContract('SnookToken', deployer);
+    TreasuryGamer = await ethers.getContract('Treasury', gamer);
+    await TreasuryGamer.transfer();
+  });
+  
+  it('tests deployer cannot grant roles on SkillToken contract', async () => {
+    const BURNER_ROLE = await SkillTokenDeployer.BURNER_ROLE();
+    await expect(
+      SkillTokenDeployer.grantRole(BURNER_ROLE, gamer)
+    ).to.be.reverted;
+  });
+
+  it('tests deployer cannot mint skill token', async () => {
+    await expect(
+      SkillTokenDeployer.mint(gamer, ethers.utils.parseEther('100'))
+    ).to.be.reverted;
+  });
+
+});

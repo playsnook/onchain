@@ -1,0 +1,104 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const PrivateSums = [
+  0,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  600000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+];
+assert(PrivateSums.length === 37);
+
+describe('Vesting - Private round', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('tests a single release after month 36 to address ...424', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a424 = namedAccounts['0xAf815BBc920dFdC6DE0Bc25224357687aC0B0424'];
+    const Total424 = ethers.utils.parseEther('6000000');
+    for (let i=0; i<40; i++) {
+      await nextMonth();
+    }
+    const {amount} = await getEventArgs(Vesting.release(a424), 'Released');
+    expect(amount).eq(Total424)
+  });
+
+  it('tests sums released to private round address: ...424; release consequently', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a424 = namedAccounts['0xAf815BBc920dFdC6DE0Bc25224357687aC0B0424'];
+    const Total424 = 6000000;
+    let acc424 = 0;
+
+    for (let i=0; i<PrivateSums.length; i++) {
+      
+      switch(i) {
+        case 2:
+        case 4:
+        case 6:
+        case 8:
+        case 10:
+        case 12:
+        case 14:
+        case 16:
+        case 18:
+        case 20:
+          const {amount: amount424} = await getEventArgs(Vesting.release(a424), 'Released');
+          acc424 += parseInt(E(amount424));
+          break;
+        default:
+          await expect(
+            Vesting.release(a424)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(acc424).to.be.equal(Total424);
+  });
+});

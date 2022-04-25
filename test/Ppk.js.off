@@ -1,0 +1,141 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+const { utils: {formatEther: E}} = ethers;
+describe('Ppk', () => {
+  let UniswapUSDCSkill;
+  let SkillTokenGamer1;
+  let SkillTokenGamer2;
+  let SnookGameGamer1;
+  let SnookGameGamer2;
+  let SnookGameDeployer;
+  let Treasury;
+  
+  
+  let snookPrice; 
+  let mintPartOfSnookPrice;
+  let gamer1;
+  let gamer2;
+  let deployer;
+
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    ({ deployer, gamer1, gamer2 } = await getNamedAccounts());
+    UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    SkillTokenGamer1 = await ethers.getContract('SkillToken', gamer1);
+    SkillTokenGamer2 = await ethers.getContract('SkillToken', gamer2);
+    SnookGameGamer1 = await ethers.getContract('SnookGame', gamer1);
+    SnookGameGamer2 = await ethers.getContract('SnookGame', gamer2);
+    SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    Treasury = await ethers.getContract('Treasury');
+
+    snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+    const TreasuryMintDiv = await Treasury.MINT_DIV();
+    const TreasuryMintPpkMul = await Treasury.MINT_PPK_MUL();
+    const SnookGameTreasuryMintPercentage = await SnookGameDeployer.MINT_TREASURY_PERCENTAGE();
+    mintPartOfSnookPrice = snookPrice
+      .mul(SnookGameTreasuryMintPercentage).div(100)
+      .mul(TreasuryMintPpkMul).div(TreasuryMintDiv);
+  
+  });
+  
+  it('tests Ppk balance after a single mint equals ppk part of snook price', async () => {
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer1.mint2(1);
+    const ppkBalance = await Treasury.getPpkBalance();
+    expect(ppkBalance).eq(mintPartOfSnookPrice);
+  });
+
+  it('tests after the claim nothing remains to claim', async () => {
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer1.mint2(1);
+    await SkillTokenGamer2.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer2.mint2(1);
+    await SnookGameGamer1.enterGame2(1);
+    await SnookGameGamer2.enterGame2(2); 
+    await SnookGameDeployer.setDeathTime(1,1,1,1,'test',2); // 2 kills 1
+    await SnookGameGamer2.claimPpkRewards();
+    await expect(SnookGameGamer2.claimPpkRewards()).to.be.revertedWith('No rewards');
+  });
+
+  it('tests claimPpkRewards reverts if gamer has no kills', async ()=>{
+    await expect(SnookGameGamer1.claimPpkRewards()).to.be.revertedWith('No rewards');
+  });
+  
+  it('tests a non-playing snook CAN kill playing snook', async ()=>{
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer1.mint2(1);
+    await SkillTokenGamer2.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer2.mint2(1);
+    await SnookGameGamer1.enterGame2(1);
+    await expect(SnookGameDeployer.setDeathTime(1,1,1,1,'test',2))
+      .to.be.not.reverted
+  })
+
+  it('tests getting ppk rewards for killing 1 snook', async ()=>{
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer1.mint2(1);
+    await SkillTokenGamer2.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer2.mint2(1);
+    await SnookGameGamer1.enterGame2(1);
+    await SnookGameGamer2.enterGame2(2);
+    
+    await SnookGameDeployer.setDeathTime(1,1,1,1,'test',2); // 2 kills 1
+    const [kills, expectedRewards] = await SnookGameGamer2.getKillsAndComputePpkRewards(gamer2);
+    expect(kills).eq(1);
+    await expect(SnookGameGamer2.claimPpkRewards())
+      .to.emit(SnookGameGamer2, 'PpkClaimed')
+      .withArgs(gamer2, expectedRewards);
+  });
+
+  it('tests suiciding increases ppk', async ()=>{
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer1.mint2(1);
+    await SkillTokenGamer2.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer2.mint2(1);
+    await SnookGameGamer1.enterGame2(1);
+    await SnookGameGamer2.enterGame2(2); 
+    const ppk1 = await SnookGameGamer1.computePpk();
+    await SnookGameDeployer.setDeathTime(1,1,1,1,'test',1); // token 1 suicides
+    const ppk2 = await SnookGameGamer1.computePpk();
+    expect(ppk2).gt(ppk1);
+  });
+
+  // have to redo the test: because of the same price, no change exists
+  it.skip('tests ppk changes only after claiming rewards', async ()=>{
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice.mul(3));
+    await SnookGameGamer1.mint2(3);
+    await SkillTokenGamer2.approve(SnookGameDeployer.address, snookPrice);
+    await SnookGameGamer2.mint2(1);
+
+    const ppk1 = await SnookGameGamer1.computePpk();
+    const spc1 = await SnookGameGamer1.getSnookPopulationCounter();
+    expect(spc1).eq(4); // 3 and 1 minted snooks
+    const ppkBalance1 = await Treasury.getPpkBalance();
+    expect(ppkBalance1.div(spc1)).eq(ppk1);
+    
+    await SnookGameGamer1.enterGame2(1);
+    await SnookGameGamer2.enterGame2(4);
+    await SnookGameDeployer.setDeathTime(1,1,1,1,'test',4); // 4 kills 1
+    
+    const ppk2 = await SnookGameGamer1.computePpk();
+    await SnookGameGamer1.enterGame2(2);
+    await SnookGameDeployer.setDeathTime(2,1,1,1,'test',4); // 4 kills 2
+    const ppk3 = await SnookGameGamer1.computePpk();
+    await SnookGameGamer1.enterGame2(3);
+    await SnookGameDeployer.setDeathTime(4,1,1,1,'test',3); // 3 kills 4
+    const ppk4 = await SnookGameGamer1.computePpk();
+    expect(ppk1).eq(ppk2);
+    expect(ppk1).eq(ppk3);
+    expect(ppk1).eq(ppk4);
+    await SnookGameGamer2.claimPpkRewards();
+
+    // Gamer2, owner of token 4, killed tokens 1 and 2, and claimed rewards
+    const spc5 = await SnookGameGamer1.getSnookPopulationCounter();
+    expect(spc5).eq(2);
+    const ppk5 = await SnookGameGamer1.computePpk();
+    const ppkBalance5 = await Treasury.getPpkBalance();
+    expect(ppkBalance5.div(spc5)).eq(ppk5);
+    //console.log(`b1: ${E(ppkBalance1)} ppk1: ${E(ppk1)} b5: ${E(ppkBalance5)} ppk5: ${E(ppk5)}`);
+  });
+});

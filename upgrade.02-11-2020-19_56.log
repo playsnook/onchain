@@ -1,0 +1,98 @@
+Compiling 62 files with 0.8.0
+Compilation finished successfully
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+deploying "SnookToken_Implementation" (tx: 0xf3341781283c17ea0266d94f06be441f910db60467075633241ba7cbf29f3ced)...: deployed at 0xD7b2CFC2e811cfE5eDb5BFf0289F27c6A92D0A07 with 2291900 gas
+---------------------------------------------------------------------------------------
+Please execute the following:
+---------------------------------------------------------------------------------------
+
+from: 0x11fe914689525618c322fc9cd76333BA15a932a6
+to: 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5 (DefaultProxyAdmin)
+method: upgrade
+args:
+  - 0x4372597f1c600D86598675DCB6cF5713bB7525Cf
+  - 0xD7b2CFC2e811cfE5eDb5BFf0289F27c6A92D0A07
+
+(raw data: 0x99a88ec40000000000000000000000004372597f1c600d86598675dcb6cf5713bb7525cf000000000000000000000000d7b2cfc2e811cfe5edb5bff0289f27c6a92d0a07 )
+
+---------------------------------------------------------------------------------------
+reusing "SkillToken" at 0x689f8e5913C158fFB5Ac5aeb83b3C875F5d20309
+reusing "UniswapUSDCSkill" at 0x31f528c6c193b27d77B874D1c28d113103AF04BF
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Treasury_Implementation" at 0x5CDC6FD7bB53C1646f290A921dDf060e8b2b2CCE
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookState_Implementation" at 0x80f905a3Ed9A9D2130487B71083dd61b7A85217a
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+deploying "SkinRewards_Implementation" (tx: 0xd5aa14a4a53aee34dfb16e375fe122b584cf85144f61798abc87024fbd7f8813)...: deployed at 0x4D3f7E111eaFD0FB3e92b8Ef0878a591fd064556 with 1959659 gas
+---------------------------------------------------------------------------------------
+Please execute the following:
+---------------------------------------------------------------------------------------
+
+from: 0x11fe914689525618c322fc9cd76333BA15a932a6
+to: 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5 (DefaultProxyAdmin)
+method: upgrade
+args:
+  - 0xD6588E9C555D35B0274f47Dc6b9D4D7917602347
+  - 0x4D3f7E111eaFD0FB3e92b8Ef0878a591fd064556
+
+(raw data: 0x99a88ec4000000000000000000000000d6588e9c555d35b0274f47dc6b9d4d79176023470000000000000000000000004d3f7e111eafd0fb3e92b8ef0878a591fd064556 )
+
+---------------------------------------------------------------------------------------
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+deploying "SnookGame_Implementation" (tx: 0xf4cf1d9ac04e93ea33f733cc53662565b9619e19c61f4d29589c10576fd4a512)...: deployed at 0xc06e40fE5421ca7902709CCf55aD0C7Bca24bF2a with 3111096 gas
+---------------------------------------------------------------------------------------
+Please execute the following:
+---------------------------------------------------------------------------------------
+
+from: 0x11fe914689525618c322fc9cd76333BA15a932a6
+to: 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5 (DefaultProxyAdmin)
+method: upgrade
+args:
+  - 0x1D9Da4c160A34DDA9C808A49D54112a5913c216c
+  - 0xc06e40fE5421ca7902709CCf55aD0C7Bca24bF2a
+
+(raw data: 0x99a88ec40000000000000000000000001d9da4c160a34dda9c808a49d54112a5913c216c000000000000000000000000c06e40fe5421ca7902709ccf55ad0c7bca24bf2a )
+
+---------------------------------------------------------------------------------------
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+deploying "Afterdeath_Implementation" (tx: 0xb27741751707fb8a6313de99013712ff1145cf599acda7b0b92933ddc808815e)...: deployed at 0x725dEE849e655F4Fd8A78c1DADF229B3a06ec905 with 2516909 gas
+---------------------------------------------------------------------------------------
+Please execute the following:
+---------------------------------------------------------------------------------------
+
+from: 0x11fe914689525618c322fc9cd76333BA15a932a6
+to: 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5 (DefaultProxyAdmin)
+method: upgrade
+args:
+  - 0x6BC8f0128e4Aaa0B3678b67BB93715fa70fAf3D3
+  - 0x725dEE849e655F4Fd8A78c1DADF229B3a06ec905
+
+(raw data: 0x99a88ec40000000000000000000000006bc8f0128e4aaa0b3678b67bb93715fa70faf3d3000000000000000000000000725dee849e655f4fd8a78c1dadf229b3a06ec905 )
+
+---------------------------------------------------------------------------------------
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "StakingRewards_Implementation" at 0x0145C9c5f19Af674349c0Ff29816208cd328c1DC
+reusing "SGE" at 0x4cA8FD22B97399421e9D0Cb6F0765bD0a23ddC41
+
+Nothing to compile
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookToken_Implementation" at 0xD7b2CFC2e811cfE5eDb5BFf0289F27c6A92D0A07
+reusing "SkillToken" at 0x689f8e5913C158fFB5Ac5aeb83b3C875F5d20309
+reusing "UniswapUSDCSkill" at 0x31f528c6c193b27d77B874D1c28d113103AF04BF
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Treasury_Implementation" at 0x5CDC6FD7bB53C1646f290A921dDf060e8b2b2CCE
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookState_Implementation" at 0x80f905a3Ed9A9D2130487B71083dd61b7A85217a
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SkinRewards_Implementation" at 0x4D3f7E111eaFD0FB3e92b8Ef0878a591fd064556
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookGame_Implementation" at 0xc06e40fE5421ca7902709CCf55aD0C7Bca24bF2a
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Afterdeath_Implementation" at 0x725dEE849e655F4Fd8A78c1DADF229B3a06ec905
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "StakingRewards_Implementation" at 0x0145C9c5f19Af674349c0Ff29816208cd328c1DC
+reusing "SGE" at 0x4cA8FD22B97399421e9D0Cb6F0765bD0a23ddC41
+Initialized2 SnookToken
+Vesting contracts will use 1635881598 timestamp
+reusing "Vesting" at 0x8329Dc7257D71934A29648c0acE54abBF4e9CbC7
+Vesting contract deployed with total rewards:37997000000000000000000000

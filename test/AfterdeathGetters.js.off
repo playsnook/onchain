@@ -1,0 +1,69 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers } = require('hardhat');
+const BurialDelayInSeconds = parseInt(process.env.BURIAL_DELAY_IN_SECONDS);
+
+describe('Afterdeath getters', () => {
+  let UniswapUSDCSkill;
+  let SkillToken;
+  let SnookGame;
+  let Afterdeath;
+  let Treasury;
+  let SnookState;
+  let SnookToken;
+  let SkinRewards;
+  let SGE;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    SkillToken = await ethers.getContract('SkillToken');
+    SnookToken = await ethers.getContract('SnookToken');
+    SnookGame = await ethers.getContract('SnookGame');
+    SkinRewards = await ethers.getContract('SkinRewards');
+    SnookState = await ethers.getContract('SnookState');
+    Afterdeath = await ethers.getContract('Afterdeath');
+    Treasury = await ethers.getContract('Treasury');
+    SGE = await ethers.getContract('SGE');
+  });
+  
+  it('test getTreasuryAddress()', async () => {
+    expect(await Afterdeath.getTreasuryAddress()).eq(Treasury.address);
+  });
+
+  it('test getBurialDelayInSeconds()', async () => {
+    expect(await Afterdeath.getBurialDelayInSeconds()).eq(BurialDelayInSeconds);
+  });
+
+  it('test getAliveSnookCount()', async () => {
+    expect(await Afterdeath.getAliveSnookCount()).eq(ethers.BigNumber.from(0));
+  });
+
+  it('test getUniswapUSDCSkillAddress()', async () => {
+    expect(await Afterdeath.getUniswapUSDCSkillAddress()).eq(UniswapUSDCSkill.address);
+  });
+
+  it('test getSnookStateAddress()', async () => {
+    expect(await Afterdeath.getSnookStateAddress()).eq(SnookState.address);
+  });
+
+  it('test getSNKAddress()', async ()=>{
+    expect(await Afterdeath.getSNKAddress()).eq(SkillToken.address);
+  });
+
+  it('test getSnookAddress()', async ()=>{
+    expect(await Afterdeath.getSNOOKAddress()).eq(SnookToken.address);
+  });
+
+  it('test getSnookGameAddress()', async ()=>{
+    expect(await Afterdeath.getSnookGameAddress()).eq(SnookGame.address);
+  });
+
+  it('test getSkinRewardsAddress()', async ()=>{
+    expect(await Afterdeath.getSkinRewardsAddress()).eq(SkinRewards.address);
+  });
+
+  it('test getSGEAddress()', async ()=>{
+    expect(await Afterdeath.getSGEAddress()).eq(SGE.address);
+  });
+
+});

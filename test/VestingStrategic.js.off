@@ -1,0 +1,133 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const StrategicSums = [
+  0,
+  0,
+  0,
+  553848,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  553846,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+];
+assert(StrategicSums.length === 37);
+
+describe('Vesting - Strategic partners', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('tests sums released to strategic parner address: ...695; release consequently', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a695 = namedAccounts['0x500baE6Bcd5F41434566a9F852b77650f2BF1695'];
+    const Total695 = 7200000;
+    let acc695 = 0;
+
+    for (let i=0; i<StrategicSums.length; i++) {
+      
+      switch(i) {
+        case 3:
+        case 5:
+        case 7:
+        case 9:
+        case 11:
+        case 13:
+        case 15:
+        case 17:
+        case 19:
+        case 21:
+        case 23:
+        case 25:
+        case 27: // remains due to rounding error
+          const {amount: amount695} = await getEventArgs(Vesting.release(a695), 'Released');
+          acc695 += parseInt(E(amount695));
+          break;
+        default:
+          if (i<29) { // for i>=29 maybe not reverted due to remains because of rounding error
+            await expect(
+              Vesting.release(a695)
+            ).to.be.revertedWith('Nothing to release');
+          }
+      }
+      await nextMonth();
+    }
+
+    expect(Math.abs(acc695 - Total695)).to.be.lessThan(20);
+  });
+
+  it('release on month 50 for address: ...695; no releases before month 50', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a695 = namedAccounts['0x500baE6Bcd5F41434566a9F852b77650f2BF1695'];
+    const Total695 = ethers.utils.parseEther('7200000');
+
+    for (let i=0; i<51; i++) {
+      await nextMonth();
+    }
+
+    const releasableAmount = await Vesting.getReleasableAmount(a695);
+    expect(releasableAmount).eq(Total695);
+    await expect(Vesting.release(a695)).not.to.be.reverted;
+  });
+
+  it('release on month 50 for address: ...695; 3 releases before month 50', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a695 = namedAccounts['0x500baE6Bcd5F41434566a9F852b77650f2BF1695'];
+    const Total695 = ethers.utils.parseEther('7200000');
+
+    let released = ethers.BigNumber.from(0);
+    for (let i=0; i<51; i++) {
+      if (i==5 || i==11 || i==15) {
+        const {amount} = await getEventArgs(Vesting.release(a695), 'Released');
+        released = released.add(amount);
+      } 
+      await nextMonth();
+    }
+
+    const {amount} = await getEventArgs(Vesting.release(a695), 'Released');
+    released = released.add(amount);
+    expect(released).eq(Total695);
+  });
+});

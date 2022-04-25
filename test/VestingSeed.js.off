@@ -1,0 +1,150 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const SeedSums = [
+  0,
+  0,
+  125000,
+  0,
+  0,
+  187500,
+  0,
+  0,
+  250000,
+  0,
+  0,
+  375000,
+  0,
+  0,
+  375000,
+  0,
+  0,
+  250000,
+  0,
+  0,
+  250000,
+  0,
+  0,
+  250000,
+  0,
+  0,
+  250000,
+  0,
+  0,
+  187500,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+];
+assert(SeedSums.length === 37);
+
+describe('Vesting - Seed', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('test a single release after month 36 to seeder ...1E8', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a1E8 = namedAccounts['0x6a860b4cF62435DC6b7D8DBB2413497f96DD61E8'];
+    const Total1E8 = ethers.utils.parseEther('1250000');
+
+    for (let i=0; i<40; i++) {
+      await nextMonth();
+    }
+
+    const {amount} = await getEventArgs(Vesting.release(a1E8), 'Released');
+    expect(amount).eq(Total1E8);
+  });
+
+  it('tests sums released to seeders: ...1E8; release consequently', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a1E8 = namedAccounts['0x6a860b4cF62435DC6b7D8DBB2413497f96DD61E8'];
+    const Total1E8 = 1250000;
+    let acc1E8 = 0;
+
+    for (let i=0; i<SeedSums.length; i++) {
+      switch(i) {
+        case 3:
+        case 6:
+        case 9:
+        case 12:
+        case 15:
+        case 18:
+        case 21:
+        case 24:
+        case 27:
+        case 30:
+          const {amount: amount1E8} = await getEventArgs(Vesting.release(a1E8), 'Released');
+          acc1E8 += parseInt(E(amount1E8));
+          break;
+        default:
+          await expect(
+            Vesting.release(a1E8)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(acc1E8).to.be.equal(Total1E8);
+  });
+
+  it('tests sums released to seeders: ...1E8; 1st release on 13th month', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a1E8 = namedAccounts['0x6a860b4cF62435DC6b7D8DBB2413497f96DD61E8'];
+    const Total1E8 = 1250000;
+    let acc1E8 = 0;
+    for (let i=0; i<SeedSums.length; i++) {
+      switch(i) {
+        case 3:
+        case 4:
+        case 5:  
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+          break;
+        case 13:
+          const {amount: amount1E8on13} = await getEventArgs(Vesting.release(a1E8), 'Released');
+          acc1E8 += parseInt(E(amount1E8on13));
+          break;
+        case 15:
+        case 18:
+        case 21:
+        case 24:
+        case 27:
+        case 30:
+          const {amount: amount1E8} = await getEventArgs(Vesting.release(a1E8), 'Released');
+          acc1E8 += parseInt(E(amount1E8));
+          break;
+        default:
+          await expect(
+            Vesting.release(a1E8)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(acc1E8).to.be.equal(Total1E8);
+  });
+
+});

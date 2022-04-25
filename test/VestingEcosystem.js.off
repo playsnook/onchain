@@ -1,0 +1,114 @@
+const assert = require('assert');
+const { expect } = require('chai');
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const EcosystemSums = [ // in ethers
+  7207,
+  14414,
+  21622,
+  28829,
+  36036,
+  43243,
+  50450,
+  57658,
+  64865,
+  72072,
+  79279,
+  86486,
+  93694,
+  100901,
+  108108,
+  115315,
+  122523,
+  129730,
+  136937,
+  144144,
+  151351,
+  158559,
+  165766,
+  172973,
+  180180,
+  187387,
+  194595,
+  201802,
+  209009,
+  216216,
+  223423,
+  230631,
+  237838,
+  245045,
+  252252,
+  259459,
+  0
+];
+assert(EcosystemSums.length === 37);
+
+describe('Vesting - Ecosystem', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('tests sums released to ecosystem address: ...F75; release consequently', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const aF75 = namedAccounts['0x59C1E862b540776Ee593C77Ac63C0C2Fa9E69F75'];
+    const TotalF75 = 4800000;
+    let released = ethers.BigNumber.from(0);
+
+    for (let i=0; i<EcosystemSums.length-1; i++) {
+      const {amount} = await getEventArgs(Vesting.release(aF75), 'Released');
+      released = released.add(amount);
+      await nextMonth();
+    }
+
+    const releasedEthers = ethers.utils.formatEther(released);
+    expect(TotalF75-releasedEthers).to.be.lessThan(1);
+  });
+
+  it('tests sums released to ecosystem address: ...F75; release one time on SGE then wait 40 months and release again. Known BUG', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const aF75 = namedAccounts['0x59C1E862b540776Ee593C77Ac63C0C2Fa9E69F75'];
+    
+    let released = ethers.BigNumber.from(0);
+    const {amount: amount1} = await getEventArgs(Vesting.release(aF75), 'Released');
+    released = released.add(amount1);
+    for (let i=0; i<40; i++) {
+      await nextMonth();
+    }
+
+    // Known Bug:
+    await expect(Vesting.release(aF75)).to.revertedWith('cannot release more than allocated');
+  });
+
+  
+
+  it('tests sums released to ecosystem address: ...F75; release consequently 1st and 12th month out of order', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const aF75 = namedAccounts['0x59C1E862b540776Ee593C77Ac63C0C2Fa9E69F75'];
+    const TotalF75 = 4800000;
+    let released = ethers.BigNumber.from(0);
+
+    for (let i=0; i<EcosystemSums.length-1; i++) {
+      if (i!== 1 && i!==12) {
+        const {amount} = await getEventArgs(Vesting.release(aF75), 'Released');
+        released = released.add(amount);
+      }
+      await nextMonth();
+    }
+
+    const releasedEthers = ethers.utils.formatEther(released);
+    expect(TotalF75-releasedEthers).to.be.lessThan(1); // total sum of sums is not strictly 4800000 (round errors)
+  });
+
+});

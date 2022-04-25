@@ -1,0 +1,204 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+const { getEventArgs } = require('../scripts/lib');
+const { BigNumber} = ethers;
+const InitialSkillSupply = ethers.BigNumber.from(process.env.INITIAL_SKILL_SUPPLY_IN_ETHERS);
+const InterestRate = ethers.BigNumber.from(process.env.INTEREST_RATE_PER_DAY_IN_CENTIPERCENTS);
+const MinStakingPeriod = ethers.BigNumber.from(process.env.MIN_STAKING_PERIOD_IN_DAYS);
+const MinNumberOfStakers = ethers.BigNumber.from(process.env.MIN_NUMBER_OF_STAKERS);
+const MinStakingValueCoef = ethers.BigNumber.from(process.env.MIN_STAKING_VALUE_COEF);
+const BurningRate = ethers.BigNumber.from(process.env.BURNING_RATE_IN_PERCENTS);
+const TreasuryCycles = [
+  parseInt(process.env.TREASURY_FOUNDERS_CYCLE_IN_DAYS),
+  parseInt(process.env.TREASURY_STAKING_CYCLE_IN_DAYS),
+  parseInt(process.env.TREASURY_SKIN_CYCLE_IN_DAYS)
+];
+const MaxStakingPeriod = BigNumber.from(TreasuryCycles[1]);
+
+describe('StakingRewards, uninitialized state', ()=>{
+  let StakingRewards;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    const { gamer1 } = await getNamedAccounts();
+    StakingRewards = await ethers.getContract('StakingRewards', gamer1);
+    Vesting = await ethers.getContract('Vesting', gamer1);
+    Treasury = await ethers.getContract('Treasury', gamer1);
+  });
+
+  it('tests init() reverts when called by non-Treasury', async () => {
+    await expect(
+      StakingRewards.init(ethers.BigNumber.from(90))
+    ).to.be.revertedWith('Not treasury')
+  });
+
+
+  it('tests deposit() reverts on never initialized cycle', async () => {
+    await expect(
+      StakingRewards.deposit(1, 1)
+    ).to.be.revertedWith('Reward cycle is not initialized');
+  });
+});
+
+describe('StakingRewards, first cycle initialized', () => {
+  let StakingRewards;
+  let Treasury;
+  let Vesting;
+  let SkillToken;
+  let gamer1;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    const accs = await getNamedAccounts();
+    gamer1 = accs.gamer1;
+    StakingRewards = await ethers.getContract('StakingRewards', gamer1);
+    Vesting = await ethers.getContract('Vesting', gamer1);
+    Treasury = await ethers.getContract('Treasury', gamer1);
+    SkillToken = await ethers.getContract('SkillToken', gamer1);
+    const [cmin] = await StakingRewards.getDepositLimits();
+    expect(await SkillToken.balanceOf(gamer1)).gte(cmin);
+    await Vesting.release(Treasury.address);
+    await Treasury.transfer();
+  });
+
+  it('tests deposit limits calculation by contract', async ()=>{
+    const tmax = MaxStakingPeriod;
+    const WEI = BigNumber.from(10).pow(BigNumber.from(18));
+    const CentiPercent = BigNumber.from(100).mul(100);
+
+    const T = await SkillToken.balanceOf(StakingRewards.address);
+    const [cmin, cmax] = await StakingRewards.getDepositLimits();
+    
+    const S = await SkillToken.totalSupply();
+    const S0 = InitialSkillSupply.mul(WEI);
+    
+    let cmaxExpected = S0.mul(T).mul(CentiPercent).div(InterestRate).div(MinNumberOfStakers).div(S).div(tmax)
+    if (cmaxExpected.gt(T)) {
+      cmaxExpected = T;
+    }
+    
+    expect(cmax).eq(cmaxExpected);
+    const cminExpected = cmaxExpected.div(MinStakingValueCoef);
+    expect(cmin).eq(cminExpected);
+  });
+
+  it('tests deposit() reverts when period is smaller than minimal staking period', async()=>{
+    await expect(
+      StakingRewards.deposit(1, MinStakingPeriod.sub(1))
+    ).to.be.revertedWith('Invalid staking period');
+  });
+
+  it('tests deposit() reverts when period is greater than maximal staking period', async()=>{
+    await expect(
+      StakingRewards.deposit(1, MaxStakingPeriod.add(1))
+    ).to.be.revertedWith('Invalid staking period');
+  });
+  
+  it('tests deposit() reverts when deposit amount is less than cmin', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await expect(
+      StakingRewards.deposit(cmin.div(2), MinStakingPeriod)
+    ).to.be.revertedWith('Invalid staking amount');
+  });
+
+  it('test deposit() reverts when deposit amount is greater than cmax', async ()=>{
+    const [,cmax] = await StakingRewards.getDepositLimits();
+    await expect(
+      StakingRewards.deposit(cmax.mul(2), MinStakingPeriod)
+    ).to.be.revertedWith('Invalid staking amount');
+  });
+
+  it('checks deposit() reverts on insufficient budget of staker', async ()=>{
+    const gamerBalance1 = await SkillToken.balanceOf(gamer1);
+    // move all gamer1's SKILL to Treasury (does not matter where, just to zero the balance)
+    await SkillToken.transfer(Treasury.address, gamerBalance1);
+    const gamerBalance2 = await SkillToken.balanceOf(gamer1);
+    const [cmin] = await StakingRewards.getDepositLimits();
+    expect(gamerBalance2).lt(cmin);
+    await expect(
+      StakingRewards.deposit(cmin, MinStakingPeriod)
+    ).to.be.revertedWith('ERC20: transfer amount exceeds balance');
+  });
+
+  it('tests making two successful deposit calls creates two deposit records', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    await StakingRewards.deposit(cmin, MinStakingPeriod);
+    await SkillToken.approve(StakingRewards.address, cmin);
+    await StakingRewards.deposit(cmin, MinStakingPeriod);
+    const depositRecords = await StakingRewards.getDepositRecords(gamer1);
+    expect(depositRecords.length).eq(2);
+  });
+
+  it('tests computeRewards() returns the same values of rewards as Deposit event of deposit()', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    const r1 = await StakingRewards.computeRewards(cmin, MinStakingPeriod);
+    const r2 = await getEventArgs(StakingRewards.deposit(cmin, MinStakingPeriod), 'Deposit');
+    expect(r1.rewards).eq(r2.rewards);    
+  });
+
+  it('tests computeRewards() returns the same values of rewardsToBurn as Deposit event of deposit()', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    const r1 = await StakingRewards.computeRewards(cmin, MinStakingPeriod);
+    const r2 = await getEventArgs(StakingRewards.deposit(cmin, MinStakingPeriod), 'Deposit');
+    expect(r1.rewardsToBurn).eq(r2.rewardsToBurn);
+  });
+
+  it('tests computeRewards() returns the same values of rewardsToPay as Deposit event of deposit()', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    const r1 = await StakingRewards.computeRewards(cmin, MinStakingPeriod);
+    const r2 = await getEventArgs(StakingRewards.deposit(cmin, MinStakingPeriod), 'Deposit');
+    expect(r1.rewardsToPay).eq(r2.rewardsToPay);
+  });
+
+  it('tests Deposit event contains the same amount as deposited', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    const [,,amount] = await getEventArgs(StakingRewards.deposit(cmin, MinStakingPeriod), 'Deposit');
+    expect(amount).eq(cmin);
+  });
+
+  it('tests Deposit event contains as beneficiary the address of depositor', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    const [beneficiary] = await getEventArgs(StakingRewards.deposit(cmin, MinStakingPeriod), 'Deposit');
+    expect(beneficiary).eq(gamer1);
+  });
+
+  it('tests token timelock balance equals computed rewardsToPay plus deposited amount', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    const [,,rewardsToPay] = await StakingRewards.computeRewards(cmin, MinStakingPeriod);
+    await StakingRewards.deposit(cmin, MinStakingPeriod);
+    
+    const [depositRecord] = await StakingRewards.getDepositRecords(gamer1);
+    const [tokenTimelock] = depositRecord;
+    expect(await SkillToken.balanceOf(tokenTimelock)).eq(rewardsToPay.add(cmin)); 
+  });
+
+  // https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#TokenTimelock
+  it('tests token timelock beneficiary is depositor', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    await StakingRewards.deposit(cmin, MinStakingPeriod);
+    
+    const [depositRecord] = await StakingRewards.getDepositRecords(gamer1);
+    const [tokenTimelock] = depositRecord;
+    const TokenTimelock = await ethers.getContractAt('TokenTimelock', tokenTimelock, gamer1);
+    expect(await TokenTimelock.beneficiary()).eq(gamer1);
+  });
+
+  it('tests token timelock release time matches deposit period', async ()=>{
+    const [cmin] = await StakingRewards.getDepositLimits();
+    await SkillToken.approve(StakingRewards.address, cmin);
+    await StakingRewards.deposit(cmin, MinStakingPeriod);
+    
+    const [depositRecord] = await StakingRewards.getDepositRecords(gamer1);
+    const [tokenTimelock] = depositRecord;
+    const TokenTimelock = await ethers.getContractAt('TokenTimelock', tokenTimelock, gamer1);
+    const releaseTime = MinStakingPeriod.mul(BigNumber.from(process.env.SECONDS_IN_DAY)).add(BigNumber.from(Math.floor(Date.now() / 1000)));
+    expect(await TokenTimelock.releaseTime()).gte(releaseTime);
+  });
+});

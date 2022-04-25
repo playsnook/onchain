@@ -1,0 +1,34 @@
+Nothing to compile
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "SnookToken_Implementation" at 0xf80D3C1aC4e50e84852aa56ACDd614499395031C
+reusing "SkillToken" at 0x8B30D22A9D92dbED2E0687677249e7f07c02a253
+reusing "UniswapV2Factory" at 0x8B646F434e4Bb0ffeEEb0fe18539a50F12DA77ea
+reusing "UniswapV2Router02" at 0xC57F6C7Fc9C122f1E949F22DE3A5C3EAb0610099
+reusing "UniswapUSDCSkill" at 0xB0D82af42eAcfb618A8F2123CD359e39eB20f38E
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "Treasury_Implementation" (tx: 0x1f0a1ae5a4f90a20a1e3a86ce99e28cbdca62730ed89e3c5f1fcd76257203b4f)...: deployed at 0x788F3ECD27f969f74c847a5017f52bf2aaA957B7 with 1491974 gas
+executing DefaultProxyAdmin.upgrade (tx: 0xda84241f0014dfb526281442da140589fb6bf1b71fea9b96dd58212688ed9509) ...: performed with 32561 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "SnookState_Implementation" at 0x8317F3bcB75E72E7D4BA5F1a8a0e6D3bb7E59e0d
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "SnookGame_Implementation" (tx: 0xb97eee77d36c1591f8214f67f7e3a697b12c1010ac33e264bd94925652b06dfc)...: deployed at 0x45984341DC1ABFBAc26B0Fc8bB8113713A993688 with 4433484 gas
+executing DefaultProxyAdmin.upgrade (tx: 0xdcb90ca2baf6adb84b8b70975b07c286dc588072b3ba8bc43391282a71c93ece) ...: performed with 32573 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "Afterdeath_Implementation" (tx: 0xd7eaef25b72e3aa3ca681d2503412966cee4062c1922780c955f40cbaead1e93)...: deployed at 0x4569F997E4314E924fdBf21617FB6dc6fEcD3DcA with 2568525 gas
+executing DefaultProxyAdmin.upgrade (tx: 0x317c958228d5a6c231be749b3ffee41c3d466c852f500789ccd084366d878aa2) ...: performed with 32573 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "StakingRewards_Implementation" (tx: 0x7d7842854c525bd8aac0281a52bc026084729d0b0522d114531232918d33b0a3)...: deployed at 0x71c7045A91D8d596Ecab9604Ec669eF886D3dD06 with 1888940 gas
+executing DefaultProxyAdmin.upgrade (tx: 0x1cd733cfccd41543d89e8026d44b6d0464cd039501b2792b5f15f77c3dbbe07c) ...: performed with 32573 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "Marketplace_Implementation" (tx: 0xd414175f6974ed5499156495afadee572ebfc937c04046990292fb3beee2302a)...: deployed at 0xAa91293eD6eE8409305D4b56C42BAf40A0Ef0005 with 2261871 gas
+executing DefaultProxyAdmin.upgrade (tx: 0xf1d1fae03be86523e4a59a7f65e203e85d2651e6dcc84d1d87475778648e9f18) ...: performed with 32561 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "PRNG_Implementation" at 0xCf9c28Dd90E32886f20eafb50DB3bc9B19104a87
+Vesting contracts will use 1650822214 timestamp
+reusing "Vesting" at 0xD0a80B5158C8F1De19114B4D9FfcB60D1cdb93a6
+Vesting contract deployed with total rewards:38000000000000000000000000
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "LuckWheel_Implementation" at 0x2826A1c49B2B66dd0d1a077a8E01b3E4A76e30c9
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "BurnSafe_Implementation" (tx: 0x9433a4f90648718aee65d946c8e97014312e043f0a0d279a8bae2df3c1205284)...: deployed at 0x657E05F8c4C57047aC7a2641601d35dD585862fC with 1256904 gas
+executing DefaultProxyAdmin.upgrade (tx: 0xfd8d9bf3697c5aae50606883760d0249cbf62ed8110e5ede7c6555b49c2f65d5) ...: performed with 32573 gas

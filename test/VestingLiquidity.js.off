@@ -1,0 +1,168 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const LiquiditySums = [
+  1000000,
+  300000,
+  300000,
+  300000,
+  300000,
+  300000,
+  300000,
+  300000,
+  300000,
+  300000,
+  300000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+];
+assert(LiquiditySums.length === 37);
+
+describe('Vesting - Liquidity pool', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('tests sums released to liquidity address: ...050; release consequently', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a050 = namedAccounts['0x882b5f8facCB9145Db18e4410926db4A9dF9C050'];
+    const Total050 = 4000000;
+    let acc050 = 0;
+
+    for (let i=0; i<LiquiditySums.length; i++) {
+      switch(i) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+          const {amount: amount050} = await getEventArgs(Vesting.release(a050), 'Released');
+          acc050 += parseInt(E(amount050));
+          break;
+        default:
+          await expect(
+            Vesting.release(a050)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(acc050).to.be.equal(Total050);
+  });
+
+  it('releases on month 91: account ...050', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a050 = namedAccounts['0x882b5f8facCB9145Db18e4410926db4A9dF9C050'];
+    const Total050 = ethers.utils.parseEther('4000000');
+    for (let i=0; i<92; i++) {
+      await nextMonth();
+    }
+    const {amount} = await getEventArgs(Vesting.release(a050), 'Released');
+    expect(amount).eq(Total050);
+  });
+
+
+  it('releases on month 91 after 2 releases in the middle: account ...050', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a050 = namedAccounts['0x882b5f8facCB9145Db18e4410926db4A9dF9C050'];
+    const Total050 = ethers.utils.parseEther('4000000');
+    let released = ethers.BigNumber.from(0);
+    for (let i=0; i<92; i++) {
+      if (i===5 || i===9) {
+        const {amount} = await getEventArgs(Vesting.release(a050), 'Released');
+        released = released.add(amount);
+      }
+      await nextMonth();
+    }
+    const {amount} = await getEventArgs(Vesting.release(a050), 'Released');
+    released = released.add(amount)
+    expect(released).eq(Total050);
+  });
+
+  it('release 9 times then wait 10 monthes and release again: account ...050', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a050 = namedAccounts['0x882b5f8facCB9145Db18e4410926db4A9dF9C050'];
+    const Total050 = ethers.utils.parseEther('4000000');
+    let released = ethers.BigNumber.from(0);
+    for (let i=0; i<=8; i++) {
+      const {amount} = await getEventArgs(Vesting.release(a050), 'Released');
+      released = released.add(amount);
+      await nextMonth();
+    }
+
+    for (let i=0; i<10; i++) {
+      await nextMonth();
+    }
+
+    const {amount} = await getEventArgs(Vesting.release(a050), 'Released');
+    released = released.add(amount)
+    expect(released).eq(Total050);
+  });
+
+  it('release 1 time then wait 100 monthes and release again: account ...050', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a050 = namedAccounts['0x882b5f8facCB9145Db18e4410926db4A9dF9C050'];
+    const Total050 = ethers.utils.parseEther('4000000');
+    let released = ethers.BigNumber.from(0);
+    
+    const {amount: amount1} = await getEventArgs(Vesting.release(a050), 'Released');
+    released = released.add(amount1);
+  
+    for (let i=0; i<101; i++) {
+      await nextMonth();
+    }
+
+    const {amount:amount2} = await getEventArgs(Vesting.release(a050), 'Released');
+    released = released.add(amount2)
+    expect(released).eq(Total050);
+  });
+
+  
+});

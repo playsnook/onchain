@@ -1,0 +1,161 @@
+// Testing enterGame2()
+
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+
+const gamer1token1 = 'ipfs://QmUgWRPtmmwvafRv3P6HUcXiKfAbdCSaRV5aHDju33kuFy';
+const gamer2token1 = 'ipfs://QmbUwbRbuHvPuQTmMWE1ZtmESnZZ6q5YPDgWhtnNTtmtLa';
+const gamer2token2 = 'ipfs://Qmdfh7t7kPARDkEtdRE6EAZR5vMWzZZoa5ftDKB8GxTRgQ';
+
+describe('SGE: bulkMint() for 2 addresses with 1 and 2 token URIs respectively', () => {
+  let Treasury;
+  let SGE;
+  let Vesting;
+  let SnookToken;
+  let gamer1;
+  let gamer2;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    Treasury = await ethers.getContract('Treasury');
+    SGE = await ethers.getContract('SGE');
+    SnookToken = await ethers.getContract('SnookToken');
+    Vesting = await ethers.getContract('Vesting');
+    await Vesting.release(Treasury.address);
+    await Treasury.transfer();
+
+    const accs = await getNamedAccounts();
+    gamer1 = accs.gamer1;
+    gamer2 = accs.gamer2;
+
+    await SGE.bulkMint([
+      gamer1, 
+      gamer2
+    ], [ 
+      [gamer1token1], 
+      [gamer2token1, gamer2token2] 
+    ]);
+  });
+  
+  it('tests getMintedCount() equals to 3', async ()=>{
+    expect(await SGE.getMintedCount()).eq(3);
+  });
+
+  it('tests owner of token 1 is gamer1', async ()=>{
+    expect(await SnookToken.ownerOf(1)).eq(gamer1);
+  });
+
+  it('tests owner of token 2 is gamer 2', async ()=>{
+    expect(await SnookToken.ownerOf(2)).eq(gamer2)
+  });
+
+  it('tests owner of token 3 is gamer 2', async ()=>{
+    expect(await SnookToken.ownerOf(3)).eq(gamer2)
+  });
+
+  it('tests owner of token 1 has valid tokenURI', async ()=>{
+    expect(await SnookToken.tokenURI(1)).eq(gamer1token1);
+  });
+
+  it('tests owner of token 2 has valid tokenURI', async ()=>{
+    expect(await SnookToken.tokenURI(2)).eq(gamer2token1);
+  });
+
+  it('tests owner of token 3 has valid tokenURI', async ()=>{
+    expect(await SnookToken.tokenURI(3)).eq(gamer2token2);
+  });
+});
+
+describe('SGE: bulkMint() token limit', () => {
+  let Treasury;
+  let SGE;
+  let Vesting;
+  let SnookToken;
+  let gamer1;
+  let beneficiaries = [];
+  let tokenURIs = [];
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    Treasury = await ethers.getContract('Treasury');
+    SGE = await ethers.getContract('SGE');
+    SnookToken = await ethers.getContract('SnookToken');
+    Vesting = await ethers.getContract('Vesting');
+    await Vesting.release(Treasury.address);
+    await Treasury.transfer();
+
+    const accs = await getNamedAccounts();
+    gamer1 = accs.gamer1;
+    const maxTokenCount = await SGE.getMaxTokenCount();
+    
+    for (let i=0; i<maxTokenCount; i++) {
+      beneficiaries.push(gamer1);
+      tokenURIs.push([gamer1token1]);
+    }
+
+    await expect(
+      SGE.bulkMint(beneficiaries,tokenURIs)
+    ).to.emit(SGE, 'BulkMint').withArgs(maxTokenCount);
+
+    expect(await SGE.getMintedCount()).eq(maxTokenCount);
+  });
+
+  it('tests bulkMint() reverts when trying to mint more than maximal number of tokens', async ()=>{
+    await expect(
+      SGE.bulkMint([gamer1], [[gamer1token1]])
+    ).to.be.revertedWith('SGE: No more minting')
+  });
+});
+
+
+describe('SGE: Playing game with minted snooks (using enterGame2)', ()=>{
+  let SkillTokenGamer1;
+  let SnookGameDeployer;
+  let SnookGameGamer1;
+  let SnookTokenGamer1;
+  let SnookTokenDeployer;
+  let TreasuryGamer1;
+  let deployer;
+  let gamer1;
+  let gamer2;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    Treasury = await ethers.getContract('Treasury');
+    SGE = await ethers.getContract('SGE');
+    SnookToken = await ethers.getContract('SnookToken');
+    Vesting = await ethers.getContract('Vesting');
+    await Vesting.release(Treasury.address);
+    await Treasury.transfer();
+
+    const accs = await getNamedAccounts();
+    gamer1 = accs.gamer1;
+    gamer2 = accs.gamer2;
+    deployer = accs.deployer;
+
+    await SGE.bulkMint([
+      gamer1, 
+      gamer2
+    ], [ 
+      [gamer1token1], 
+      [gamer2token1, gamer2token2] 
+    ]);
+
+    SkillTokenGamer1 = await ethers.getContract('SkillToken', gamer1);
+    SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    SnookGameGamer1 = await ethers.getContract('SnookGame', gamer1);
+    SnookTokenGamer1 = await ethers.getContract('SnookToken', gamer1);
+    SnookTokenDeployer = await ethers.getContract('SnookToken', deployer);
+    TreasuryGamer1 = await ethers.getContract('Treasury', gamer1);
+    await TreasuryGamer1.transfer();
+  });
+
+  it('gamer1 plays with snook1', async ()=>{
+    await expect(
+      SnookGameGamer1.enterGame2(1)
+    ).to.emit(SnookGameDeployer, 'Entry').withArgs(gamer1, 1);
+
+    await expect(
+      SnookGameDeployer.extractSnook(1,10,3,10,'better')
+    ).to.emit(SnookGameDeployer, 'Extraction').withArgs(gamer1, 1);
+
+  });
+});

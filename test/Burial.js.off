@@ -1,0 +1,212 @@
+require('dotenv').config();
+const assert = require('assert');
+const { expect } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+const { utils: {formatEther:E} } = ethers;
+const { nextMonth } = require('../scripts/lib');
+const BurialDelayInSeconds = parseInt(process.env.BURIAL_DELAY_IN_SECONDS);
+const { getEventArgs } = require('../scripts/lib');
+
+
+// in the tests we assume a month is enough to skip resurrection window 
+assert(BurialDelayInSeconds < 24*3600*30);
+
+describe('Bury of 3 dead snooks and 2 waiting for ressurection', function() {
+  // this.timeout(600000)
+
+  let AfterdeathGamer1;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    const { deployer, gamer1, gamer2 } = await getNamedAccounts();
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookGameGamer1 = await ethers.getContract('SnookGame', gamer1);
+
+    const SnookTokenGamer1 = await ethers.getContract('SnookToken', gamer1);
+
+    const SkillTokenGamer1 = await ethers.getContract('SkillToken', gamer1);
+    const SkillTokenGamer2 = await ethers.getContract('SkillToken', gamer2);
+
+    const SnookGameGamer2 = await ethers.getContract('SnookGame', gamer2);
+    
+    AfterdeathGamer1 = await ethers.getContract('Afterdeath', gamer1);
+    const AfterdeathGamer2 = await ethers.getContract('Afterdeath', gamer2);
+
+    
+    const TreasuryGamer1 = await ethers.getContract('Treasury', gamer1);
+    // Start cycles
+    await TreasuryGamer1.transfer();
+    
+    let tokenId = 0;
+    for (let i=0; i<3; i++) {
+      await SkillTokenGamer1.approve(SnookGameGamer1.address, snookPrice);
+      await SnookGameGamer1.mint2(1);
+      tokenId += 1;
+      await SnookGameGamer1.enterGame2(tokenId);
+      await SnookGameDeployer.setDeathTime(tokenId, 1, 1, 1, 'ressurect', 1);
+    }
+
+    await nextMonth();
+    // 1,2 and 3 are dead because they were not ressurected
+
+    for (let i=0; i<2; i++) {
+      await SkillTokenGamer1.approve(SnookGameGamer1.address, snookPrice);
+      await SnookGameGamer1.mint2(1);
+      tokenId += 1;
+      await SnookGameGamer1.enterGame2(tokenId);
+      await SnookGameDeployer.setDeathTime(tokenId, 1, 1, 1, 'ressurect', 1);
+    }
+    // 4,5 can be resurrected
+  });
+
+  it('tests bury(1) to emit Bury(0,1)', async ()=>{
+    await expect(
+      AfterdeathGamer1.bury(1)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(0,1)
+  });
+
+  it('tests bury(1) emits Bury(0,1) and then bury(1) emits Bury(1,2)', async ()=>{
+    await expect(
+      AfterdeathGamer1.bury(1)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(0,1);
+    await expect(
+      AfterdeathGamer1.bury(1)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(1,2);
+  });
+
+  it('tests bury(10) emits Bury(0,3)', async ()=>{
+    await expect(
+      AfterdeathGamer1.bury(10)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(0,3);
+  });
+
+  it('tests after bury(10) getRemovedFromMorgueLength() returns 3', async ()=>{
+    await AfterdeathGamer1.bury(10);
+    expect(await AfterdeathGamer1.getRemovedFromMorgueLength()).eq(3);
+  });
+
+  it('tests after bury(10) getRemovedFromMorgue(0,3) returns [1,2,3]', async ()=>{
+    await AfterdeathGamer1.bury(10);
+    const removedTokenIds = await AfterdeathGamer1.getRemovedFromMorgue(0,3);
+    expect(removedTokenIds[0]).eq(1);
+    expect(removedTokenIds[1]).eq(2);
+    expect(removedTokenIds[2]).eq(3);
+  });
+
+  it('tests after bury(10) getMorgue(3,5) returns [4,5]', async ()=>{
+    await AfterdeathGamer1.bury(10);
+    const waitingTokenIds = await AfterdeathGamer1.getMorgue(3,5);
+    expect(waitingTokenIds[0]).eq(4);
+    expect(waitingTokenIds[1]).eq(5);
+  });
+
+  it('tests after bury(1) getMorgueLength() returns 5', async ()=>{
+    await AfterdeathGamer1.bury(1);
+    expect(await AfterdeathGamer1.getMorgueLength()).eq(5);
+  });
+});
+
+describe('Bury of 2 dead snooks, 1 resurrected and 2 waiting for ressurection', function() {
+  // this.timeout(600000)
+
+  let AfterdeathGamer1;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    const { deployer, gamer1, gamer2 } = await getNamedAccounts();
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookTokenGamer1 = await ethers.getContract('SnookToken', gamer1);
+
+    const SkillTokenGamer1 = await ethers.getContract('SkillToken', gamer1);
+    const SkillTokenGamer2 = await ethers.getContract('SkillToken', gamer2);
+
+    const SnookGameGamer1 = await ethers.getContract('SnookGame', gamer1);
+    const SnookGameGamer2 = await ethers.getContract('SnookGame', gamer2);
+    
+    AfterdeathGamer1 = await ethers.getContract('Afterdeath', gamer1);
+    const AfterdeathGamer2 = await ethers.getContract('Afterdeath', gamer2);
+
+    
+    const TreasuryGamer1 = await ethers.getContract('Treasury', gamer1);
+    // Start cycles
+    await TreasuryGamer1.transfer();
+    
+    let tokenId = 0;
+    // die with 3 snooks
+    for (let i=0; i<3; i++) {
+      await SkillTokenGamer1.approve(SnookGameGamer1.address, snookPrice);
+      await SnookGameGamer1.mint2(1);
+      tokenId += 1;
+      await SnookGameGamer1.enterGame2(tokenId);
+      await SnookGameDeployer.setDeathTime(tokenId, 1, 1, 1, 'ressurect', tokenId);
+    }
+    
+    // resurrect 3rd snook
+    const { resurrectionPrice } = await SnookGameGamer1.describe(3);
+    await SkillTokenGamer1.approve(AfterdeathGamer1.address, resurrectionPrice);
+    await AfterdeathGamer1.resurrect(1);
+
+
+    await nextMonth();
+    // 1,2 are dead because they were not ressurected and 3rd is resurected
+    
+    for (let i=0; i<2; i++) {
+      await SkillTokenGamer1.approve(SnookGameGamer1.address, snookPrice);
+      await SnookGameGamer1.mint2(1);    
+      tokenId += 1;
+      await SnookGameGamer1.enterGame2(tokenId);
+      await SnookGameDeployer.setDeathTime(tokenId, 1, 1, 1, 'ressurect', tokenId);
+    }
+    // 4,5 can be resurrected
+  });
+
+  it('tests bury(1) to emit Bury(0,1)', async ()=>{
+    await expect(
+      AfterdeathGamer1.bury(1)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(0,1)
+  });
+
+  it('tests bury(1) emits Bury(0,1) and then bury(1) emits Bury(1,2)', async ()=>{
+    await expect(
+      AfterdeathGamer1.bury(1)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(0,1);
+    await expect(
+      AfterdeathGamer1.bury(1)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(1,2);
+  });
+
+  it('tests bury(10) emits Bury(0,3)', async ()=>{
+    await expect(
+      AfterdeathGamer1.bury(10)
+    ).to.emit(AfterdeathGamer1, 'Bury').withArgs(0,3);
+  });
+
+  it('tests after bury(10) getRemovedFromMorgueLength() returns 3', async ()=>{
+    await AfterdeathGamer1.bury(10);
+    expect(await AfterdeathGamer1.getRemovedFromMorgueLength()).eq(3);
+  });
+
+  it('tests after bury(10) getRemovedFromMorgue(0,3) returns [1,2,3]', async ()=>{
+    await AfterdeathGamer1.bury(10);
+    const removedTokenIds = await AfterdeathGamer1.getRemovedFromMorgue(0,3);
+    expect(removedTokenIds[0]).eq(1);
+    expect(removedTokenIds[1]).eq(2);
+    expect(removedTokenIds[2]).eq(3);
+  });
+
+  it('tests after bury(10) getMorgue(3,5) returns [4,5]', async ()=>{
+    await AfterdeathGamer1.bury(10);
+    const waitingTokenIds = await AfterdeathGamer1.getMorgue(3,5);
+    expect(waitingTokenIds[0]).eq(4);
+    expect(waitingTokenIds[1]).eq(5);
+  });
+
+  it('tests after bury(1) getMorgueLength() returns 5', async ()=>{
+    await AfterdeathGamer1.bury(1);
+    expect(await AfterdeathGamer1.getMorgueLength()).eq(5);
+  });
+});

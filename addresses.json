@@ -1,0 +1,42 @@
+{
+  "mainnet": {
+    "MintableERC20PredicateProxy": "0x9923263fA127b3d1484cFD649df8f1831c2A74e4"
+  },
+  "goerli": {
+    "MintableERC20PredicateProxy":"0x37c3bfC05d5ebF9EBb3FF80ce0bd0133Bf221BC8"
+  },
+  "mumbai": {
+    "ChildChainManagerProxy":"0xb5505a6d998549090530911180f38aC5130101c6",
+    "RootChainManagerProxy":"0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74"
+  },
+  "polygon": {
+    "ChildChainManagerProxy":"0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa",
+    "RootChainManagerProxy":"0xA0c68C638235ee32657e8f720a23ceC1bFc77C77"
+  },
+  "hardhat": {
+    "MintableERC20PredicateProxy":"0x37c3bfC05d5ebF9EBb3FF80ce0bd0133Bf221BC8",
+    "ChildChainManagerProxy":"0xb5505a6d998549090530911180f38aC5130101c6",
+    "RootChainManagerProxy":"0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74"
+  },
+  "localhost": {
+    "MintableERC20PredicateProxy":"0x37c3bfC05d5ebF9EBb3FF80ce0bd0133Bf221BC8",
+    "ChildChainManagerProxy":"0xb5505a6d998549090530911180f38aC5130101c6",
+    "RootChainManagerProxy":"0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74"
+  },
+  "exchainmain": {
+    "ChildChainManagerProxy":"0x0000000000000000000000000000000000000000",
+    "Anyswap": {
+      "ContractAddress": "0x5e31a71d3cdd90d517f1f38000ab08bfa6922421",
+      "MaximumSwapAmount": "21000000000000000000000000",
+      "MinimumSwapAmount": "205000000000000000000",
+      "MaximumSwapFeeAmount": "4044000000000000000000",
+      "MinimumSwapFeeAmount": "20300000000000000000"
+    },
+    "USDCTokenAddress": "0x382bB369d343125BfB2117af9c149795C6C65C50",
+    "UniswapV2FactoryAddress": "0x709102921812b3276a65092fe79edfc76c4d4afe"
+  },
+  "exchaintest": {
+    "ChildChainManagerProxy":"0x0000000000000000000000000000000000000000"
+  }
+  
+}

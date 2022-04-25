@@ -1,0 +1,50 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers, network } = require('hardhat');
+const { nextMonth } = require('../scripts/lib');
+const TreasuryShares = [
+  parseInt(process.env.TREASURY_FOUNDERS_SHARE_IN_CENTIPERCENTS),
+  parseInt(process.env.TREASURY_STAKING_SHARE_IN_CENTIPERCENTS),
+  parseInt(process.env.TREASURY_SKIN_SHARE_IN_CENTIPERCENTS)
+];
+const TreasuryCycles = [
+  parseInt(process.env.TREASURY_FOUNDERS_CYCLE_IN_DAYS),
+  parseInt(process.env.TREASURY_STAKING_CYCLE_IN_DAYS),
+  parseInt(process.env.TREASURY_SKIN_CYCLE_IN_DAYS)
+];
+const FoundersAddress = process.env.FOUNDERS_ADDRESS;
+const ToSecs = process.env.SECONDS_IN_DAY;
+
+describe('Treasury, 0 month vesting release to treasury', () => {
+  let Treasury;
+  let SkillToken;
+  let Vesting;
+ 
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    Treasury = await ethers.getContract('Treasury');
+    SkillToken = await ethers.getContract('SkillToken');
+    Vesting = await ethers.getContract('Vesting');
+    await Vesting.release(Treasury.address); // first release of funds to treasury
+  });
+  
+  it('tests treasury distributes funds correctly by predefined shares', async ()=>{
+    const treasuryBalance0 = await SkillToken.balanceOf(Treasury.address);
+    const foundersBalance0 = await SkillToken.balanceOf(FoundersAddress);
+    const Denumerator = 10000; // centipercents
+    const SentTo0 = treasuryBalance0.mul(TreasuryShares[0]).div(Denumerator);
+    await expect(Treasury.transfer())
+      .to.emit(Treasury, 'Transfer')
+      .withArgs(FoundersAddress, SentTo0);
+    const foundersBalance1 = await SkillToken.balanceOf(FoundersAddress);
+    expect(foundersBalance1).eq(foundersBalance0.add(SentTo0));
+  });
+
+  it('tests funds are not transfered before cycle is finished', async () => {
+    await Treasury.transfer();
+    // no transfers occur before cycle ends: wait zero time
+    await expect(
+      Treasury.transfer()
+    ).to.not.emit(Treasury, 'Transfer');
+  });
+});

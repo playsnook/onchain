@@ -1,0 +1,95 @@
+Nothing to compile
+deploying "DefaultProxyAdmin" (tx: 0x562afeddfdf0bce0a6ac65e9743ec8e5298fed4aaa288c98fa91d3f61ca63abc)...: deployed at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135 with 670161 gas
+deploying "SnookToken_Implementation" (tx: 0x0527ac9363345e73fcbd8f95838d2930c55c63f2f79d2885f7aee0a46b2b9a36)...: deployed at 0xf80D3C1aC4e50e84852aa56ACDd614499395031C with 2392041 gas
+deploying "SnookToken_Proxy" (tx: 0x7322d9c2c28a50c0b3c4790b2ea36642b72c724f8edaed91ebb36e90a70b6324)...: deployed at 0xA08f28300fDe6E761B5F5535eCfB3a250b64A8a5 with 538241 gas
+deploying "SkillToken" (tx: 0xf10b0a6b18f003bbe81ac2f3d2d312db9229c15ddba6320b30dbf849cdd4b0fd)...: deployed at 0x8B30D22A9D92dbED2E0687677249e7f07c02a253 with 2202237 gas
+contract UsdcToken deployed at 0x935CF381dAf6D83107899D0ae5D4E30533120E8F using 728653 gas
+deploying "UniswapV2Factory" (tx: 0x86a8aa70ad5bf9da35f387d823a4b4aa0bfb6093d90fa396e3b3a70831d6056c)...: deployed at 0x8B646F434e4Bb0ffeEEb0fe18539a50F12DA77ea with 3049335 gas
+contract UniswapV2Factroy deployed at 0x8B646F434e4Bb0ffeEEb0fe18539a50F12DA77ea using 3049335 gas
+deploying "UniswapV2Router02" (tx: 0xdec91f899a8bc0389c2a3c60ab1e22c34f978c488ca7214871ce8aee4645d1b7)...: deployed at 0xC57F6C7Fc9C122f1E949F22DE3A5C3EAb0610099 with 4756329 gas
+contract UniswapV2Router02 deployed at 0xC57F6C7Fc9C122f1E949F22DE3A5C3EAb0610099 using 4756329 gas
+Created UsdcToken-SkillToken pair
+deploying "UniswapUSDCSkill" (tx: 0xa871a171dc6f4f681d6be84223fe9c1751b900ed8eab0b24059001c5287ab1ae)...: deployed at 0xB0D82af42eAcfb618A8F2123CD359e39eB20f38E with 381124 gas
+contract UniswapUSDCSkill deployed at 0xB0D82af42eAcfb618A8F2123CD359e39eB20f38E using 381124 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "Treasury_Implementation" (tx: 0x07bb8170f6c8fbef22b0aa8cc3605b79eb30154b24b079aedae1cb99a35f0ba2)...: deployed at 0xEd0cFec4Bf8cd4f8f60Bb5652B65c6F3B8ECb15b with 1491974 gas
+deploying "Treasury_Proxy" (tx: 0x9ee87da7e7cfa86afd6102084dda4a87e934482a40f3c479996ba01961a6612f)...: deployed at 0xd7d4006BaB11bDd01007eA99628B56e07E56Cc47 with 538241 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "SnookState_Implementation" (tx: 0x5bdc4d2f0c0e4a93846fd6874bef674e5133c655112a6ae69965a397f7e7e834)...: deployed at 0x8317F3bcB75E72E7D4BA5F1a8a0e6D3bb7E59e0d with 832453 gas
+deploying "SnookState_Proxy" (tx: 0x66cdcad90391d5a334c6453aa7d37f31931f5a35ef79988a0d5c913a1fbb5cf3)...: deployed at 0x3c2099a5caf7d3F967EF5bE1aB217C4ac70261d4 with 538241 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "SnookGame_Implementation" (tx: 0xee589ee315175a1cc6dd1168d7f22beaf344d7cdfe51a668a4bcb1f49516ddc2)...: deployed at 0x150B33B8eA65039a9B32b0516fE7736D4f21b418 with 3935063 gas
+deploying "SnookGame_Proxy" (tx: 0xe2ddee05d2a7c2327c6be82b4572aeecae3ed2046ad602023d0db0fa519c0e16)...: deployed at 0x3F325731BfE1c2bcC3828E0bA0dfC30Ed67C4872 with 538241 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "Afterdeath_Implementation" (tx: 0x5637bec433f078b6114a6e2d82b7a66de5f05e67aa32bcd979bae53915e4f85e)...: deployed at 0xAF679F49aF60667252Baa1c798Be08235c1E9C39 with 2568525 gas
+deploying "Afterdeath_Proxy" (tx: 0x3a36619c918ebe371c81f0512282ca068e0061f7b3a874b557b0c639efabfdac)...: deployed at 0x5751928CE14B78925674297240C911E9EF879817 with 538241 gas
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "StakingRewards_Implementation" (tx: 0x95cff0f10eb7ffb75f663b607b30603063f10f3d34a6e251e931b78f1b0341f6)...: deployed at 0xA16f187244b101eE28c4f0Da250770457b4651B4 with 1888940 gas
+deploying "StakingRewards_Proxy" (tx: 0xd4b85c3e73aa0b042f45f1bc28511dca44b1208a2a0209895ead3ec3dfef1171)...: deployed at 0x89f787ae6Fc6025e04B718CBCa192A8819f5bcD8 with 538241 gas
+Initialized Treasury
+Treasury: init2
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "Marketplace_Implementation" (tx: 0x127b8f3de1ebbd361ee996383dca9f562213486e5b6bd9b531067f750ccdc404)...: deployed at 0x94bABcA4ab87A20DE113e7f0bf58a716e0b044EB with 2261871 gas
+deploying "Marketplace_Proxy" (tx: 0x5b1f5c22f0d190fcae87b00540934e1af48e459397d3eed55583c1ba2cdbced0)...: deployed at 0xD80f149B483d277f0FFafc971119b78D2af9d2C5 with 538241 gas
+Initialized SnookState
+SnookToken: initialize()
+SnookToken: initialize3() (marketplace)
+Marketplace: initialize()
+Afterdeath: initialize()
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "PRNG_Implementation" (tx: 0x966ff4046636988899ee691e588d8c925e6f53020bf232e74212139633b7f3c2)...: deployed at 0xCf9c28Dd90E32886f20eafb50DB3bc9B19104a87 with 239018 gas
+deploying "PRNG_Proxy" (tx: 0xd66da0b4734efb4e4212053ea23496bc0e0426b0a96cef4fbb0153da9dcf62c5)...: deployed at 0x537286A072D10fb2d4A8AaDAE2Ea53271bbb33B0 with 538241 gas
+Initing SnookGame: deployer: 0x9a1187cB7084F3E60a8b99eb195D9f3c29361a8a admin: 0x9a1187cB7084F3E60a8b99eb195D9f3c29361a8a
+SnookGame: initialize()
+SnookGame: initialize2()
+SnookGame: initialize3()
+Initialized StakingRewards
+SkillToken granted BURNER_ROLE to SnookGame and StakingRewards
+PublicSaleInitialBalanceInWei: 2000000000000000000000000
+
+    Tapped public sale balance to 2000000000000000000000000 
+    deployer balance before: 40000000000000000000000000
+    deployer balance after: 38000000000000000000000000
+  
+Vesting contracts will use 1650461896 timestamp
+deploying "Vesting" (tx: 0xbee9a8462a661ed89eeff2ef16fb1470f62bb5e7ee884703fee619e2d29f35e4)...: deployed at 0xD0a80B5158C8F1De19114B4D9FfcB60D1cdb93a6 with 6202531 gas
+Vesting contract deployed with total rewards:38000000000000000000000000
+Tapped vesting balance to 38000000000000000000000000
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "LuckWheel_Implementation" (tx: 0xb055ae55eb4591299849427ca789e9187e2dab721bd5abbaee14a6104dc95f41)...: deployed at 0x2826A1c49B2B66dd0d1a077a8E01b3E4A76e30c9 with 649047 gas
+deploying "LuckWheel_Proxy" (tx: 0x47b17874baaf8c5f4ce22ca77697a801b7a2c6991ba08dd8aa38577b0004468b)...: deployed at 0x56C564a55Fa994216E43DEFA35F1d800D8e3e747 with 538241 gas
+
+Nothing to compile
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "SnookToken_Implementation" at 0xf80D3C1aC4e50e84852aa56ACDd614499395031C
+reusing "SkillToken" at 0x8B30D22A9D92dbED2E0687677249e7f07c02a253
+reusing "UniswapV2Factory" at 0x8B646F434e4Bb0ffeEEb0fe18539a50F12DA77ea
+reusing "UniswapV2Router02" at 0xC57F6C7Fc9C122f1E949F22DE3A5C3EAb0610099
+reusing "UniswapUSDCSkill" at 0xB0D82af42eAcfb618A8F2123CD359e39eB20f38E
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "Treasury_Implementation" at 0xEd0cFec4Bf8cd4f8f60Bb5652B65c6F3B8ECb15b
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "SnookState_Implementation" at 0x8317F3bcB75E72E7D4BA5F1a8a0e6D3bb7E59e0d
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "SnookGame_Implementation" at 0x150B33B8eA65039a9B32b0516fE7736D4f21b418
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "Afterdeath_Implementation" at 0xAF679F49aF60667252Baa1c798Be08235c1E9C39
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "StakingRewards_Implementation" at 0xA16f187244b101eE28c4f0Da250770457b4651B4
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "Marketplace_Implementation" at 0x94bABcA4ab87A20DE113e7f0bf58a716e0b044EB
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "PRNG_Implementation" at 0xCf9c28Dd90E32886f20eafb50DB3bc9B19104a87
+Vesting contracts will use 1650462861 timestamp
+reusing "Vesting" at 0xD0a80B5158C8F1De19114B4D9FfcB60D1cdb93a6
+Vesting contract deployed with total rewards:38000000000000000000000000
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+reusing "LuckWheel_Implementation" at 0x2826A1c49B2B66dd0d1a077a8E01b3E4A76e30c9
+Initialized LuckWheel
+Treasury: init3
+SnookState: initialize2 (marketplace)
+reusing "DefaultProxyAdmin" at 0xa9e735E6B4111e9f353EC5A93D9e5d041B886135
+deploying "BurnSafe_Implementation" (tx: 0x7518fcdf150a6fedf12a7612014625f92473fb538af2096f8965a7af9d82f65a)...: deployed at 0x19AD6e04665b16bd22718f61aC55Ab08dddE5A46 with 1253874 gas
+deploying "BurnSafe_Proxy" (tx: 0x44777ecbe4bd412dd34908845503388c55eb14bd89c05b257c5ebefe0b71a626)...: deployed at 0x624FFD4e8D6AaccC4c8bc0a20d8C9229dbde1E16 with 538241 gas
+BurnSafe: initialize
+SnookGame: initialize4 (bridged network)

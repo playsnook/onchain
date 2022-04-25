@@ -1,0 +1,88 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers } = require('hardhat');
+const SecondsInDay = ethers.BigNumber.from(process.env.SECONDS_IN_DAY);
+const InitialSNKSupplyInWei = ethers.utils.parseEther(process.env.INITIAL_SKILL_SUPPLY_IN_ETHERS);
+const TreasuryStakingCycleInDays = ethers.BigNumber.from(process.env.TREASURY_STAKING_CYCLE_IN_DAYS);
+const MinStakingPeriodInDays = ethers.BigNumber.from(process.env.MIN_STAKING_PERIOD_IN_DAYS);
+const InterestRatePerDayInCentipercents = ethers.BigNumber.from(process.env.INTEREST_RATE_PER_DAY_IN_CENTIPERCENTS);
+const MinNumberOfStakers = ethers.BigNumber.from(process.env.MIN_NUMBER_OF_STAKERS);
+const MinStakingValueCoef = ethers.BigNumber.from(process.env.MIN_STAKING_VALUE_COEF);
+const BurningRateInPercents = ethers.BigNumber.from(process.env.BURNING_RATE_IN_PERCENTS);
+
+describe('StakingRewards getters', () => {
+  let UniswapUSDCSkill;
+  let SkillToken;
+  let SnookGame;
+  let Afterdeath;
+  let Treasury;
+  let SnookState;
+  let SnookToken;
+  let SkinRewards;
+  let StakingRewards;
+  let SGE;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    SkillToken = await ethers.getContract('SkillToken');
+    SnookToken = await ethers.getContract('SnookToken');
+    SnookGame = await ethers.getContract('SnookGame');
+    SkinRewards = await ethers.getContract('SkinRewards');
+    SnookState = await ethers.getContract('SnookState');
+    Afterdeath = await ethers.getContract('Afterdeath');
+    Treasury = await ethers.getContract('Treasury');
+    SGE = await ethers.getContract('SGE');
+    StakingRewards = await ethers.getContract('StakingRewards');
+  });
+  
+  it('test getSecondsInDay()', async () => {
+    expect(await StakingRewards.getSecondsInDay()).eq(SecondsInDay);
+  });
+
+  it('test getInitialSNKSupplyWei()', async () => {
+    expect(await StakingRewards.getInitialSNKSupplyInWei()).eq(InitialSNKSupplyInWei);
+  });
+
+  it('test getMaxStakingPeriodInDays() before treasury transfer', async () => {
+    expect(await StakingRewards.getMaxStakingPeriodInDays()).eq(0);
+  });
+
+  it('test getMaxStakingPeriodInDays() after treasury transfer', async () => {
+    await Treasury.transfer();
+    expect(await StakingRewards.getMaxStakingPeriodInDays()).eq(TreasuryStakingCycleInDays);
+  });
+
+  it('test getMinStakingPeriodInDays() before treasury transfer', async () => {
+    expect(await StakingRewards.getMinStakingPeriodInDays()).eq(MinStakingPeriodInDays);
+  });
+
+  it('test getInterestRatePerDayInCentipercents()', async () => {
+    expect(await StakingRewards.getInterestRatePerDayInCentipercents())
+      .eq(InterestRatePerDayInCentipercents);
+  });
+
+  it('test getMinimalNumberOfStakers()', async () => {
+    expect(await StakingRewards.getMinNumberOfStakers()).eq(MinNumberOfStakers);
+  });
+
+  it('test getPrevInitTime() before treasury transfer', async () => {
+    expect(await StakingRewards.getPrevInitTime()).eq(0);
+  });
+
+  it('test getPrevInitTime()', async () => {
+    expect(await StakingRewards.getMinStakingValueCoef()).eq(MinStakingValueCoef);
+  });
+
+
+  it('test getBurningRateInPercents()', async () => {
+    expect(await StakingRewards.getBurningRateInPercents()).eq(BurningRateInPercents);
+  });
+
+  it('test getSNKAddress()', async () => {
+    expect(await StakingRewards.getSNKAddress()).eq(SkillToken.address);
+  });
+
+  it('test getTreasuryAddress()', async () => {
+    expect(await StakingRewards.getTreasuryAddress()).eq(Treasury.address);
+  });
+});

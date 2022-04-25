@@ -1,0 +1,61 @@
+Compiling 62 files with 0.8.0
+Compilation finished successfully
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookToken_Implementation" at 0xD7b2CFC2e811cfE5eDb5BFf0289F27c6A92D0A07
+reusing "SkillToken" at 0x689f8e5913C158fFB5Ac5aeb83b3C875F5d20309
+reusing "UniswapUSDCSkill" at 0x31f528c6c193b27d77B874D1c28d113103AF04BF
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Treasury_Implementation" at 0x5CDC6FD7bB53C1646f290A921dDf060e8b2b2CCE
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookState_Implementation" at 0x80f905a3Ed9A9D2130487B71083dd61b7A85217a
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+deploying "SkinRewards_Implementation" (tx: 0xcde50ed634485adfe5ae58ce1a1861b9a87f8cb95e2f70bae1a439f0a0c1cde0)...: deployed at 0xA6BA127aCDeE75af7A793225359a0EBc5832807E with 2360956 gas
+---------------------------------------------------------------------------------------
+Please execute the following:
+---------------------------------------------------------------------------------------
+
+from: 0x11fe914689525618c322fc9cd76333BA15a932a6
+to: 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5 (DefaultProxyAdmin)
+method: upgrade
+args:
+  - 0xD6588E9C555D35B0274f47Dc6b9D4D7917602347
+  - 0xA6BA127aCDeE75af7A793225359a0EBc5832807E
+
+(raw data: 0x99a88ec4000000000000000000000000d6588e9c555d35b0274f47dc6b9d4d7917602347000000000000000000000000a6ba127acdee75af7a793225359a0ebc5832807e )
+
+---------------------------------------------------------------------------------------
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookGame_Implementation" at 0x1221A3F65Ba909b2B0e0696a1F38DdC9d08f14E3
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Afterdeath_Implementation" at 0x725dEE849e655F4Fd8A78c1DADF229B3a06ec905
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "StakingRewards_Implementation" at 0x0145C9c5f19Af674349c0Ff29816208cd328c1DC
+reusing "SGE" at 0x4cA8FD22B97399421e9D0Cb6F0765bD0a23ddC41
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "PRNG_Implementation" at 0xEAd99f9001019922644E61505a725724A604EF81
+Vesting contracts will use 1637154028 timestamp
+reusing "Vesting" at 0x8329Dc7257D71934A29648c0acE54abBF4e9CbC7
+Vesting contract deployed with total rewards:37997000000000000000000000
+Nothing to compile
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookToken_Implementation" at 0xD7b2CFC2e811cfE5eDb5BFf0289F27c6A92D0A07
+reusing "SkillToken" at 0x689f8e5913C158fFB5Ac5aeb83b3C875F5d20309
+reusing "UniswapUSDCSkill" at 0x31f528c6c193b27d77B874D1c28d113103AF04BF
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Treasury_Implementation" at 0x5CDC6FD7bB53C1646f290A921dDf060e8b2b2CCE
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookState_Implementation" at 0x80f905a3Ed9A9D2130487B71083dd61b7A85217a
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SkinRewards_Implementation" at 0xA6BA127aCDeE75af7A793225359a0EBc5832807E
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "SnookGame_Implementation" at 0x1221A3F65Ba909b2B0e0696a1F38DdC9d08f14E3
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "Afterdeath_Implementation" at 0x725dEE849e655F4Fd8A78c1DADF229B3a06ec905
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "StakingRewards_Implementation" at 0x0145C9c5f19Af674349c0Ff29816208cd328c1DC
+reusing "SGE" at 0x4cA8FD22B97399421e9D0Cb6F0765bD0a23ddC41
+reusing "DefaultProxyAdmin" at 0xb1c2f36F1aBe8457855a7934E64Bf5C85FFDF6f5
+reusing "PRNG_Implementation" at 0xEAd99f9001019922644E61505a725724A604EF81
+Vesting contracts will use 1637155029 timestamp
+reusing "Vesting" at 0x8329Dc7257D71934A29648c0acE54abBF4e9CbC7
+Vesting contract deployed with total rewards:37997000000000000000000000

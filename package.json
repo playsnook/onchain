@@ -1,0 +1,47 @@
+{
+  "name": "hhtest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "node": "npx hardhat node",
+    "generate-snooks": "npx hardhat --network localhost run scripts/generate-snooks.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.8",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts-upgradeable": "^4.1.0",
+    "@pinata/sdk": "^1.1.23",
+    "axios": "^0.21.3",
+    "chance": "^1.1.7",
+    "delay": "^5.0.0",
+    "eth-revert-reason": "^1.0.3",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.3.1",
+    "hardhat": "^2.4.1",
+    "hardhat-contract-sizer": "^2.0.3",
+    "hardhat-deploy-ethers": "^0.3.0-beta.10",
+    "hardhat-gas-reporter": "^1.0.4",
+    "tmp-promise": "^3.0.2"
+  },
+  "dependencies": {
+    "@ethersproject/address": "^5.3.0",
+    "@ethersproject/contracts": "^5.3.0",
+    "@ethersproject/providers": "^5.3.1",
+    "@ethersproject/solidity": "^5.3.0",
+    "@maticnetwork/pos-portal": "^1.5.2",
+    "@openzeppelin/contracts": "^4.1.0",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "abdk-libraries-solidity": "^3.0.0",
+    "chai": "^4.3.4",
+    "dotenv": "^9.0.2",
+    "hardhat-deploy": "^0.8.9",
+    "moment": "^2.29.1"
+  }
+}

@@ -1,0 +1,108 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const TreasurySums = [
+  324324,
+  315315,
+  306306,
+  297297,
+  288288,
+  279279,
+  270270,
+  261261,
+  252252,
+  243243,
+  234234,
+  225225,
+  216216,
+  207207,
+  198198,
+  189189,
+  180180,
+  171171,
+  162162,
+  153153,
+  144144,
+  135135,
+  126126,
+  117117,
+  108108,
+  99099,
+  90090,
+  81081,
+  72072,
+  63063,
+  54054,
+  45045,
+  36036,
+  27027,
+  18018,
+  9009,
+  0
+];
+
+assert(TreasurySums.length === 37, 'Invalid number of months');
+describe('Vesting - Treasury', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('tests sums released to treasury, release each month', async () => {
+    const Treasury = await ethers.getContract('Treasury');
+    const Vesting = await ethers.getContract('Vesting');
+
+    for (let i=0; i<TreasurySums.length-1; i++) {
+      const args = await getEventArgs(Vesting.release(Treasury.address), 'Released');
+      const amountReleased = parseInt(E(args.amount));
+      expect(amountReleased).to.equal(TreasurySums[i]);
+
+      await nextMonth();
+    }
+  });
+
+  it('tests sums released to treasury, sequentially with 1 and 10 months skipped', async () => {
+    const Treasury = await ethers.getContract('Treasury');
+    const Vesting = await ethers.getContract('Vesting');
+    const Total = 6000000;
+    let released = ethers.BigNumber.from(0);
+
+    for (let i=0; i<TreasurySums.length-1; i++) {
+      if (i !== 1 && i !== 10) {
+        const { amount } = await getEventArgs(Vesting.release(Treasury.address), 'Released');
+        released = released.add(amount);
+      }
+      await nextMonth();
+    }
+
+    const releasedEthers = ethers.utils.formatEther(released);
+    expect(Total-releasedEthers).to.be.lessThan(1);
+  });
+
+
+  // Known bug: past month 36 release fails
+  it('tests sums released to treasury, no release last 2 monthes: KNOWN BUG', async () => {
+    const Treasury = await ethers.getContract('Treasury');
+    const Vesting = await ethers.getContract('Vesting');
+
+    for (let i=0; i<TreasurySums.length-2; i++) {
+      const args = await getEventArgs(Vesting.release(Treasury.address), 'Released');
+      const amountReleased = parseInt(E(args.amount));
+      expect(amountReleased).to.equal(TreasurySums[i]);
+
+      await nextMonth();
+    }
+
+    for (let i=0; i<3; i++) {
+      await nextMonth();
+    }
+    
+    // Known Bug
+    await expect(Vesting.release(Treasury.address)).to.be.reverted; // panic code 0x11
+  });
+});

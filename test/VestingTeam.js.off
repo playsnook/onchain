@@ -1,0 +1,113 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const TeamSums = [
+  0,
+  0,
+  320000,
+  0,
+  0,
+  480000,
+  0,
+  0,
+  640000,
+  0,
+  0,
+  960000,
+  0,
+  0,
+  960000,
+  0,
+  0,
+  640000,
+  0,
+  0,
+  640000,
+  0,
+  0,
+  640000,
+  0,
+  0,
+  640000,
+  0,
+  0,
+  480000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+];
+
+describe('Vesting - Team', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('test a single release to address ...8Ca after month 36', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    const namedAccounts = await getNamedAccounts();
+    const a8Ca = namedAccounts['0x59E798026645C8b3019E0ECdFb30075B818a88Ca'];
+    const Total8Ca = ethers.utils.parseEther('1250000');
+    for (let i=0; i<40; i++) {
+      await nextMonth();
+    }
+    const {amount} = await getEventArgs(Vesting.release(a8Ca), 'Released');
+    expect(amount).eq(Total8Ca);
+  });
+
+  it('tests sums released to team: ...02f, ...8Ca', async ()=>{
+    
+    assert(TeamSums.length === 37);
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const a02f = namedAccounts['0x413c783F1d6088D065b4718aE867c6443728402f'];
+    const a8Ca = namedAccounts['0x59E798026645C8b3019E0ECdFb30075B818a88Ca'];
+    const Total02f = 2291667;
+    const Total8Ca = 1250000;
+
+    let acc02f = 0;
+    let acc8Ca = 0;
+
+    for (let i=0; i<TeamSums.length; i++) {
+      switch(i) {
+        case 3:
+        case 6:
+        case 9:
+        case 12:
+        case 15:
+        case 18: 
+        case 21:
+        case 24:
+        case 27:
+        case 30:
+          const {amount: amount8Ca} = await getEventArgs(Vesting.release(a8Ca), 'Released');
+          const {amount: amount02f} = await getEventArgs(Vesting.release(a02f), 'Released');
+          acc8Ca += parseInt(E(amount8Ca));
+          acc02f += parseInt(E(amount02f));
+          break;
+        default:
+          await expect(
+            Vesting.release(a8Ca)
+          ).to.be.revertedWith('Nothing to release');
+          await expect(
+            Vesting.release(a02f)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(Math.abs(acc02f - Total02f)).to.be.lessThan(10);
+    expect(acc8Ca).to.be.equal(Total8Ca);
+  });
+});

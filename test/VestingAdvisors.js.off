@@ -1,0 +1,196 @@
+const { expect, assert } = require("chai");
+const {
+  deployments, 
+  ethers, 
+  getNamedAccounts,
+} = require('hardhat');
+const {utils: {formatEther: E}} = ethers;
+const { getEventArgs, nextMonth } = require('../scripts/lib');
+
+const AdvisorSums = [
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  220000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  220000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  220000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  220000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  220000,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+];
+assert(AdvisorSums.length === 37);
+
+describe('Vesting - Advisors', () => {
+  
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+
+  it('tests a single release after month 36 to advisor ...F61', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    const namedAccounts = await getNamedAccounts();
+    const aF61 = namedAccounts['0x0b28eb3c90075814F40cFC276c9165a957646F61'];
+    for (let i=0; i<40; i++) {
+      await nextMonth();
+    }
+    const {amount} = await getEventArgs(Vesting.release(aF61), 'Released');
+    expect(amount).eq(ethers.utils.parseEther("100000"));
+  });
+
+  it('tests release monthes to advisor ...F61, sequencial, verbose for 6 month', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+
+    const namedAccounts = await getNamedAccounts();
+    const aF61 = namedAccounts['0x0b28eb3c90075814F40cFC276c9165a957646F61'];
+    
+    // month 0:
+    await expect(
+      Vesting.release(aF61)
+    ).to.be.revertedWith('Nothing to release');
+
+    await nextMonth();
+    // month 1 (30)
+    await expect(
+      Vesting.release(aF61)
+    ).to.be.revertedWith('Nothing to release');
+
+    await nextMonth();
+    // month 2 (60)
+    await expect(
+      Vesting.release(aF61)
+    ).to.be.revertedWith('Nothing to release');
+
+    await nextMonth();
+    // month 3 (90)
+    await expect(
+      Vesting.release(aF61)
+    ).to.be.revertedWith('Nothing to release');
+
+    await nextMonth();
+    // month 4 (120)
+    await expect(
+      Vesting.release(aF61)
+    ).to.be.revertedWith('Nothing to release');
+
+    await nextMonth();
+    // month 5 (150)
+    await expect(
+      Vesting.release(aF61)
+    ).to.be.revertedWith('Nothing to release');
+
+    await nextMonth();
+    // month 6 (180)
+    await expect(
+      Vesting.release(aF61)
+    ).to.emit(Vesting, "Released")
+  });
+
+  it('tests sums released to advisors: ...F61, sequential release', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const aF61 = namedAccounts['0x0b28eb3c90075814F40cFC276c9165a957646F61'];
+    const TotalF61 = 100000;
+    let accF61 = 0;
+
+    for (let i=0; i<AdvisorSums.length; i++) {
+      switch(i) {
+        case 6:
+        case 12:
+        case 18:
+        case 24:
+        case 30:
+          const {amount: amountF61} = await getEventArgs(Vesting.release(aF61), 'Released');
+          accF61 += parseInt(E(amountF61));
+          break;
+        default:
+          await expect(
+            Vesting.release(aF61)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(accF61).to.be.equal(TotalF61);
+  });
+
+  it('tests sums released to advisors: ...F61, call release() after 25 months passed', async ()=>{
+    const Vesting = await ethers.getContract('Vesting');
+    
+    const namedAccounts = await getNamedAccounts();
+    const aF61 = namedAccounts['0x0b28eb3c90075814F40cFC276c9165a957646F61'];
+    const TotalF61 = 100000;
+    let accF61 = 0;
+
+    for (let i=0; i<AdvisorSums.length; i++) {
+      switch(i) {
+        // during these monthes release() is not called
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 25:
+          break;
+        case 26:
+          const {amount: amountF61on26} = await getEventArgs(Vesting.release(aF61), 'Released');
+          accF61 += parseInt(E(amountF61on26));
+          break;
+        case 30:
+          const {amount: amountF61} = await getEventArgs(Vesting.release(aF61), 'Released');
+          accF61 += parseInt(E(amountF61));
+          break;
+        default:
+          await expect(
+            Vesting.release(aF61)
+          ).to.be.revertedWith('Nothing to release');
+      }
+      await nextMonth();
+    }
+
+    expect(accF61).to.be.equal(TotalF61);
+  });
+
+});

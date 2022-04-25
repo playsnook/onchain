@@ -1,0 +1,208 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers, getNamedAccounts } = require('hardhat');
+
+describe('Resurrection price', () => {
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+  });
+  
+  it('tests resurrection price for a single snook with 0 traits is k', async ()=>{
+    const { deployer, gamer1: gamer } = await getNamedAccounts();
+
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookGameGamer = await ethers.getContract('SnookGame', gamer);
+    const SkillTokenGamer = await ethers.getContract('SkillToken', gamer);
+    const TreasuryGamer = await ethers.getContract('Treasury', gamer);
+    // start a cycle
+    await TreasuryGamer.transfer();
+
+    const snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+    await SkillTokenGamer.approve(SnookGameGamer.address, snookPrice);
+    await SnookGameGamer.mint2(1); // default assignment of 1 trait
+    await SnookGameGamer.enterGame2(1);
+    await SnookGameDeployer.extractSnook(1,0,0,0,'test'); // extracting to set traitCount to 0
+    await SnookGameGamer.enterGame2(1); // entering with 0 traits 
+    await SnookGameDeployer.setDeathTime(1,0,0,0,'test',1); // calc resurrection price for snook with 0 traits
+    
+    const { resurrectionPrice } = await SnookGameGamer.describe(1);
+    expect(resurrectionPrice).to.equal(snookPrice);
+  });
+
+  it('tests resurrection price for a single snook with 1 trait', async ()=>{
+    const { deployer, gamer1: gamer } = await getNamedAccounts();
+
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookGameGamer = await ethers.getContract('SnookGame', gamer);
+    const SkillTokenGamer = await ethers.getContract('SkillToken', gamer);
+    const TreasuryGamer = await ethers.getContract('Treasury', gamer);
+    // start a cycle
+    await TreasuryGamer.transfer();
+
+    const snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+    await SkillTokenGamer.approve(SnookGameGamer.address, snookPrice);
+    await SnookGameGamer.mint2(1);
+    await SnookGameGamer.enterGame2(1);
+    await SnookGameDeployer.setDeathTime(1,1,0,0,'test', 1);
+    
+    const { resurrectionPrice } = await SnookGameGamer.describe(1);
+    
+    const rpEthersFloat = parseFloat(ethers.utils.formatEther(resurrectionPrice));
+    const rpEthersFixed = rpEthersFloat.toFixed(2);
+  
+    // precalculation, need to know algo
+    const expectedS = 1;
+    const expectedTraits = 1; 
+    const difficulty = Math.exp(expectedS) * expectedTraits*expectedTraits;
+    const snookPriceInSkills = 1; // in ethers
+    const expectedRP = snookPriceInSkills * difficulty;
+    expect(expectedRP.toFixed(2)).to.equal(rpEthersFixed);
+  });
+
+  it('tests resurrection price for a single snook with 2 traits', async ()=>{
+    const { deployer, gamer1: gamer } = await getNamedAccounts();
+
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookGameGamer = await ethers.getContract('SnookGame', gamer);
+    const SkillTokenGamer = await ethers.getContract('SkillToken', gamer);
+    const TreasuryGamer = await ethers.getContract('Treasury', gamer);
+    // start a cycle
+    await TreasuryGamer.transfer();
+
+    const snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+    await SkillTokenGamer.approve(SnookGameGamer.address, snookPrice);
+    await SnookGameGamer.mint2(1);
+    await SnookGameGamer.enterGame2(1);
+    await SnookGameDeployer.extractSnook(1, 2, 0, 0, 'test');
+    await SnookGameGamer.enterGame2(1);
+    
+    await SnookGameDeployer.setDeathTime(1,1,0,0,'test',1);
+    const { resurrectionPrice } = await SnookGameGamer.describe(1);
+    
+    const rpEthersFloat = parseFloat(ethers.utils.formatEther(resurrectionPrice));
+    const rpEthersFixed = rpEthersFloat.toFixed(2);
+
+    // precalculation, need to know algo
+    const expectedS = 1; // only one snook with 2 traits
+    const expectedTraits = 2; 
+    const difficulty = Math.exp(expectedS) * expectedTraits*expectedTraits;
+    const snookPriceInSkills = 1; // in ethers
+    const expectedRP = snookPriceInSkills * difficulty;
+    expect(expectedRP.toFixed(2)).to.equal(rpEthersFixed);
+  });
+
+  it('tests resurrection price for two snooks with 1 and 2 traits', async ()=>{
+    const { deployer, gamer1, gamer2 } = await getNamedAccounts();
+
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookGameGamer1 = await ethers.getContract('SnookGame', gamer1);
+    const SkillTokenGamer1 = await ethers.getContract('SkillToken', gamer1);
+
+    const SnookGameGamer2 = await ethers.getContract('SnookGame', gamer2);
+    const SkillTokenGamer2 = await ethers.getContract('SkillToken', gamer2);
+
+    const TreasuryGamer = await ethers.getContract('Treasury', gamer1);
+    // start a cycle
+    await TreasuryGamer.transfer();
+
+
+    const snookPrice1 = await UniswapUSDCSkill.getSnookPriceInSkills();
+    await SkillTokenGamer1.approve(SnookGameDeployer.address, snookPrice1);
+    // snook with 1 trait
+    await SnookGameGamer1.mint2(1);
+    
+    const snookPrice2 = await UniswapUSDCSkill.getSnookPriceInSkills();
+    await SkillTokenGamer2.approve(SnookGameDeployer.address, snookPrice2);
+    // snook with 2 traits
+    await SnookGameGamer2.mint2(1);
+    await SnookGameGamer2.enterGame2(2);
+    await SnookGameDeployer.extractSnook(2,2,0,0,'test'); // now 2 traits
+    
+    await SnookGameGamer1.enterGame2(1);
+    await SnookGameDeployer.setDeathTime(1,1,0,0,'test',1);
+ 
+    await SnookGameGamer2.enterGame2(2);
+    await SnookGameDeployer.setDeathTime(2,1,0,0,'test',2);
+    
+    const { resurrectionPrice: rp1 } = await SnookGameGamer1.describe(1);
+    const rp1EthersFloat = parseFloat(ethers.utils.formatEther(rp1));
+    const rp1EthersFixed = rp1EthersFloat.toFixed(2);
+
+    const { resurrectionPrice: rp2 } = await SnookGameGamer2.describe(2);
+    const rp2EthersFloat = parseFloat(ethers.utils.formatEther(rp2));
+    const rp2EthersFixed = rp2EthersFloat.toFixed(2);
+    
+    // precalculation, need to know algo; should move calculation of difficulty to the test
+    const s1 = 0.5; // value of S, only one snook with 2 traits
+    const traits1 = 1; 
+    const difficulty1 = Math.exp(s1) * traits1*traits1;
+    const sp1 = 1; // snook price from uniswap in ethers
+    const erp1 = sp1 * difficulty1; // expected resurrection price
+    expect(erp1.toFixed(2)).to.equal(rp1EthersFixed);
+
+    // precalculation, need to know algo
+    const s2 = 1; // only one snook with 2 traits
+    const traits2 = 2; 
+    const difficulty2 = Math.exp(s2) * traits2*traits2;
+    const sp2 = 1; // in ethers
+    const erp2 = sp2 * difficulty2; // expected res price
+    expect(erp2.toFixed(2)).to.equal(rp2EthersFixed);
+
+  });
+
+  it('tests trait hist when a single snook is minted, extracted, died and ressurected', async ()=>{
+    const { deployer, gamer1: gamer } = await getNamedAccounts();
+
+    const UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    const SnookGameDeployer = await ethers.getContract('SnookGame', deployer);
+    const SnookGameGamer = await ethers.getContract('SnookGame', gamer);
+    const SkillTokenGamer = await ethers.getContract('SkillToken', gamer);
+    const AfterdeathGamer = await ethers.getContract('Afterdeath', gamer);
+
+    const TreasuryGamer = await ethers.getContract('Treasury', gamer);
+    // start a cycle
+    await TreasuryGamer.transfer();
+
+
+    const snookPrice = await UniswapUSDCSkill.getSnookPriceInSkills();
+    await SkillTokenGamer.approve(SnookGameGamer.address, snookPrice);
+    const hist1 = await AfterdeathGamer.getTraitHist();
+    expect(hist1).to.have.lengthOf(0);
+
+    // mint a snook with 1 trait
+    await SnookGameGamer.mint2(1);
+    const hist2 = await AfterdeathGamer.getTraitHist();
+    expect(hist2).to.have.lengthOf(2);
+    const hist2str = hist2.map(n=>n.toString());
+    expect(hist2str).to.include.ordered.members(['0','1']);
+    
+   
+    await SnookGameGamer.enterGame2(1);
+    // extract snook with 2 traits
+    await SnookGameDeployer.extractSnook(1, 2, 0,0, 'test');
+    hist3 = await AfterdeathGamer.getTraitHist();
+    expect(hist3).to.have.lengthOf(3);
+    const hist3str = hist3.map(n=>n.toString());
+    expect(hist3str).to.include.ordered.members(['0','0','1']);
+
+    
+    await SnookGameGamer.enterGame2(1);
+    // snook is dead and will have 1 trait on resurrection
+    await SnookGameDeployer.setDeathTime(1, 1, 0, 0, 'dead', 1);
+    const hist4 = await AfterdeathGamer.getTraitHist();
+    const hist4str = hist4.map(n=>n.toString());
+    expect(hist4str).to.include.ordered.members(['0','0','0']);
+
+    const {resurrectionPrice} = await SnookGameGamer.describe(1);
+    await SkillTokenGamer.approve(AfterdeathGamer.address, resurrectionPrice);
+    await AfterdeathGamer.resurrect(1);
+    const hist5 = await AfterdeathGamer.getTraitHist();
+    const hist5str = hist5.map(n=>n.toString());
+    expect(hist5str).to.have.ordered.members(['0','1','0']);
+  });
+  
+});

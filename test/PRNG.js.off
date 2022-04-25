@@ -1,0 +1,60 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers } = require('hardhat');
+
+describe('PRNG', () => {
+  let PRNG;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    PRNG = await ethers.getContract('PRNG'); 
+  });
+
+  // https://docs.soliditylang.org/en/v0.8.9/types.html#modulo
+  it('tests max set to 0 causes panic error', async ()=>{
+    await PRNG.generate();
+    await expect(PRNG.read(0)).to.be.reverted;
+  });
+
+  it('tests max set to 1 always returns 0', async ()=>{
+    const max = 1;
+    const sampleSize = 10;
+    const sample = Array(sampleSize);
+    for (let i=0; i<sample.length; i++) {
+      await PRNG.generate();
+      const n = await PRNG.read(max);
+      sample[i] = n.toNumber();
+    }
+    expect(sample).to.have.members(Array(sampleSize).fill(0));
+  });
+
+  it('tests max set to 2 produces around 50% of 0s and 50% of 1s', async ()=>{
+    const max = 2;
+    const sampleSize = 200;
+    const sample = Array(sampleSize);
+    for (let i=0; i<sample.length; i++) {
+      await PRNG.generate();
+      const n = await PRNG.read(max);
+      sample[i] = n.toNumber();
+    }
+    const ones = sample.filter(e=>e==1);
+    const delta = Math.floor(sampleSize * 0.05); // 5% deviation  
+    expect(ones.length).to.be.closeTo(sampleSize/2, delta);
+  });
+
+  it('tests max set to 3 produces around 33.3% of 0s, 33.3% of 1s and 33.3% of 2s', async ()=>{
+    const max = 3;
+    const sampleSize = 300;
+    const sample = Array(sampleSize);
+    for (let i=0; i<sample.length; i++) {
+      await PRNG.generate();
+      const n = await PRNG.read(max);
+      sample[i] = n.toNumber();
+    }
+    const delta = Math.floor(sampleSize * 0.05); // 5% deviation 
+    const ones = sample.filter(e=>e==1);
+    const twos = sample.filter(e=>e==2);
+    expect(ones.length).to.be.closeTo(Math.ceil(sampleSize/3), delta);
+    expect(twos.length).to.be.closeTo(Math.ceil(sampleSize/3), delta);
+
+  });
+});

@@ -1,0 +1,31 @@
+worker@lenovo ~/Documents/MyProjects/playsnook/onchain-hh (development)$ npx hardhat --network mumbai deploy --tags mumbai
+Nothing to compile
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+deploying "SnookToken_Implementation" (tx: 0xa0488c772a1cdeb6178347e6d1e3e1bad847272bee889fabcc0702426ca943e1)...: deployed at 0x3dB864d8cC06382cfB2fc25d0FbF334aC8de8dE4 with 2328483 gas
+executing DefaultProxyAdmin.upgrade (tx: 0x64612337f6a186e9e526a625a8af0dee2e601a8597ee171d588e45f59451652a) ...: performed with 38373 gas
+reusing "SkillToken" at 0xE0fc37fb8bf8cb0b4da886f62f4Aa6D86f10Fac4
+reusing "UniswapV2Factory" at 0xd6A14836F39c846017950A803520E6D36a06a713
+reusing "UniswapV2Router02" at 0xa368C0A30B02aCB3C752e80c074Ffb96e2cb63f0
+reusing "UniswapUSDCSkill" at 0x954032cDea9eEb719607C76fEAbA90F1F129b53d
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+deploying "Treasury_Implementation" (tx: 0xd0c81f74d999f890ee36f0ded51d7f647bf0acca5b9d7768b7c4cc69bc5e9207)...: deployed at 0x9Dc6814ABC4489c1899aB28a155A187A4359B705 with 1491974 gas
+executing DefaultProxyAdmin.upgrade (tx: 0xd245b3644f534fc449e2f99685ca38f94dcbfaf60e9ff9d60b56ab2203cafc4c) ...: performed with 38373 gas
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+deploying "SnookState_Implementation" (tx: 0x2f42ff31307d38f080f65ad4dad11045f4336355a64fd44b7888fbff11930a15)...: deployed at 0x05608e46C888Bd813CeadADF30e9228C7d8272d2 with 741038 gas
+executing DefaultProxyAdmin.upgrade (tx: 0x863c260bc7eef83641c46551d7ed30a53cc5117bc99c0cb5bb33682dcf12b651) ...: performed with 38373 gas
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+deploying "SnookGame_Implementation" (tx: 0xb21641a8ea8d397e93383f30bd71b2c4cdab30e7979d900ac3aebcba54917f27)...: deployed at 0x97D5761A8A7Ea0Ea0B6a5af9Af080Da156129000 with 3833057 gas
+executing DefaultProxyAdmin.upgrade (tx: 0x37e34534cdbccbc4ad253b8f0167be33ee2be6785cc5b3a5c21681b2b96f141a) ...: performed with 38361 gas
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+deploying "Afterdeath_Implementation" (tx: 0x565a0560d456b2d4706963ea0216fcb2dc05b55d516d8b92a84e9b887484e559)...: deployed at 0xf5984454D2f99b6Fd97035886B1F149063138461 with 2573464 gas
+executing DefaultProxyAdmin.upgrade (tx: 0x4f73e6544cc541f3ba3b063d3dc00f2e871547e7f8bee026b44b627e09661979) ...: performed with 38373 gas
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+deploying "StakingRewards_Implementation" (tx: 0x7d43096891a79dc194fca9e3753ea2ead12465072fb1841aa37c2eae47d1708d)...: deployed at 0x52800Fb3127EAE2D1097BC7187A7C8FEb0889627 with 1703939 gas
+executing DefaultProxyAdmin.upgrade (tx: 0xccc57c4411aead40e9b59e57560bf609a8f216fd5b6b09d77de519b75b09138b) ...: performed with 38373 gas
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+reusing "PRNG_Implementation" at 0x83eF7E2ABF9e0e76c2E2b23CA3B489d3a52EFCaA
+Vesting contracts will use 1647608831 timestamp
+reusing "Vesting" at 0x694fCce2B8CB0523BB1e754a8F8371F05F9Ede2C
+Vesting contract deployed with total rewards:38000000000000000000000000
+reusing "DefaultProxyAdmin" at 0x44E07eB19010DD3c5C06d11a1567A519d675b484
+reusing "LuckWheel_Implementation" at 0x2aC29edEBC2B44189DF806e6f1feb08c1b0C7842

@@ -1,0 +1,52 @@
+require('dotenv').config();
+const { expect } = require("chai");
+const {deployments, ethers } = require('hardhat');
+const BurialDelayInSeconds = parseInt(process.env.BURIAL_DELAY_IN_SECONDS);
+
+describe('SnookState getters', () => {
+  let UniswapUSDCSkill;
+  let SkillToken;
+  let SnookGame;
+  let Afterdeath;
+  let Treasury;
+  let SnookState;
+  let SnookToken;
+
+  //let SkinRewards;
+  let Marketplace;
+  
+  let SGE;
+  beforeEach(async () => {
+    await deployments.fixture(['L2']);
+    UniswapUSDCSkill = await ethers.getContract('UniswapUSDCSkill');
+    SkillToken = await ethers.getContract('SkillToken');
+    SnookToken = await ethers.getContract('SnookToken');
+    SnookGame = await ethers.getContract('SnookGame');
+    //SkinRewards = await ethers.getContract('SkinRewards');
+    Marketplace = await ethers.getContract('Marketplace');
+    SnookState = await ethers.getContract('SnookState');
+    Afterdeath = await ethers.getContract('Afterdeath');
+    Treasury = await ethers.getContract('Treasury');
+    SGE = await ethers.getContract('SGE');
+  });
+  
+  it('test getAfterdeathAddress()', async () => {
+    expect(await SnookState.getAfterdeathAddress()).eq(Afterdeath.address);
+  });
+
+  it('test getSnookGameAddress()', async ()=>{
+    expect(await SnookState.getSnookGameAddress()).eq(SnookGame.address);
+  });
+
+  // it('test getSkinRewardsAddress()', async ()=>{
+  //   expect(await SnookState.getSkinRewardsAddress()).eq(SkinRewards.address);
+  // });
+  it('test getMarketplaceAddress()', async ()=>{
+    expect(await SnookState.getMarketplaceAddress()).eq(Marketplace.address);
+  });
+
+  it('test getSGEAddress()', async ()=>{
+    expect(await SnookState.getSGEAddress()).eq(SGE.address);
+  });
+
+});
