@@ -21,5 +21,5 @@ module.exports = async ({getNamedAccounts, deployments, network}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'mumbai', 'polygon'];
+module.exports.tags = ['L2', 'mumbai', 'polygon', 'skaletest'];
 module.exports.id = 'init4SnookGameMother';

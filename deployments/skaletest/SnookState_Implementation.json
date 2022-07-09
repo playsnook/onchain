@@ -1,0 +1,598 @@
+{
+  "address": "0x0ee1377030ca2703Edb9599476dA46F8E062A6bf",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "deleteDescriptor",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAfterdeathAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDescriptor",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "score",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stars",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "traitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resurrectionPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resurrectionCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionScore",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionStars",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionTraitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "onResurrectionTokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onGameEntryTraitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "deathTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "gameAllowed",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lives",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "forSale",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IDescriptorUser.Descriptor",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getMarketplaceAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getSnookGameAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "game",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "afterdeath",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "marketplace",
+          "type": "address"
+        }
+      ],
+      "name": "initialize2",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "score",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stars",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "traitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resurrectionPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resurrectionCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionScore",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionStars",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionTraitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "onResurrectionTokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onGameEntryTraitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "deathTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "gameAllowed",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lives",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "forSale",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IDescriptorUser.Descriptor",
+          "name": "descriptor",
+          "type": "tuple"
+        }
+      ],
+      "name": "setDescriptor",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "tokenIds",
+          "type": "uint256[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "score",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stars",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "traitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resurrectionPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resurrectionCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionScore",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionStars",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onResurrectionTraitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "onResurrectionTokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onGameEntryTraitCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "deathTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "gameAllowed",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lives",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "forSale",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IDescriptorUser.Descriptor[]",
+          "name": "descriptors",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "setDescriptors",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x4f1dd24bfd1bfdbdeaace1d59acc32859f7794654f4ce55d486b5d4150059890",
+  "receipt": {
+    "to": "0x0000000000000000000000000000000000000000",
+    "from": "0x9a1187cB7084F3E60a8b99eb195D9f3c29361a8a",
+    "contractAddress": "0x0ee1377030ca2703Edb9599476dA46F8E062A6bf",
+    "transactionIndex": 0,
+    "gasUsed": "832453",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x1e6fe1eab4ae93952d40190bc66524ddd7478800d7154c2b0c439802116838f9",
+    "transactionHash": "0x4f1dd24bfd1bfdbdeaace1d59acc32859f7794654f4ce55d486b5d4150059890",
+    "logs": [],
+    "blockNumber": 264442,
+    "cumulativeGasUsed": "832453",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "44bc5b6e9efb9005c0cdf786881a4dc8",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"deleteDescriptor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAfterdeathAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getDescriptor\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stars\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"traitCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionScore\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionStars\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionTraitCount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"onResurrectionTokenURI\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"onGameEntryTraitCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deathTime\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"gameAllowed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"lives\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"forSale\",\"type\":\"bool\"}],\"internalType\":\"struct IDescriptorUser.Descriptor\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getMarketplaceAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getSnookGameAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"game\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"afterdeath\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"marketplace\",\"type\":\"address\"}],\"name\":\"initialize2\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stars\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"traitCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionScore\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionStars\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionTraitCount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"onResurrectionTokenURI\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"onGameEntryTraitCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deathTime\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"gameAllowed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"lives\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"forSale\",\"type\":\"bool\"}],\"internalType\":\"struct IDescriptorUser.Descriptor\",\"name\":\"descriptor\",\"type\":\"tuple\"}],\"name\":\"setDescriptor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stars\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"traitCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionScore\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionStars\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"onResurrectionTraitCount\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"onResurrectionTokenURI\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"onGameEntryTraitCount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deathTime\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"gameAllowed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"lives\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"forSale\",\"type\":\"bool\"}],\"internalType\":\"struct IDescriptorUser.Descriptor[]\",\"name\":\"descriptors\",\"type\":\"tuple[]\"}],\"name\":\"setDescriptors\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/SnookState.sol\":\"SnookState\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\n// solhint-disable-next-line compiler-version\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed\\n * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an\\n * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer\\n * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.\\n *\\n * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as\\n * possible by providing the encoded function call as the `_data` argument to {ERC1967Proxy-constructor}.\\n *\\n * CAUTION: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or to ensure\\n * that all initializers are idempotent. This is not verified automatically as constructors are by Solidity.\\n */\\nabstract contract Initializable {\\n\\n    /**\\n     * @dev Indicates that the contract has been initialized.\\n     */\\n    bool private _initialized;\\n\\n    /**\\n     * @dev Indicates that the contract is in the process of being initialized.\\n     */\\n    bool private _initializing;\\n\\n    /**\\n     * @dev Modifier to protect an initializer function from being invoked twice.\\n     */\\n    modifier initializer() {\\n        require(_initializing || !_initialized, \\\"Initializable: contract is already initialized\\\");\\n\\n        bool isTopLevelCall = !_initializing;\\n        if (isTopLevelCall) {\\n            _initializing = true;\\n            _initialized = true;\\n        }\\n\\n        _;\\n\\n        if (isTopLevelCall) {\\n            _initializing = false;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x67d2f282a9678e58e878a0b774041ba7a01e2740a262aea97a3f681339914713\",\"license\":\"MIT\"},\"contracts/IDescriptorUser.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\n// https://ethereum.stackexchange.com/questions/27259/how-can-you-share-a-struct-definition-between-contracts-in-separate-files\\ninterface IDescriptorUser {\\n  struct Descriptor {\\n    uint score;\\n    uint stars;\\n    uint traitCount;\\n\\n    uint resurrectionPrice;\\n    uint resurrectionCount;\\n    uint onResurrectionScore;\\n    uint onResurrectionStars;\\n    uint onResurrectionTraitCount;\\n    string onResurrectionTokenURI;\\n\\n    // required to recalculate probability density on exit from the game\\n    uint onGameEntryTraitCount; \\n    uint deathTime;\\n    bool gameAllowed; // UNUSED; \\n  \\n    uint lives; \\n    bool forSale;\\n\\n  }\\n}\",\"keccak256\":\"0x7609d22e47e34f2ca2efe67b3d58ada3442de8543b9f4e6b732b84ab784124c1\",\"license\":\"MIT\"},\"contracts/ISnookState.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport \\\"./IDescriptorUser.sol\\\";\\n\\ninterface ISnookState is IDescriptorUser { \\n  function getSnookGameAddress() external view returns (address);\\n  function getMarketplaceAddress() external view returns (address);\\n  function getAfterdeathAddress() external view returns (address);\\n  \\n  function getDescriptor(uint tokenId) external view returns(Descriptor memory);\\n  function setDescriptor(uint tokenId, Descriptor memory descriptor) external;\\n  function setDescriptors(uint[] calldata tokenIds, Descriptor[] calldata descriptors) external;\\n\\n  function deleteDescriptor(uint tokenId) external;\\n}\",\"keccak256\":\"0x76a11b67e83719bb16fd3904b95d521d18866e8c9249d74f9a4087cd01623178\",\"license\":\"MIT\"},\"contracts/SnookState.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\nimport \\\"./ISnookState.sol\\\";\\nimport \\\"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\\\";\\n\\ncontract SnookState is ISnookState, Initializable {\\n\\n  mapping (uint => Descriptor) private _descriptors;\\n \\n  address private _game;\\n  //address private _skinRewards;\\n  address private _marketplace;\\n  address private _afterdeath;\\n  // address private _sge;\\n  address private _UNUSED;\\n\\n  function getSnookGameAddress() external override view returns (address) {\\n    return _game;\\n  }\\n\\n  function getMarketplaceAddress() external override view returns (address) {\\n    return _marketplace;\\n  }\\n\\n  function getAfterdeathAddress() external override view returns (address) {\\n    return _afterdeath;\\n  }\\n\\n\\n  function initialize(\\n    address game,\\n    address afterdeath\\n  ) initializer public {\\n    _game = game;    \\n    _afterdeath = afterdeath;\\n  }\\n\\n  function initialize2(address marketplace) public {\\n    require(marketplace != _marketplace, \\\"SnookState: marketplace already initialized\\\");\\n    _marketplace = marketplace;\\n  }\\n\\n  modifier onlyGameContracts {\\n    require(\\n      msg.sender == _game || \\n      msg.sender == _marketplace || \\n      msg.sender == _afterdeath, \\n      'SnookState: Not game contracts'\\n    );\\n    _;\\n  }\\n\\n  function getDescriptor(uint tokenId) onlyGameContracts external override view returns(Descriptor memory) {\\n    return _descriptors[tokenId];\\n  }\\n\\n  function setDescriptor(uint tokenId, Descriptor calldata descriptor) onlyGameContracts external override {\\n    _setDescriptor(tokenId, descriptor);\\n\\n  }\\n  function deleteDescriptor(uint tokenId) onlyGameContracts external override {\\n    delete _descriptors[tokenId];\\n  }\\n  function _setDescriptor(uint tokenId, Descriptor calldata descriptor) internal {\\n    _descriptors[tokenId] = descriptor;\\n  }\\n  \\n  function setDescriptors(uint[] calldata tokenIds, Descriptor[] calldata descriptors) onlyGameContracts external override {\\n    require(tokenIds.length == descriptors.length, 'SnookState: invalid lengths');\\n    for (uint i=0; i<tokenIds.length; i++) {\\n      _setDescriptor(tokenIds[i], descriptors[i]);\\n    }\\n  }\\n} \",\"keccak256\":\"0xe9031c1493018f00545f37b4e7063d66e9e80d36f6415eb6528137e7cf7d0234\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610e19806100206000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c80637a9aa2b0116100665780637a9aa2b0146100fc578063bb8fe78514610111578063d9a911ac14610119578063eb14ab081461012c578063f697081a1461013f57610093565b806326dcff1514610098578063485cc955146100ad5780636a6f3e1d146100c05780636d733a17146100e9575b600080fd5b6100ab6100a6366004610799565b610147565b005b6100ab6100bb3660046107ba565b6101a0565b6100d36100ce366004610855565b610247565b6040516100e09190610a25565b60405180910390f35b6100ab6100f73660046107ec565b6103eb565b6101046104e3565b6040516100e0919061090a565b6101046104f2565b6100ab61012736600461086d565b610501565b6100ab61013a366004610855565b610563565b61010461063f565b6003546001600160a01b038281169116141561017e5760405162461bcd60e51b815260040161017590610955565b60405180910390fd5b600380546001600160a01b0319166001600160a01b0392909216919091179055565b600054610100900460ff16806101b9575060005460ff16155b6101d55760405162461bcd60e51b8152600401610175906109a0565b600054610100900460ff16158015610200576000805460ff1961ff0019909116610100171660011790555b600280546001600160a01b038086166001600160a01b03199283161790925560048054928516929091169190911790558015610242576000805461ff00191690555b505050565b61024f61066e565b6002546001600160a01b031633148061027257506003546001600160a01b031633145b8061028757506004546001600160a01b031633145b6102a35760405162461bcd60e51b81526004016101759061091e565b60016000838152602001908152602001600020604051806101c0016040529081600082015481526020016001820154815260200160028201548152602001600382015481526020016004820154815260200160058201548152602001600682015481526020016007820154815260200160088201805461032290610c71565b80601f016020809104026020016040519081016040528092919081815260200182805461034e90610c71565b801561039b5780601f106103705761010080835404028352916020019161039b565b820191906000526020600020905b81548152906001019060200180831161037e57829003601f168201915b505050918352505060098201546020820152600a8201546040820152600b82015460ff90811615156060830152600c8301546080830152600d90920154909116151560a09091015290505b919050565b6002546001600160a01b031633148061040e57506003546001600160a01b031633145b8061042357506004546001600160a01b031633145b61043f5760405162461bcd60e51b81526004016101759061091e565b82811461045e5760405162461bcd60e51b8152600401610175906109ee565b60005b838110156104dc576104ca85858381811061048c57634e487b7160e01b600052603260045260246000fd5b905060200201358484848181106104b357634e487b7160e01b600052603260045260246000fd5b90506020028101906104c59190610b38565b61064e565b806104d481610cbf565b915050610461565b5050505050565b6002546001600160a01b031690565b6003546001600160a01b031690565b6002546001600160a01b031633148061052457506003546001600160a01b031633145b8061053957506004546001600160a01b031633145b6105555760405162461bcd60e51b81526004016101759061091e565b61055f828261064e565b5050565b6002546001600160a01b031633148061058657506003546001600160a01b031633145b8061059b57506004546001600160a01b031633145b6105b75760405162461bcd60e51b81526004016101759061091e565b600081815260016020819052604082208281559081018290556002810182905560038101829055600481018290556005810182905560068101829055600781018290559061060860088301826106e1565b50600060098201819055600a8201819055600b8201805460ff19908116909155600c830191909155600d9091018054909116905550565b6004546001600160a01b031690565b600082815260016020526040902081906106688282610d28565b50505050565b604051806101c001604052806000815260200160008152602001600081526020016000815260200160008152602001600081526020016000815260200160008152602001606081526020016000815260200160008152602001600015158152602001600081526020016000151581525090565b5080546106ed90610c71565b6000825580601f106106ff575061071d565b601f01602090049060005260206000209081019061071d9190610720565b50565b5b808211156107355760008155600101610721565b5090565b80356001600160a01b03811681146103e657600080fd5b60008083601f840112610761578182fd5b50813567ffffffffffffffff811115610778578182fd5b602083019150836020808302850101111561079257600080fd5b9250929050565b6000602082840312156107aa578081fd5b6107b382610739565b9392505050565b600080604083850312156107cc578081fd5b6107d583610739565b91506107e360208401610739565b90509250929050565b60008060008060408587031215610801578182fd5b843567ffffffffffffffff80821115610818578384fd5b61082488838901610750565b9096509450602087013591508082111561083c578384fd5b5061084987828801610750565b95989497509550505050565b600060208284031215610866578081fd5b5035919050565b6000806040838503121561087f578182fd5b82359150602083013567ffffffffffffffff81111561089c578182fd5b83016101c081860312156108ae578182fd5b809150509250929050565b15159052565b60008151808452815b818110156108e4576020818501810151868301820152016108c8565b818111156108f55782602083870101525b50601f01601f19169290920160200192915050565b6001600160a01b0391909116815260200190565b6020808252601e908201527f536e6f6f6b53746174653a204e6f742067616d6520636f6e7472616374730000604082015260600190565b6020808252602b908201527f536e6f6f6b53746174653a206d61726b6574706c61636520616c72656164792060408201526a1a5b9a5d1a585b1a5e995960aa1b606082015260800190565b6020808252602e908201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160408201526d191e481a5b9a5d1a585b1a5e995960921b606082015260800190565b6020808252601b908201527f536e6f6f6b53746174653a20696e76616c6964206c656e677468730000000000604082015260600190565b60006020825282516020830152602083015160408301526040830151606083015260608301516080830152608083015160a083015260a083015160c083015260c083015160e083015260e08301516101008181850152808501519150506101c06101208181860152610a9b6101e08601846108bf565b908601516101408681019190915286015161016080870191909152860151909250610180610acb818701836108b9565b8601516101a0868101919091528601519050610ae9828601826108b9565b5090949350505050565b6000808335601e19843603018112610b09578283fd5b83018035915067ffffffffffffffff821115610b23578283fd5b60200191503681900382131561079257600080fd5b600082356101be19833603018112610b4e578182fd5b9190910192915050565b60009081526020902090565b5b8181101561055f5760008155600101610b65565b67ffffffffffffffff831115610b9157610b91610ce6565b610b9b8154610c71565b600080601f8611601f841181811715610bba57610bb786610b58565b92505b8015610be9576020601f89010483016020891015610bd55750825b610be76020601f880104850182610b64565b505b508060018114610c1557600094508715610c04578387013594505b610c0e8886610cac565b8655610c67565b601f198816945082845b86811015610c3f5788860135825560209586019560019092019101610c1f565b5088861015610c5c57878501356000196008601f8c16021c191681555b506001600289020186555b5050505050505050565b600281046001821680610c8557607f821691505b60208210811415610ca657634e487b7160e01b600052602260045260246000fd5b50919050565b600019600883021c191660029091021790565b6000600019821415610cdf57634e487b7160e01b81526011600452602481fd5b5060010190565b634e487b7160e01b600052604160045260246000fd5b600081358015158114610d0d578182fd5b92915050565b60ff1981541660ff8315151681178255505050565b813581556020820135600182015560408201356002820155606082013560038201556080820135600482015560a0820135600582015560c0820135600682015560e08201356007820155610d80610100830183610af3565b610d8e818360088601610b79565b50506101208201356009820155610140820135600a820155610dbf610db66101608401610cfc565b600b8301610d13565b610180820135600c82015561055f610dda6101a08401610cfc565b600d8301610d1356fea26469706673582212200b9e86cc32e10027002f4d44a4f310fece7dac91cb68af2ab2834e24851c99e364736f6c63430008000033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100935760003560e01c80637a9aa2b0116100665780637a9aa2b0146100fc578063bb8fe78514610111578063d9a911ac14610119578063eb14ab081461012c578063f697081a1461013f57610093565b806326dcff1514610098578063485cc955146100ad5780636a6f3e1d146100c05780636d733a17146100e9575b600080fd5b6100ab6100a6366004610799565b610147565b005b6100ab6100bb3660046107ba565b6101a0565b6100d36100ce366004610855565b610247565b6040516100e09190610a25565b60405180910390f35b6100ab6100f73660046107ec565b6103eb565b6101046104e3565b6040516100e0919061090a565b6101046104f2565b6100ab61012736600461086d565b610501565b6100ab61013a366004610855565b610563565b61010461063f565b6003546001600160a01b038281169116141561017e5760405162461bcd60e51b815260040161017590610955565b60405180910390fd5b600380546001600160a01b0319166001600160a01b0392909216919091179055565b600054610100900460ff16806101b9575060005460ff16155b6101d55760405162461bcd60e51b8152600401610175906109a0565b600054610100900460ff16158015610200576000805460ff1961ff0019909116610100171660011790555b600280546001600160a01b038086166001600160a01b03199283161790925560048054928516929091169190911790558015610242576000805461ff00191690555b505050565b61024f61066e565b6002546001600160a01b031633148061027257506003546001600160a01b031633145b8061028757506004546001600160a01b031633145b6102a35760405162461bcd60e51b81526004016101759061091e565b60016000838152602001908152602001600020604051806101c0016040529081600082015481526020016001820154815260200160028201548152602001600382015481526020016004820154815260200160058201548152602001600682015481526020016007820154815260200160088201805461032290610c71565b80601f016020809104026020016040519081016040528092919081815260200182805461034e90610c71565b801561039b5780601f106103705761010080835404028352916020019161039b565b820191906000526020600020905b81548152906001019060200180831161037e57829003601f168201915b505050918352505060098201546020820152600a8201546040820152600b82015460ff90811615156060830152600c8301546080830152600d90920154909116151560a09091015290505b919050565b6002546001600160a01b031633148061040e57506003546001600160a01b031633145b8061042357506004546001600160a01b031633145b61043f5760405162461bcd60e51b81526004016101759061091e565b82811461045e5760405162461bcd60e51b8152600401610175906109ee565b60005b838110156104dc576104ca85858381811061048c57634e487b7160e01b600052603260045260246000fd5b905060200201358484848181106104b357634e487b7160e01b600052603260045260246000fd5b90506020028101906104c59190610b38565b61064e565b806104d481610cbf565b915050610461565b5050505050565b6002546001600160a01b031690565b6003546001600160a01b031690565b6002546001600160a01b031633148061052457506003546001600160a01b031633145b8061053957506004546001600160a01b031633145b6105555760405162461bcd60e51b81526004016101759061091e565b61055f828261064e565b5050565b6002546001600160a01b031633148061058657506003546001600160a01b031633145b8061059b57506004546001600160a01b031633145b6105b75760405162461bcd60e51b81526004016101759061091e565b600081815260016020819052604082208281559081018290556002810182905560038101829055600481018290556005810182905560068101829055600781018290559061060860088301826106e1565b50600060098201819055600a8201819055600b8201805460ff19908116909155600c830191909155600d9091018054909116905550565b6004546001600160a01b031690565b600082815260016020526040902081906106688282610d28565b50505050565b604051806101c001604052806000815260200160008152602001600081526020016000815260200160008152602001600081526020016000815260200160008152602001606081526020016000815260200160008152602001600015158152602001600081526020016000151581525090565b5080546106ed90610c71565b6000825580601f106106ff575061071d565b601f01602090049060005260206000209081019061071d9190610720565b50565b5b808211156107355760008155600101610721565b5090565b80356001600160a01b03811681146103e657600080fd5b60008083601f840112610761578182fd5b50813567ffffffffffffffff811115610778578182fd5b602083019150836020808302850101111561079257600080fd5b9250929050565b6000602082840312156107aa578081fd5b6107b382610739565b9392505050565b600080604083850312156107cc578081fd5b6107d583610739565b91506107e360208401610739565b90509250929050565b60008060008060408587031215610801578182fd5b843567ffffffffffffffff80821115610818578384fd5b61082488838901610750565b9096509450602087013591508082111561083c578384fd5b5061084987828801610750565b95989497509550505050565b600060208284031215610866578081fd5b5035919050565b6000806040838503121561087f578182fd5b82359150602083013567ffffffffffffffff81111561089c578182fd5b83016101c081860312156108ae578182fd5b809150509250929050565b15159052565b60008151808452815b818110156108e4576020818501810151868301820152016108c8565b818111156108f55782602083870101525b50601f01601f19169290920160200192915050565b6001600160a01b0391909116815260200190565b6020808252601e908201527f536e6f6f6b53746174653a204e6f742067616d6520636f6e7472616374730000604082015260600190565b6020808252602b908201527f536e6f6f6b53746174653a206d61726b6574706c61636520616c72656164792060408201526a1a5b9a5d1a585b1a5e995960aa1b606082015260800190565b6020808252602e908201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160408201526d191e481a5b9a5d1a585b1a5e995960921b606082015260800190565b6020808252601b908201527f536e6f6f6b53746174653a20696e76616c6964206c656e677468730000000000604082015260600190565b60006020825282516020830152602083015160408301526040830151606083015260608301516080830152608083015160a083015260a083015160c083015260c083015160e083015260e08301516101008181850152808501519150506101c06101208181860152610a9b6101e08601846108bf565b908601516101408681019190915286015161016080870191909152860151909250610180610acb818701836108b9565b8601516101a0868101919091528601519050610ae9828601826108b9565b5090949350505050565b6000808335601e19843603018112610b09578283fd5b83018035915067ffffffffffffffff821115610b23578283fd5b60200191503681900382131561079257600080fd5b600082356101be19833603018112610b4e578182fd5b9190910192915050565b60009081526020902090565b5b8181101561055f5760008155600101610b65565b67ffffffffffffffff831115610b9157610b91610ce6565b610b9b8154610c71565b600080601f8611601f841181811715610bba57610bb786610b58565b92505b8015610be9576020601f89010483016020891015610bd55750825b610be76020601f880104850182610b64565b505b508060018114610c1557600094508715610c04578387013594505b610c0e8886610cac565b8655610c67565b601f198816945082845b86811015610c3f5788860135825560209586019560019092019101610c1f565b5088861015610c5c57878501356000196008601f8c16021c191681555b506001600289020186555b5050505050505050565b600281046001821680610c8557607f821691505b60208210811415610ca657634e487b7160e01b600052602260045260246000fd5b50919050565b600019600883021c191660029091021790565b6000600019821415610cdf57634e487b7160e01b81526011600452602481fd5b5060010190565b634e487b7160e01b600052604160045260246000fd5b600081358015158114610d0d578182fd5b92915050565b60ff1981541660ff8315151681178255505050565b813581556020820135600182015560408201356002820155606082013560038201556080820135600482015560a0820135600582015560c0820135600682015560e08201356007820155610d80610100830183610af3565b610d8e818360088601610b79565b50506101208201356009820155610140820135600a820155610dbf610db66101608401610cfc565b600b8301610d13565b610180820135600c82015561055f610dda6101a08401610cfc565b600d8301610d1356fea26469706673582212200b9e86cc32e10027002f4d44a4f310fece7dac91cb68af2ab2834e24851c99e364736f6c63430008000033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 753,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_initialized",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 756,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_initializing",
+        "offset": 1,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 16841,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_descriptors",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_uint256,t_struct(Descriptor)13134_storage)"
+      },
+      {
+        "astId": 16843,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_game",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_address"
+      },
+      {
+        "astId": 16845,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_marketplace",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_address"
+      },
+      {
+        "astId": 16847,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_afterdeath",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_address"
+      },
+      {
+        "astId": 16849,
+        "contract": "contracts/SnookState.sol:SnookState",
+        "label": "_UNUSED",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_uint256,t_struct(Descriptor)13134_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct IDescriptorUser.Descriptor)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Descriptor)13134_storage"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(Descriptor)13134_storage": {
+        "encoding": "inplace",
+        "label": "struct IDescriptorUser.Descriptor",
+        "members": [
+          {
+            "astId": 13107,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "score",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13109,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "stars",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13111,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "traitCount",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13113,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "resurrectionPrice",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13115,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "resurrectionCount",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13117,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "onResurrectionScore",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13119,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "onResurrectionStars",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13121,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "onResurrectionTraitCount",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13123,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "onResurrectionTokenURI",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 13125,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "onGameEntryTraitCount",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13127,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "deathTime",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13129,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "gameAllowed",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_bool"
+          },
+          {
+            "astId": 13131,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "lives",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 13133,
+            "contract": "contracts/SnookState.sol:SnookState",
+            "label": "forSale",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_bool"
+          }
+        ],
+        "numberOfBytes": "448"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

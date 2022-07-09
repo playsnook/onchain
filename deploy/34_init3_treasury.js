@@ -25,5 +25,13 @@ module.exports = async ({getNamedAccounts, deployments, network}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest', 'exchainmain'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'exchainmain',
+  'skaletest'
+];
 module.exports.id = "initTreasury3";

@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { delayBetweenDeployScripts } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
 
 const SecondsInDay = ethers.BigNumber.from(process.env.SECONDS_IN_DAY);
 const MinStakingPeriod = ethers.BigNumber.from(process.env.MIN_STAKING_PERIOD_IN_DAYS);
@@ -9,8 +9,9 @@ const MinStakingValueCoef = ethers.BigNumber.from(process.env.MIN_STAKING_VALUE_
 const BurningRate = ethers.BigNumber.from(process.env.BURNING_RATE_IN_PERCENTS);
 const InitialSkillSupply = ethers.BigNumber.from(process.env.INITIAL_SKILL_SUPPLY_IN_ETHERS);
 
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const { deployer, admin } = await getNamedAccounts();
+  const gasPrice = getDeployGasPrice(network.name);
   const SkillToken = await deployments.get('SkillToken');
   const Treasury = await deployments.get('Treasury');
 
@@ -22,7 +23,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   
   await deployments.execute(
     'StakingRewards',
-    {from:deployer},
+    {from:deployer, gasPrice},
     'initialize',
     SkillToken.address,
     Treasury.address,
@@ -39,5 +40,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest',
+  'skaletest'
+];
 module.exports.id = 'initStakingRewards';

@@ -1,8 +1,9 @@
 require('dotenv').config();
-const { delayBetweenDeployScripts } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
 
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const { deployer, admin } = await getNamedAccounts();
+  const gasPrice = getDeployGasPrice(network.name);
   const UniswapUSDCSkill = await deployments.get('UniswapUSDCSkill');
   const SnookState = await deployments.get('SnookState');
   const SnookToken = await deployments.get('SnookToken');
@@ -11,7 +12,10 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   deployments.log(`Initing SnookGame: deployer: ${deployer} admin: ${admin}`);
   await deployments.execute(
     'SnookGame',
-    {from:deployer},
+    {
+      from:deployer, 
+      gasPrice
+    },
     'initialize',
     SnookState.address,
     SnookToken.address,
@@ -24,5 +28,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'skaletest'
+];
 module.exports.id = 'initSnookGame';

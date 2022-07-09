@@ -1,10 +1,9 @@
 require('dotenv').config();
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
 
-const { delayBetweenDeployScripts } = require('../scripts/lib');
-
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const { deployer, admin } = await getNamedAccounts();
-  
+  const gasPrice = getDeployGasPrice(network.name)
   const KILLER_ROLE = await deployments.read(
     'SnookGame',
     {from:admin},
@@ -26,7 +25,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   // Grant role to deployer
   await deployments.execute(
     'SnookGame',
-    {from: admin},
+    {from: admin, gasPrice},
     'grantRole',
     KILLER_ROLE,
     deployer 
@@ -34,7 +33,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'SnookGame',
-    {from: admin},
+    {from: admin, gasPrice},
     'grantRole',
     EXTRACTOR_ROLE,
     deployer 
@@ -42,7 +41,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'SnookGame',
-    {from: admin},
+    {from: admin, gasPrice},
     'grantRole',
     EMERGENCY_EXTRACTOR_ROLE,
     deployer 

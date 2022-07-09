@@ -1,4 +1,6 @@
-const { delayBetweenDeployScripts } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
+
+const gasPrice = getDeployGasPrice(network.name);
 
 module.exports = async ({getNamedAccounts, deployments}) => {
   const {deployer} = await getNamedAccounts();
@@ -8,7 +10,10 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'UniswapV2Factory', 
-    {from: deployer}, 
+    {
+      from: deployer,
+      gasPrice
+    }, 
     'createPair', 
     UsdcToken.address, 
     SkillToken.address
@@ -20,5 +25,5 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   return true;
 };
 
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'exchaintest'];
+module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'exchaintest','skaletest'];
 module.exports.id = 'createUniswapPair';

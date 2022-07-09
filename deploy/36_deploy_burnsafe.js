@@ -25,4 +25,4 @@ module.exports = async ({
   );
   await delayBetweenDeployScripts();
 };
-module.exports.tags = ['L2bridged', 'exchaintest', 'exchainmain'];
+module.exports.tags = ['L2bridged', 'exchainmain'];

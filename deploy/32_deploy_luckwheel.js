@@ -23,4 +23,12 @@ module.exports = async ({getNamedAccounts, deployments, network}) => {
   await delayBetweenDeployScripts();
 
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest', 'exchainmain'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'exchainmain',
+  'skaletest'
+];

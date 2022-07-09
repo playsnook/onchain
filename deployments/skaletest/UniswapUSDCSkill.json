@@ -1,0 +1,126 @@
+{
+  "address": "0x01e97e59d59786eBC6D7BBc50e98deEfFeD201DA",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "factory",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "usdc",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "skill",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "getSnookPriceInSkills",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "k",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xecb2dbc503f3724789fa7fcc823c937c6b011355fa6e4e99ee3f529c81a5db81",
+  "receipt": {
+    "to": "0x0000000000000000000000000000000000000000",
+    "from": "0x9a1187cB7084F3E60a8b99eb195D9f3c29361a8a",
+    "contractAddress": "0x01e97e59d59786eBC6D7BBc50e98deEfFeD201DA",
+    "transactionIndex": 0,
+    "gasUsed": "381124",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x963ddad7d6ffe6c3ca37ca53e25b63cc25a150a6728bdceec266729a4210b093",
+    "transactionHash": "0xecb2dbc503f3724789fa7fcc823c937c6b011355fa6e4e99ee3f529c81a5db81",
+    "logs": [],
+    "blockNumber": 264439,
+    "cumulativeGasUsed": "381124",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xb1b3227F055eF5b90779e325a08cD0Efe5589BD4",
+    "0x8EbdcC8726f30dd8096855E01A8e9DfB171dBAEd",
+    "0x08795fBd3EFd8358b8039746944Ec8E9FA769308"
+  ],
+  "solcInputHash": "56648311fb5fa7f6a2d2c3738f9e105a",
+  "metadata": "{\"compiler\":{\"version\":\"0.6.6+commit.6c089d02\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"usdc\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"skill\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"getSnookPriceInSkills\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"k\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"contracts/UniswapUSDCSkill.sol\":\"UniswapUSDCSkill\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol\":{\"content\":\"pragma solidity >=0.5.0;\\n\\ninterface IUniswapV2Factory {\\n    event PairCreated(address indexed token0, address indexed token1, address pair, uint);\\n\\n    function feeTo() external view returns (address);\\n    function feeToSetter() external view returns (address);\\n\\n    function getPair(address tokenA, address tokenB) external view returns (address pair);\\n    function allPairs(uint) external view returns (address pair);\\n    function allPairsLength() external view returns (uint);\\n\\n    function createPair(address tokenA, address tokenB) external returns (address pair);\\n\\n    function setFeeTo(address) external;\\n    function setFeeToSetter(address) external;\\n}\\n\",\"keccak256\":\"0xe5905c0989cf5a865ed9bb7b9252536ca011c5b744017a82a7d4443b9c00a891\"},\"@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol\":{\"content\":\"pragma solidity >=0.5.0;\\n\\ninterface IUniswapV2Pair {\\n    event Approval(address indexed owner, address indexed spender, uint value);\\n    event Transfer(address indexed from, address indexed to, uint value);\\n\\n    function name() external pure returns (string memory);\\n    function symbol() external pure returns (string memory);\\n    function decimals() external pure returns (uint8);\\n    function totalSupply() external view returns (uint);\\n    function balanceOf(address owner) external view returns (uint);\\n    function allowance(address owner, address spender) external view returns (uint);\\n\\n    function approve(address spender, uint value) external returns (bool);\\n    function transfer(address to, uint value) external returns (bool);\\n    function transferFrom(address from, address to, uint value) external returns (bool);\\n\\n    function DOMAIN_SEPARATOR() external view returns (bytes32);\\n    function PERMIT_TYPEHASH() external pure returns (bytes32);\\n    function nonces(address owner) external view returns (uint);\\n\\n    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;\\n\\n    event Mint(address indexed sender, uint amount0, uint amount1);\\n    event Burn(address indexed sender, uint amount0, uint amount1, address indexed to);\\n    event Swap(\\n        address indexed sender,\\n        uint amount0In,\\n        uint amount1In,\\n        uint amount0Out,\\n        uint amount1Out,\\n        address indexed to\\n    );\\n    event Sync(uint112 reserve0, uint112 reserve1);\\n\\n    function MINIMUM_LIQUIDITY() external pure returns (uint);\\n    function factory() external view returns (address);\\n    function token0() external view returns (address);\\n    function token1() external view returns (address);\\n    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);\\n    function price0CumulativeLast() external view returns (uint);\\n    function price1CumulativeLast() external view returns (uint);\\n    function kLast() external view returns (uint);\\n\\n    function mint(address to) external returns (uint liquidity);\\n    function burn(address to) external returns (uint amount0, uint amount1);\\n    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external;\\n    function skim(address to) external;\\n    function sync() external;\\n\\n    function initialize(address, address) external;\\n}\\n\",\"keccak256\":\"0x7c9bc70e5996c763e02ff38905282bc24fb242b0ef2519a003b36824fc524a4b\"},\"@uniswap/v2-periphery/contracts/libraries/SafeMath.sol\":{\"content\":\"pragma solidity =0.6.6;\\n\\n// a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)\\n\\nlibrary SafeMath {\\n    function add(uint x, uint y) internal pure returns (uint z) {\\n        require((z = x + y) >= x, 'ds-math-add-overflow');\\n    }\\n\\n    function sub(uint x, uint y) internal pure returns (uint z) {\\n        require((z = x - y) <= x, 'ds-math-sub-underflow');\\n    }\\n\\n    function mul(uint x, uint y) internal pure returns (uint z) {\\n        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');\\n    }\\n}\\n\",\"keccak256\":\"0x27f0ea82f879b3b01387b583e6d9d0ec858dca3b22b0aad173f8fbda06e761e1\"},\"@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol\":{\"content\":\"pragma solidity >=0.5.0;\\n\\nimport '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';\\n\\nimport \\\"./SafeMath.sol\\\";\\n\\nlibrary UniswapV2Library {\\n    using SafeMath for uint;\\n\\n    // returns sorted token addresses, used to handle return values from pairs sorted in this order\\n    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {\\n        require(tokenA != tokenB, 'UniswapV2Library: IDENTICAL_ADDRESSES');\\n        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);\\n        require(token0 != address(0), 'UniswapV2Library: ZERO_ADDRESS');\\n    }\\n\\n    // calculates the CREATE2 address for a pair without making any external calls\\n    function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {\\n        (address token0, address token1) = sortTokens(tokenA, tokenB);\\n        pair = address(uint(keccak256(abi.encodePacked(\\n                hex'ff',\\n                factory,\\n                keccak256(abi.encodePacked(token0, token1)),\\n                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash\\n            ))));\\n    }\\n\\n    // fetches and sorts the reserves for a pair\\n    function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {\\n        (address token0,) = sortTokens(tokenA, tokenB);\\n        (uint reserve0, uint reserve1,) = IUniswapV2Pair(pairFor(factory, tokenA, tokenB)).getReserves();\\n        (reserveA, reserveB) = tokenA == token0 ? (reserve0, reserve1) : (reserve1, reserve0);\\n    }\\n\\n    // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset\\n    function quote(uint amountA, uint reserveA, uint reserveB) internal pure returns (uint amountB) {\\n        require(amountA > 0, 'UniswapV2Library: INSUFFICIENT_AMOUNT');\\n        require(reserveA > 0 && reserveB > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');\\n        amountB = amountA.mul(reserveB) / reserveA;\\n    }\\n\\n    // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset\\n    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {\\n        require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');\\n        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');\\n        uint amountInWithFee = amountIn.mul(997);\\n        uint numerator = amountInWithFee.mul(reserveOut);\\n        uint denominator = reserveIn.mul(1000).add(amountInWithFee);\\n        amountOut = numerator / denominator;\\n    }\\n\\n    // given an output amount of an asset and pair reserves, returns a required input amount of the other asset\\n    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) internal pure returns (uint amountIn) {\\n        require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');\\n        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');\\n        uint numerator = reserveIn.mul(amountOut).mul(1000);\\n        uint denominator = reserveOut.sub(amountOut).mul(997);\\n        amountIn = (numerator / denominator).add(1);\\n    }\\n\\n    // performs chained getAmountOut calculations on any number of pairs\\n    function getAmountsOut(address factory, uint amountIn, address[] memory path) internal view returns (uint[] memory amounts) {\\n        require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');\\n        amounts = new uint[](path.length);\\n        amounts[0] = amountIn;\\n        for (uint i; i < path.length - 1; i++) {\\n            (uint reserveIn, uint reserveOut) = getReserves(factory, path[i], path[i + 1]);\\n            amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut);\\n        }\\n    }\\n\\n    // performs chained getAmountIn calculations on any number of pairs\\n    function getAmountsIn(address factory, uint amountOut, address[] memory path) internal view returns (uint[] memory amounts) {\\n        require(path.length >= 2, 'UniswapV2Library: INVALID_PATH');\\n        amounts = new uint[](path.length);\\n        amounts[amounts.length - 1] = amountOut;\\n        for (uint i = path.length - 1; i > 0; i--) {\\n            (uint reserveIn, uint reserveOut) = getReserves(factory, path[i - 1], path[i]);\\n            amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut);\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x2e125bac8733dde3c937e4245f15dcd56633a1aecf5d7760ba2018e9e374f378\"},\"contracts/ISkillToken.sol\":{\"content\":\"//SPDX-License-Identifier: Unlicense\\n\\npragma solidity >=0.5.0;\\n\\ninterface ISkillToken {\\n    // IERC20Metadata\\n    function name() external pure returns (string memory);\\n    function symbol() external pure returns (string memory);\\n    function decimals() external pure returns (uint8);\\n\\n    // IERC20\\n    event Approval(address indexed owner, address indexed spender, uint value);\\n    event Transfer(address indexed from, address indexed to, uint value);    \\n    function totalSupply() external view returns (uint);\\n    function balanceOf(address owner) external view returns (uint);\\n    function allowance(address owner, address spender) external view returns (uint);\\n    function approve(address spender, uint value) external returns (bool);\\n    function transfer(address to, uint value) external returns (bool);\\n    function transferFrom(address from, address to, uint value) external returns (bool);\\n\\n    // SnookGame extension\\n    function burn(address, uint256) external;\\n}\",\"keccak256\":\"0x2a28799b5cf2bdc40bee27444bcb8566fe226ae57b4f47fb02f3f990a051218a\"},\"contracts/UniswapUSDCSkill.sol\":{\"content\":\"//SPDX-License-Identifier: Unlicense\\n\\npragma solidity >=0.6.6;\\n\\nimport '@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol';\\nimport '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';\\nimport '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';\\nimport \\\"./ISkillToken.sol\\\";\\n\\ncontract UniswapUSDCSkill  {\\n  uint _usdcDecimals;\\n  uint _skillDecimals;\\n  address private _factory;\\n  address private _usdc;\\n  address private _skill;\\n  \\n  constructor(address factory, address usdc, address skill) public {\\n    _factory = factory;\\n    _usdc = usdc;\\n    _skill = skill;\\n    _usdcDecimals = ISkillToken(_usdc).decimals(); // to get decimals definition\\n    _skillDecimals = ISkillToken(_skill).decimals();\\n  }\\n\\n\\n  function getSnookPriceInSkills() public view returns (uint k) {\\n    IUniswapV2Pair pair = IUniswapV2Pair( IUniswapV2Factory(_factory).getPair(_usdc, _skill));\\n    uint snookPriceUSDC = 10**_usdcDecimals * 25 / 100;  // (=0.25 USDC = 0.25 USD) \\n    /*  To determine noUniswapK, assume SKILL current rate to be X=0.25 USD then price of SNOOK \\n        which is always 0.25 USD in SKILL is X/0.25 = 0.25/0.25 = 1.\\n    */\\n    uint noUniswapK = 10**_skillDecimals * 1;\\n    if (address(pair) == address(0) ) {\\n      k =  noUniswapK; \\n    } else {\\n      (uint reserves0, uint reserves1,) = pair.getReserves();\\n      if (reserves0 == 0 || reserves1 == 0) {\\n        k = noUniswapK;\\n      } else {\\n        (uint reservesUSDC, uint reservesSkill) = _usdc == pair.token0() ? ( reserves0, reserves1) : (reserves1, reserves0);\\n        k = UniswapV2Library.quote(snookPriceUSDC, reservesUSDC, reservesSkill);   \\n      }\\n    }\\n  }\\n}\",\"keccak256\":\"0x3227bd7a5fbade472d9e2e3ebdb6aeebfe7aa809dfdf8e864f34e3f16ab85493\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161054b38038061054b8339818101604052606081101561003357600080fd5b508051602080830151604093840151600280546001600160a01b038087166001600160a01b031992831617909255600380548386169083161790819055600480548486169316929092178255875163313ce56760e01b8152975196979496939592169363313ce5679381830193929091829003018186803b1580156100b757600080fd5b505afa1580156100cb573d6000803e3d6000fd5b505050506040513d60208110156100e157600080fd5b505160ff16600055600480546040805163313ce56760e01b815290516001600160a01b039092169263313ce567928282019260209290829003018186803b15801561012b57600080fd5b505afa15801561013f573d6000803e3d6000fd5b505050506040513d602081101561015557600080fd5b505160ff166001555050506103dc8061016f6000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063b7d0020714610030575b600080fd5b61003861004a565b60408051918252519081900360200190f35b600254600354600480546040805163e6a4390560e01b81526001600160a01b03948516938101939093529083166024830152516000938493169163e6a43905916044808301926020929190829003018186803b1580156100a957600080fd5b505afa1580156100bd573d6000803e3d6000fd5b505050506040513d60208110156100d357600080fd5b505160005460015491925060646019600a92830a020491900a6001600160a01b0383166101025780935061023e565b600080846001600160a01b0316630902f1ac6040518163ffffffff1660e01b815260040160606040518083038186803b15801561013e57600080fd5b505afa158015610152573d6000803e3d6000fd5b505050506040513d606081101561016857600080fd5b5080516020909101516dffffffffffffffffffffffffffff9182169350169050811580610193575080155b156101a05782955061023b565b600080866001600160a01b0316630dfe16816040518163ffffffff1660e01b815260040160206040518083038186803b1580156101dc57600080fd5b505afa1580156101f0573d6000803e3d6000fd5b505050506040513d602081101561020657600080fd5b50516003546001600160a01b03908116911614610224578284610227565b83835b91509150610236868383610244565b975050505b50505b50505090565b60008084116102845760405162461bcd60e51b81526004018080602001828103825260258152602001806103826025913960400191505060405180910390fd5b6000831180156102945750600082115b6102cf5760405162461bcd60e51b815260040180806020018281038252602881526020018061035a6028913960400191505060405180910390fd5b826102e0858463ffffffff6102f016565b816102e757fe5b04949350505050565b600081158061030b5750508082028282828161030857fe5b04145b610353576040805162461bcd60e51b815260206004820152601460248201527364732d6d6174682d6d756c2d6f766572666c6f7760601b604482015290519081900360640190fd5b9291505056fe556e697377617056324c6962726172793a20494e53554646494349454e545f4c4951554944495459556e697377617056324c6962726172793a20494e53554646494349454e545f414d4f554e54a264697066735822122039c5a9f686f1187a4fb01ebe8ab04e48575a4d15492716db770d2897b7328c5964736f6c63430006060033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063b7d0020714610030575b600080fd5b61003861004a565b60408051918252519081900360200190f35b600254600354600480546040805163e6a4390560e01b81526001600160a01b03948516938101939093529083166024830152516000938493169163e6a43905916044808301926020929190829003018186803b1580156100a957600080fd5b505afa1580156100bd573d6000803e3d6000fd5b505050506040513d60208110156100d357600080fd5b505160005460015491925060646019600a92830a020491900a6001600160a01b0383166101025780935061023e565b600080846001600160a01b0316630902f1ac6040518163ffffffff1660e01b815260040160606040518083038186803b15801561013e57600080fd5b505afa158015610152573d6000803e3d6000fd5b505050506040513d606081101561016857600080fd5b5080516020909101516dffffffffffffffffffffffffffff9182169350169050811580610193575080155b156101a05782955061023b565b600080866001600160a01b0316630dfe16816040518163ffffffff1660e01b815260040160206040518083038186803b1580156101dc57600080fd5b505afa1580156101f0573d6000803e3d6000fd5b505050506040513d602081101561020657600080fd5b50516003546001600160a01b03908116911614610224578284610227565b83835b91509150610236868383610244565b975050505b50505b50505090565b60008084116102845760405162461bcd60e51b81526004018080602001828103825260258152602001806103826025913960400191505060405180910390fd5b6000831180156102945750600082115b6102cf5760405162461bcd60e51b815260040180806020018281038252602881526020018061035a6028913960400191505060405180910390fd5b826102e0858463ffffffff6102f016565b816102e757fe5b04949350505050565b600081158061030b5750508082028282828161030857fe5b04145b610353576040805162461bcd60e51b815260206004820152601460248201527364732d6d6174682d6d756c2d6f766572666c6f7760601b604482015290519081900360640190fd5b9291505056fe556e697377617056324c6962726172793a20494e53554646494349454e545f4c4951554944495459556e697377617056324c6962726172793a20494e53554646494349454e545f414d4f554e54a264697066735822122039c5a9f686f1187a4fb01ebe8ab04e48575a4d15492716db770d2897b7328c5964736f6c63430006060033",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 950,
+        "contract": "contracts/UniswapUSDCSkill.sol:UniswapUSDCSkill",
+        "label": "_usdcDecimals",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 952,
+        "contract": "contracts/UniswapUSDCSkill.sol:UniswapUSDCSkill",
+        "label": "_skillDecimals",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 954,
+        "contract": "contracts/UniswapUSDCSkill.sol:UniswapUSDCSkill",
+        "label": "_factory",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_address"
+      },
+      {
+        "astId": 956,
+        "contract": "contracts/UniswapUSDCSkill.sol:UniswapUSDCSkill",
+        "label": "_usdc",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_address"
+      },
+      {
+        "astId": 958,
+        "contract": "contracts/UniswapUSDCSkill.sol:UniswapUSDCSkill",
+        "label": "_skill",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

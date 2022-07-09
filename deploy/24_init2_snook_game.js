@@ -1,13 +1,14 @@
 require('dotenv').config();
-const { delayBetweenDeployScripts, getMintTokenCIDs } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getMintTokenCIDs, getDeployGasPrice } = require('../scripts/lib');
 
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const { deployer } = await getNamedAccounts();
+  const gasPrice = getDeployGasPrice(network.name)
   const PRGN = await deployments.get('PRNG');
   const MintTokenCIDs = getMintTokenCIDs();
   await deployments.execute(
     'SnookGame',
-    {from:deployer},
+    {from:deployer, gasPrice},
     'initialize2',
     PRGN.address,
     MintTokenCIDs
@@ -16,5 +17,13 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest', 'exchainmain'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'exchainmain', 
+  'skaletest'
+];
 module.exports.id = 'init2SnookGame';

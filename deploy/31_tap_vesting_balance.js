@@ -1,7 +1,7 @@
-const { ethers } = require('hardhat');
-const { delayBetweenDeployScripts } = require('../scripts/lib');
-module.exports = async ({getNamedAccounts, deployments}) => {
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const { deployer } = await getNamedAccounts();
+  const gasPrice = getDeployGasPrice(network.name);
   const Vesting = await deployments.get('Vesting');
 
   const balanceOfDeployer = await deployments.read(
@@ -13,7 +13,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'SkillToken',
-    {from:deployer},
+    {from:deployer, gasPrice},
     'transfer',
     Vesting.address,
     balanceOfDeployer
@@ -30,5 +30,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'skaletest'
+];
 module.exports.id = 'TopVestingBalance';

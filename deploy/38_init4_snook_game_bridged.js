@@ -21,5 +21,5 @@ module.exports = async ({getNamedAccounts, deployments, network}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2bridged', 'exchaintest', 'exchainmain'];
+module.exports.tags = ['L2bridged', 'exchainmain'];
 module.exports.id = 'init4SnookGameBridged';

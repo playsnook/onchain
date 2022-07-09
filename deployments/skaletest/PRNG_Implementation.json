@@ -1,0 +1,196 @@
+{
+  "address": "0x45FAABA31e19ca45364e5c5c63B0B1935aa3A977",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "a1",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "a2",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "a3",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "cur",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "generate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "prev",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "max",
+          "type": "uint64"
+        }
+      ],
+      "name": "read",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "x",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x689f9cacec898efcf0da24382953f84b7e6665ff8a525539b0d7bc35307d779a",
+  "receipt": {
+    "to": "0x0000000000000000000000000000000000000000",
+    "from": "0x9a1187cB7084F3E60a8b99eb195D9f3c29361a8a",
+    "contractAddress": "0x45FAABA31e19ca45364e5c5c63B0B1935aa3A977",
+    "transactionIndex": 0,
+    "gasUsed": "239018",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x9ef9bcb4987a6a2b456ca2e27b20e9c1a1562d5e4d173a419bc6be14633e2014",
+    "transactionHash": "0x689f9cacec898efcf0da24382953f84b7e6665ff8a525539b0d7bc35307d779a",
+    "logs": [],
+    "blockNumber": 264520,
+    "cumulativeGasUsed": "239018",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "44bc5b6e9efb9005c0cdf786881a4dc8",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"a1\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"a2\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"a3\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"cur\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"generate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"prev\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"max\",\"type\":\"uint64\"}],\"name\":\"read\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"x\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/PRNG.sol\":\"PRNG\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\n// solhint-disable-next-line compiler-version\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed\\n * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an\\n * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer\\n * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.\\n *\\n * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as\\n * possible by providing the encoded function call as the `_data` argument to {ERC1967Proxy-constructor}.\\n *\\n * CAUTION: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or to ensure\\n * that all initializers are idempotent. This is not verified automatically as constructors are by Solidity.\\n */\\nabstract contract Initializable {\\n\\n    /**\\n     * @dev Indicates that the contract has been initialized.\\n     */\\n    bool private _initialized;\\n\\n    /**\\n     * @dev Indicates that the contract is in the process of being initialized.\\n     */\\n    bool private _initializing;\\n\\n    /**\\n     * @dev Modifier to protect an initializer function from being invoked twice.\\n     */\\n    modifier initializer() {\\n        require(_initializing || !_initialized, \\\"Initializable: contract is already initialized\\\");\\n\\n        bool isTopLevelCall = !_initializing;\\n        if (isTopLevelCall) {\\n            _initializing = true;\\n            _initialized = true;\\n        }\\n\\n        _;\\n\\n        if (isTopLevelCall) {\\n            _initializing = false;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x67d2f282a9678e58e878a0b774041ba7a01e2740a262aea97a3f681339914713\",\"license\":\"MIT\"},\"contracts/IPRNG.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\ninterface IPRNG {\\n  function generate() external;\\n  function read(uint64 max) external returns (uint64);\\n}\",\"keccak256\":\"0x1059e1dce605822ed165f9d92ee9ede30fd7ee219d5dd8cd896ef3ca92807e7c\",\"license\":\"MIT\"},\"contracts/PRNG.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\\\";\\nimport \\\"./IPRNG.sol\\\";\\n\\ncontract PRNG is IPRNG, Initializable {  \\n  uint64 public constant a1 = 21;\\n  uint64 public constant a2 = 35;\\n  uint64 public constant a3 = 4;\\n\\n  uint64 public prev;\\n  uint64 public cur;\\n  uint64 public x;\\n  \\n\\n  function generate() external override {\\n    cur = uint64(uint256(blockhash(block.number - 1))); \\n    if (cur != prev) {\\n      prev = cur;\\n      x = cur;\\n    } \\n    \\n    x ^= (x >> a1);\\n    x ^= (x << a2);\\n    x ^= (x >> a3);\\n  }\\n\\n  // Returns integers in range [0..max-1]\\n  function read(uint64 max) external override view returns (uint64) {\\n    return x % max;\\n  }\\n\\n}\",\"keccak256\":\"0x681ef2ea60f36c46082c69a4909835d2482dd0ecc282ef26d6e3743c802389c2\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061035d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c80634fe242511161005b5780634fe24251146100c557806389b8b492146100cd5780639426eef8146100e0578063969e9d0c146100e857610088565b80630c55699c1461008d578063119552a1146100ab5780632a1bbc34146100b3578063479c9254146100bd575b600080fd5b6100956100f0565b6040516100a291906102bc565b60405180910390f35b610095610107565b6100bb61010c565b005b610095610230565b610095610246565b6100956100db36600461028d565b61025d565b610095610283565b610095610288565b600054600160901b900467ffffffffffffffff1681565b601581565b6101176001436102d1565b6000805467ffffffffffffffff60501b1916600160501b924067ffffffffffffffff9081168402919091179182905562010000820481169290910416146101a7576000805467ffffffffffffffff60901b1969ffffffffffffffff0000198216600160501b9283900467ffffffffffffffff9081166201000002919091179182169290910416600160901b021790555b6000805467ffffffffffffffff60901b1980821667ffffffffffffffff600160901b9384900481811660159190911c6507ffffffffff161881168402919091178083169084900480831660239190911b6c07fffffffffffffff800000000161882168402179182169183900480821660049190911c670fffffffffffffff161816909102179055565b60005462010000900467ffffffffffffffff1681565b600054600160501b900467ffffffffffffffff1681565b6000805461027d908390600160901b900467ffffffffffffffff166102f4565b92915050565b600481565b602381565b60006020828403121561029e578081fd5b813567ffffffffffffffff811681146102b5578182fd5b9392505050565b67ffffffffffffffff91909116815260200190565b6000828210156102ef57634e487b7160e01b81526011600452602481fd5b500390565b600067ffffffffffffffff8084168061031b57634e487b7160e01b83526012600452602483fd5b9216919091069291505056fea264697066735822122041dbac9874c50e6d5b0c056c9a1be973eada2ec138c4974fdd116e38deb9322b64736f6c63430008000033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100885760003560e01c80634fe242511161005b5780634fe24251146100c557806389b8b492146100cd5780639426eef8146100e0578063969e9d0c146100e857610088565b80630c55699c1461008d578063119552a1146100ab5780632a1bbc34146100b3578063479c9254146100bd575b600080fd5b6100956100f0565b6040516100a291906102bc565b60405180910390f35b610095610107565b6100bb61010c565b005b610095610230565b610095610246565b6100956100db36600461028d565b61025d565b610095610283565b610095610288565b600054600160901b900467ffffffffffffffff1681565b601581565b6101176001436102d1565b6000805467ffffffffffffffff60501b1916600160501b924067ffffffffffffffff9081168402919091179182905562010000820481169290910416146101a7576000805467ffffffffffffffff60901b1969ffffffffffffffff0000198216600160501b9283900467ffffffffffffffff9081166201000002919091179182169290910416600160901b021790555b6000805467ffffffffffffffff60901b1980821667ffffffffffffffff600160901b9384900481811660159190911c6507ffffffffff161881168402919091178083169084900480831660239190911b6c07fffffffffffffff800000000161882168402179182169183900480821660049190911c670fffffffffffffff161816909102179055565b60005462010000900467ffffffffffffffff1681565b600054600160501b900467ffffffffffffffff1681565b6000805461027d908390600160901b900467ffffffffffffffff166102f4565b92915050565b600481565b602381565b60006020828403121561029e578081fd5b813567ffffffffffffffff811681146102b5578182fd5b9392505050565b67ffffffffffffffff91909116815260200190565b6000828210156102ef57634e487b7160e01b81526011600452602481fd5b500390565b600067ffffffffffffffff8084168061031b57634e487b7160e01b83526012600452602483fd5b9216919091069291505056fea264697066735822122041dbac9874c50e6d5b0c056c9a1be973eada2ec138c4974fdd116e38deb9322b64736f6c63430008000033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 753,
+        "contract": "contracts/PRNG.sol:PRNG",
+        "label": "_initialized",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 756,
+        "contract": "contracts/PRNG.sol:PRNG",
+        "label": "_initializing",
+        "offset": 1,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 15052,
+        "contract": "contracts/PRNG.sol:PRNG",
+        "label": "prev",
+        "offset": 2,
+        "slot": "0",
+        "type": "t_uint64"
+      },
+      {
+        "astId": 15054,
+        "contract": "contracts/PRNG.sol:PRNG",
+        "label": "cur",
+        "offset": 10,
+        "slot": "0",
+        "type": "t_uint64"
+      },
+      {
+        "astId": 15056,
+        "contract": "contracts/PRNG.sol:PRNG",
+        "label": "x",
+        "offset": 18,
+        "slot": "0",
+        "type": "t_uint64"
+      }
+    ],
+    "types": {
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_uint64": {
+        "encoding": "inplace",
+        "label": "uint64",
+        "numberOfBytes": "8"
+      }
+    }
+  }
+}

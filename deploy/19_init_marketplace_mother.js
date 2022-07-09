@@ -29,5 +29,12 @@ module.exports = async ({getNamedAccounts, deployments, network}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest',
+  'skaletest'
+];
 module.exports.id = 'initMarketplace';

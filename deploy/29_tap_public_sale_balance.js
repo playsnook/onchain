@@ -1,11 +1,12 @@
 const { ethers } = require('hardhat');
-const { delayBetweenDeployScripts } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
 const PublicSaleInitialBalanceInWei = ethers.utils
   .parseEther(process.env.PUBLIC_SALE_INITIAL_BALANCE_IN_ETHERS);
 
 const PublicSaleAddress = process.env.PUBLIC_SALE_ADDRESS;
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const { deployer } = await getNamedAccounts();
+  const gasPrice = getDeployGasPrice(network.name);
   deployments.log(`PublicSaleInitialBalanceInWei: ${PublicSaleInitialBalanceInWei}`);
 
   const balanceOfDeployer1 = await deployments.read(
@@ -17,7 +18,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'SkillToken',
-    {from:deployer},
+    {from:deployer, gasPrice},
     'transfer',
     PublicSaleAddress,
     PublicSaleInitialBalanceInWei
@@ -46,5 +47,5 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   return true;
   
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest', 'skaletest'];
 module.exports.id = 'TopPublicSaleBalance';

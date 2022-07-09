@@ -27,4 +27,11 @@ module.exports = async ({
   });
   await delayBetweenDeployScripts();
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'skaletest'
+];

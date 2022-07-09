@@ -1,8 +1,8 @@
-const { delayBetweenDeployScripts } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
 
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const {deployer} = await getNamedAccounts();
-  const SkillToken = await deployments.get('SkillToken');
+  const gasPrice = getDeployGasPrice(network.name);
   const SnookGame = await deployments.get('SnookGame');
   const StakingRewards = await deployments.get('StakingRewards');
   const  BURNER_ROLE = await deployments.read(
@@ -19,7 +19,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   
   await deployments.execute(
     'SkillToken',
-    {from: deployer},
+    {from: deployer, gasPrice},
     'grantRole',
     BURNER_ROLE,
     SnookGame.address  
@@ -27,7 +27,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'SkillToken',
-    {from: deployer},
+    {from: deployer, gasPrice},
     'grantRole',
     BURNER_ROLE,
     StakingRewards.address  
@@ -35,7 +35,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
 
   await deployments.execute(
     'SkillToken',
-    {from: deployer},
+    {from: deployer, gasPrice},
     'revokeRole',
     DEFAULT_ADMIN_ROLE,
     deployer 
@@ -45,5 +45,12 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   await delayBetweenDeployScripts();
   return true;
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest',
+  'skaletest'
+];
 module.exports.id = 'SkillGrantsRoles'

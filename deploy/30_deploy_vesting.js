@@ -3,7 +3,7 @@ require('dotenv').config();
 const assert = require('assert');
 const { Ecosystem, LiquidityPool } = require('../.vesting.json');
 const { Vesting } = require('../scripts/lib');
-const { delayBetweenDeployScripts } = require('../scripts/lib');
+const { delayBetweenDeployScripts, getDeployGasPrice } = require('../scripts/lib');
 const SecondsInDay = ethers.BigNumber.from(process.env.SECONDS_IN_DAY);
 const { utils: {parseEther: PE, parseUnits: PU}} = ethers;
 
@@ -18,11 +18,11 @@ const SentToTreasury = ethers.BigNumber.from(process.env.SENT_TO_TREASURY_IN_WEI
 const SentToEcosystem = ethers.BigNumber.from(process.env.SENT_TO_ECOSYSTEM_IN_WEI);
 const SentToLiquidity = ethers.utils.parseEther(process.env.SENT_TO_LIQUIDITY_IN_ETHER);
 
-module.exports = async ({getNamedAccounts, deployments}) => {
+module.exports = async ({getNamedAccounts, deployments, network}) => {
   const TreasuryDeployment = await deployments.get('Treasury');
   const SkillTokenDeployment = await deployments.get('SkillToken');
   const { deployer } = await getNamedAccounts();
-
+  const gasPrice = getDeployGasPrice(network.name);
   const vesting = new Vesting(TreasuryDeployment.address);
   await vesting.init();
   
@@ -52,7 +52,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   await deployments.deploy('Vesting', {
     from: deployer,
     gasLimit: 10_000_000,
-    gasPrice: PU("100", "gwei"),
+    gasPrice,
     args: [
       SkillTokenDeployment.address,
       vesting.getBeneficiaries(),
@@ -72,4 +72,11 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   
   await delayBetweenDeployScripts();
 };
-module.exports.tags = ['L2', 'L2bridged', 'mumbai', 'polygon', 'exchaintest'];
+module.exports.tags = [
+  'L2', 
+  'L2bridged', 
+  'mumbai', 
+  'polygon', 
+  'exchaintest', 
+  'skaletest'
+];
